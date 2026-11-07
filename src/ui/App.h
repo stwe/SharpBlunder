@@ -1,5 +1,8 @@
 #pragma once
 
+#include "core/Position.h"
+#include "ui/BoardView.h"
+#include "ui/PieceSet.h"
 #include "ui/Window.h"
 
 namespace sg::chess::ui
@@ -22,7 +25,9 @@ namespace sg::chess::ui
         //-------------------------------------------------
 
         /**
-         * @brief Creates the application and opens its window.
+         * @brief Creates the application: opens the window, loads the pieces and sets up the start position.
+         *
+         * @throws std::runtime_error If the piece images cannot be loaded.
          */
         App();
 
@@ -66,6 +71,12 @@ namespace sg::chess::ui
         // Member
         //-------------------------------------------------
 
-        Window m_window; ///< The main window
+        // Members are initialized in the order of their declaration, not in the order of the
+        // constructor's initializer list. m_boardView refers to m_pieces, so m_pieces must come first.
+
+        Window m_window;            ///< The main window
+        PieceSet m_pieces;          ///< The piece images
+        core::Position m_position;  ///< The position that is shown
+        BoardView m_boardView;      ///< Draws m_position
     };
 }
