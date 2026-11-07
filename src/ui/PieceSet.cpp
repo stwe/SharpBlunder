@@ -8,7 +8,7 @@
 
 namespace
 {
-    constexpr std::size_t TYPES_PER_COLOR{sg::chess::core::PIECE_LETTERS.size() };
+    constexpr std::size_t TYPES_PER_COLOR{ sg::chess::core::PIECE_LETTERS.size() };
 
     std::size_t TextureIndex(const sg::chess::core::Piece t_piece)
     {

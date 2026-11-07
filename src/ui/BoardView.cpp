@@ -12,7 +12,7 @@ namespace
     constexpr sf::Color LIGHT_SQUARE{ 240, 217, 181 };
     constexpr sf::Color DARK_SQUARE{ 181, 136, 99 };
 
-    constexpr int BOARD_SIZE{sg::chess::core::Position::BOARD_SIZE };
+    constexpr int BOARD_SIZE{ sg::chess::core::Position::BOARD_SIZE };
 }
 
 //-------------------------------------------------

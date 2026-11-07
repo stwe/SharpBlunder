@@ -29,6 +29,11 @@ namespace sg::chess::core
         static constexpr int BOARD_SIZE{ 8 };   ///< Number of files and ranks
         static constexpr int SQUARE_COUNT{ BOARD_SIZE * BOARD_SIZE };
 
+        /**
+         * @brief The standard starting position in FEN (Forsyth-Edwards Notation) format.
+         */
+        static constexpr std::string_view START_FEN{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" };
+
         //-------------------------------------------------
         // Creation
         //-------------------------------------------------

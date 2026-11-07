@@ -19,7 +19,7 @@ namespace sg::chess::ui
      */
     struct WindowConfig
     {
-        sf::Vector2u size{ 1050, 690 };    ///< Client area size in pixels
+        sf::Vector2u size{ 1280, 720 };    ///< Client area size in pixels
         std::string title{ "SharpBlunder" }; ///< Text shown in the title bar
         unsigned int frameRateLimit{ 60 };     ///< Maximum frames per second (0 = unlimited)
     };
@@ -70,7 +70,7 @@ namespace sg::chess::ui
         [[nodiscard]] bool IsOpen() const;
 
         /**
-         * @brief Closes the window. IsOpen() returns false afterward.
+         * @brief Closes the window. IsOpen() returns false afterwards.
          */
         void Close();
 
@@ -119,6 +119,16 @@ namespace sg::chess::ui
          * @return The render target of this window.
          */
         [[nodiscard]] sf::RenderTarget& GetRenderTarget() noexcept { return m_window; }
+
+        /**
+         * @brief Gives access to the SFML window itself.
+         *
+         * Only meant for the GUI backend (Dear ImGui), which needs the window and not just a render target.
+         * Everything else should use the functions of this class.
+         *
+         * @return The underlying SFML window.
+         */
+        [[nodiscard]] sf::RenderWindow& GetRenderWindow() noexcept { return m_window; }
 
     private:
         //-------------------------------------------------

@@ -1,8 +1,10 @@
 #pragma once
 
-#include "core/Position.h"
-#include "ui/BoardView.h"
+#include <SFML/System/Clock.hpp>
+#include "ui/GuiLayer.h"
+#include "ui/NavigationBar.h"
 #include "ui/PieceSet.h"
+#include "ui/ScreenManager.h"
 #include "ui/Window.h"
 
 namespace sg::chess::ui
@@ -12,7 +14,7 @@ namespace sg::chess::ui
     //-------------------------------------------------
 
     /**
-     * @brief The application: owns the window and runs the main loop.
+     * @brief The application: owns the window and the screens and runs the main loop.
      *
      * Every frame does the same three things in the same order:
      * handle input, update the state, draw the result.
@@ -25,9 +27,9 @@ namespace sg::chess::ui
         //-------------------------------------------------
 
         /**
-         * @brief Creates the application: opens the window, loads the pieces and sets up the start position.
+         * @brief Creates the application: opens the window, sets up the GUI, loads the pieces and creates the screens.
          *
-         * @throws std::runtime_error If the piece images cannot be loaded.
+         * @throws std::runtime_error If the GUI font or the piece images cannot be loaded.
          */
         App();
 
@@ -53,14 +55,16 @@ namespace sg::chess::ui
         //-------------------------------------------------
 
         /**
-         * @brief Handles all pending events (close button, key presses, ...).
+         * @brief Handles all pending events (close button, key presses, mouse, ...).
          */
         void ProcessEvents();
 
         /**
          * @brief Advances the application state by one frame.
+         *
+         * @param t_dt The time since the previous frame.
          */
-        void Update();
+        void Update(sf::Time t_dt);
 
         /**
          * @brief Draws the current state and shows it in the window.
@@ -71,12 +75,14 @@ namespace sg::chess::ui
         // Member
         //-------------------------------------------------
 
-        // Members are initialized in the order of their declaration, not in the order of the
-        // constructor's initializer list. m_boardView refers to m_pieces, so m_pieces must come first.
+        // Members are initialized in the order of their declaration and destroyed in the reverse order.
+        // m_gui needs m_window, and the screens refer to m_pieces, so both come before m_screens.
 
-        Window m_window;            ///< The main window
-        PieceSet m_pieces;          ///< The piece images
-        core::Position m_position;  ///< The position that is shown
-        BoardView m_boardView;      ///< Draws m_position
+        Window m_window;              ///< The main window
+        GuiLayer m_gui;               ///< Dear ImGui, connected to m_window
+        PieceSet m_pieces;            ///< The piece images, shared by all screens with a board
+        ScreenManager m_screens;      ///< All pages of the application
+        NavigationBar m_navigation;   ///< The menu on the left
+        sf::Clock m_clock;            ///< Measures the time of a frame
     };
 }
