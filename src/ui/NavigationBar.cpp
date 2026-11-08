@@ -1,7 +1,7 @@
 #include <imgui.h>
 #include <string>
-#include "ui/NavigationBar.h"
 #include "ui/Layout.h"
+#include "ui/NavigationBar.h"
 
 namespace
 {

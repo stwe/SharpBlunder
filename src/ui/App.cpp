@@ -21,12 +21,14 @@ namespace
 // Ctors. / Dtor.
 //-------------------------------------------------
 
-sg::chess::ui::App::App()
-    : m_window(WindowConfig{})
+sg::chess::ui::App::App(const std::string& t_stockfish)
+    : m_engine(t_stockfish)
+    , m_rules(m_engine)
+    , m_window(WindowConfig{})
     , m_gui(m_window, std::filesystem::path{ ASSET_DIR } / "fonts" / GUI_FONT, GUI_FONT_SIZE)
     , m_pieces(std::filesystem::path{ ASSET_DIR } / "pieces" / PIECE_SET)
 {
-    m_screens.Add(ScreenId::ANALYSIS, std::make_unique<AnalysisScreen>(m_pieces));
+    m_screens.Add(ScreenId::ANALYSIS, std::make_unique<AnalysisScreen>(m_pieces, m_rules));
     m_screens.Add(ScreenId::GAMES, std::make_unique<PlaceholderScreen>(
         "My Games", "Import and analyze your games from lichess.org and chess.com."));
     m_screens.Add(ScreenId::TRAINING, std::make_unique<PlaceholderScreen>(

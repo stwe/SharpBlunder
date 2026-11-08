@@ -19,9 +19,9 @@ namespace sg::chess::ui
      */
     struct WindowConfig
     {
-        sf::Vector2u size{ 1280, 720 };    ///< Client area size in pixels
-        std::string title{ "SharpBlunder" }; ///< Text shown in the title bar
-        unsigned int frameRateLimit{ 60 };     ///< Maximum frames per second (0 = unlimited)
+        sf::Vector2u size{ 1280, 720 };       ///< Client area size in pixels
+        std::string title{ "SharpBlunder" };  ///< Text shown in the title bar
+        unsigned int frameRateLimit{ 60 };    ///< Maximum frames per second (0 = unlimited)
     };
 
     //-------------------------------------------------

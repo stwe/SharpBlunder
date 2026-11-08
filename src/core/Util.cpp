@@ -6,14 +6,14 @@
 // Utils
 //-------------------------------------------------
 
-std::string sg::chess::core::stockfish_path(const char* t_arg)
+std::string sg::chess::core::stockfish_path(const int t_argc, char** t_argv)
 {
-    if (t_arg && *t_arg)
+    if (t_argc > 1 && *t_argv[1] != '\0')
     {
-        return t_arg;
+        return t_argv[1];
     }
 
-    if (const char* env = std::getenv("STOCKFISH"); env && *env)
+    if (const char* env = std::getenv("STOCKFISH"); env && *env != '\0')
     {
         return env;
     }

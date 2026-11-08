@@ -28,17 +28,7 @@ namespace sg::chess::core
     // Utils
     //-------------------------------------------------
 
-    /**
-     * @brief Resolves the path to the Stockfish executable.
-     *
-     * Checks the provided command line argument first, then the system environment
-     * variable 'STOCKFISH', and falls back to the default "stockfish" binary name.
-     *
-     * @param t_arg Optional command-line argument specifying the path.
-     *
-     * @return std::string The resolved executable path.
-     */
-    std::string stockfish_path(const char* t_arg = nullptr);
+    std::string stockfish_path(int t_argc, char** t_argv);
 
     /**
      * @brief Retrieves and ensures the existence of the application's data directory.

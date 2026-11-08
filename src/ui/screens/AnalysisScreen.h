@@ -1,8 +1,11 @@
 #pragma once
 
+#include <string>
 #include <string_view>
-#include "core/Position.h"
+#include "core/GameState.h"
+#include "core/RulesProvider.h"
 #include "ui/BoardView.h"
+#include "ui/MoveInput.h"
 #include "ui/PieceSet.h"
 #include "ui/Screen.h"
 
@@ -14,6 +17,9 @@ namespace sg::chess::ui
 
     /**
      * @brief The start page: a free board for analysis. There is nothing to learn here.
+     *
+     * Pieces are moved with the mouse. The played moves are listed on the right, and the user can
+     * step through them with the buttons or the arrow keys.
      */
     class AnalysisScreen final : public Screen
     {
@@ -26,8 +32,11 @@ namespace sg::chess::ui
          * @brief Creates the page with the board in the start position.
          *
          * @param t_pieces The piece images. Not owned: they must outlive this screen.
+         * @param t_rules The source of the rules. Not owned: it must outlive this screen.
+         *
+         * @throws std::runtime_error If the rules cannot be queried.
          */
-        explicit AnalysisScreen(const PieceSet& t_pieces);
+        AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules);
 
         AnalysisScreen(const AnalysisScreen& t_other) = delete;
         AnalysisScreen(AnalysisScreen&& t_other) noexcept = delete;
@@ -42,14 +51,46 @@ namespace sg::chess::ui
 
         [[nodiscard]] std::string_view Title() const noexcept override;
 
+        void HandleEvent(const sf::Event& t_event) override;
         void Draw(sf::RenderTarget& t_target) override;
+        void DrawGui() override;
 
     private:
+        //-------------------------------------------------
+        // Helper
+        //-------------------------------------------------
+
+        /**
+         * @brief Collects what the board shows on top of the position: last move, check, selection, dragged piece.
+         *
+         * @return The overlay for this frame.
+         */
+        [[nodiscard]] BoardOverlay BuildOverlay() const;
+
+        /**
+         * @brief Describes the situation on the board in one line, e.g. "White to move" or "Checkmate".
+         *
+         * @return The text.
+         */
+        [[nodiscard]] std::string StatusText() const;
+
+        /**
+         * @brief Called after the position on the board has changed by navigation or by a move.
+         */
+        void OnPositionChanged();
+
+        void DrawControls();
+        void DrawMoveList();
+
         //-------------------------------------------------
         // Member
         //-------------------------------------------------
 
-        core::Position m_position;  ///< The position that is shown
-        BoardView m_boardView;      ///< Draws m_position
+        // m_input refers to m_boardView, so m_boardView must be declared first.
+
+        core::GameState m_game;          ///< The moves played on the board
+        BoardView m_boardView;           ///< Draws the board
+        MoveInput m_input;               ///< Turns mouse input into moves
+        bool m_scrollToCurrent{ true };  ///< The move list scrolls to the current move in the next frame
     };
 }

@@ -13,9 +13,9 @@ namespace sg::chess::ui
      */
     enum class ScreenId : std::uint8_t
     {
-        ANALYSIS,   ///< Start page: a free board for analysis
-        GAMES,      ///< Analysis of the user's online games
-        TRAINING,   ///< Learning the opening repertoire
-        SETTINGS    ///< Program settings
+        ANALYSIS,  ///< Start page: a free board for analysis
+        GAMES,     ///< Analysis of the user's online games
+        TRAINING,  ///< Learning the opening repertoire
+        SETTINGS   ///< Program settings
     };
 }

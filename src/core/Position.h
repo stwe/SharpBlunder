@@ -2,8 +2,10 @@
 
 #include <array>
 #include <optional>
+#include <string>
 #include <string_view>
 #include "core/Piece.h"
+#include "core/Square.h"
 
 namespace sg::chess::core
 {
@@ -12,12 +14,10 @@ namespace sg::chess::core
     //-------------------------------------------------
 
     /**
-     * @brief The pieces on the 64 squares of the board.
+     * @brief A chess position: the pieces on the 64 squares and the state needed to continue the game.
      *
-     * Files and ranks are counted from zero: file 0 is the a-file, rank 0 is the first rank.
-     * So a1 is (0, 0), h1 is (7, 0) and e4 is (4, 3).
-     *
-     * This is a plain value type. It can be copied freely and knows nothing about drawing.
+     * This is a plain value type that can be copied freely. It knows nothing about drawing
+     * and it does not know which moves are legal; that is the job of a RulesProvider.
      */
     class Position
     {
@@ -25,9 +25,6 @@ namespace sg::chess::core
         //-------------------------------------------------
         // Constants
         //-------------------------------------------------
-
-        static constexpr int BOARD_SIZE{ 8 };   ///< Number of files and ranks
-        static constexpr int SQUARE_COUNT{ BOARD_SIZE * BOARD_SIZE };
 
         /**
          * @brief The standard starting position in FEN (Forsyth-Edwards Notation) format.
@@ -39,21 +36,21 @@ namespace sg::chess::core
         //-------------------------------------------------
 
         /**
-         * @brief Creates an empty board.
+         * @brief Creates an empty board with white to move.
          */
         Position() = default;
 
         /**
-         * @brief Creates a position from the piece placement of a FEN string.
+         * @brief Creates a position from a FEN string.
          *
-         * Only the first field of the FEN is read (e.g. "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR").
-         * The remaining fields (side to move, castling rights, ...) are ignored for now.
+         * The first field (piece placement) is required. The other fields (side to move, castling rights,
+         * en passant square, halfmove clock, fullmove number) may be omitted and default to "w - - 0 1".
          *
-         * @param t_fen A full FEN string or just its piece placement.
+         * @param t_fen A FEN string, e.g. START_FEN.
          *
          * @return The position.
          *
-         * @throws std::invalid_argument If the piece placement is malformed.
+         * @throws std::invalid_argument If the FEN is malformed.
          */
         [[nodiscard]] static Position FromFen(std::string_view t_fen);
 
@@ -62,17 +59,11 @@ namespace sg::chess::core
         //-------------------------------------------------
 
         /**
-         * @brief Converts file and rank to a square index (0 = a1, 63 = h8).
+         * @brief Writes the position as a FEN string.
          *
-         * @param t_file The file, 0 to 7.
-         * @param t_rank The rank, 0 to 7.
-         *
-         * @return The square index.
+         * @return The FEN with all six fields.
          */
-        [[nodiscard]] static constexpr int Index(const int t_file, const int t_rank) noexcept
-        {
-            return t_rank * BOARD_SIZE + t_file;
-        }
+        [[nodiscard]] std::string ToFen() const;
 
         /**
          * @brief Returns the piece on a square.
@@ -86,11 +77,41 @@ namespace sg::chess::core
          */
         [[nodiscard]] std::optional<Piece> At(int t_file, int t_rank) const;
 
+        /**
+         * @brief Returns the piece on a square.
+         *
+         * @param t_square The square index, 0 to 63.
+         *
+         * @return The piece, or std::nullopt if the square is empty.
+         *
+         * @throws std::out_of_range If the square is outside the board.
+         */
+        [[nodiscard]] std::optional<Piece> At(int t_square) const;
+
+        /**
+         * @brief Finds the king of a side.
+         *
+         * @param t_color The side.
+         *
+         * @return The square of the king, or std::nullopt if there is none.
+         */
+        [[nodiscard]] std::optional<int> KingSquare(Color t_color) const noexcept;
+
+        [[nodiscard]] Color SideToMove() const noexcept { return m_sideToMove; }
+        [[nodiscard]] int HalfmoveClock() const noexcept { return m_halfmoveClock; }
+        [[nodiscard]] int FullmoveNumber() const noexcept { return m_fullmoveNumber; }
+
     private:
         //-------------------------------------------------
         // Member
         //-------------------------------------------------
 
-        std::array<std::optional<Piece>, SQUARE_COUNT> m_squares{}; ///< Index = rank * 8 + file
+        std::array<std::optional<Piece>, SQUARE_COUNT> m_squares{};  ///< Index = rank * 8 + file
+
+        Color m_sideToMove{ Color::WHITE };  ///< The side that moves next
+        std::string m_castling{ "-" };       ///< Castling rights as in FEN, e.g. "KQkq" or "-"
+        std::string m_enPassant{ "-" };      ///< En passant target square as in FEN, e.g. "e3" or "-"
+        int m_halfmoveClock{ 0 };            ///< Halfmoves since the last capture or pawn move (50-move rule)
+        int m_fullmoveNumber{ 1 };           ///< Starts at 1 and is incremented after Black's move
     };
 }

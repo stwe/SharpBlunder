@@ -34,11 +34,20 @@ FetchContent_MakeAvailable(imgui-sfml)
 add_executable(SharpBlunder
         src/main.cpp
 
+        src/core/GameState.cpp
+        src/core/Move.cpp
         src/core/Position.cpp
+        src/core/San.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+
+        src/engine/Engine.cpp
+        src/engine/StockfishRules.cpp
 
         src/ui/App.cpp
         src/ui/BoardView.cpp
         src/ui/GuiLayer.cpp
+        src/ui/MoveInput.cpp
         src/ui/NavigationBar.cpp
         src/ui/PieceSet.cpp
         src/ui/ScreenManager.cpp

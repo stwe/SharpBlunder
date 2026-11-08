@@ -82,7 +82,7 @@ namespace sg::chess::ui
          *
          * @param t_dt The time since the previous frame.
          */
-        virtual void Update(const sf::Time t_dt) { static_cast<void>(t_dt); }
+        virtual void Update(sf::Time t_dt) { static_cast<void>(t_dt); }
 
         /**
          * @brief Draws with SFML (board, pieces, ...). Runs before DrawGui(), so the GUI appears on top.

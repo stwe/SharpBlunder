@@ -134,7 +134,7 @@ namespace sg::chess::ui
         // Member
         //-------------------------------------------------
 
-        std::vector<Entry> m_entries;           ///< All screens
-        std::optional<std::size_t> m_current;   ///< Index of the active screen in m_entries
+        std::vector<Entry> m_entries;          ///< All screens
+        std::optional<std::size_t> m_current;  ///< Index of the active screen in m_entries
     };
 }
