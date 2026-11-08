@@ -12,11 +12,6 @@ namespace sg::chess::core
     //-------------------------------------------------
 
     /**
-     * @brief The standard starting position in FEN (Forsyth-Edwards Notation) format.
-     */
-    inline constexpr auto* START_FEN{ "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" };
-
-    /**
      * @brief Separator between moves in a serialized move sequence (e.g., "e2e4 e7e5 g1f3").
      *
      * Used by JoinMoves() and for parsing with SplitStr(). The same format is used in the repertoire files,
