@@ -10,3 +10,7 @@ The `COPYING.md` of that repository lists this piece set as **GPLv2+**
 
 The PNG files in this directory are rasterized versions of those SVGs, created with
 `tools/render_pieces.sh`. They are derived from the SVGs and are therefore under the same license.
+
+Because that license allows the use under "version 2 or later", this project uses the pieces under
+the terms of the **GNU General Public License, version 3 or later**, the same terms as the rest of the project
+(see `LICENSE.md` in the root directory).
