@@ -75,7 +75,7 @@ namespace sg::chess::engine
          *
          * @throws std::runtime_error If the engine is no longer there.
          */
-        void Send(std::string_view t_command);
+        void Send(std::string_view t_command) const;
 
         /**
          * @brief Reads lines from the engine until one starts with the given text.
@@ -100,7 +100,7 @@ namespace sg::chess::engine
          *
          * @return False if the engine's output has ended.
          */
-        [[nodiscard]] bool ReadLine(std::string& t_line);
+        [[nodiscard]] bool ReadLine(std::string& t_line) const;
 
         /**
          * @brief Stops the process and closes the pipes. Safe to call more than once.

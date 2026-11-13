@@ -22,7 +22,7 @@
 namespace
 {
     // Do two moves of the same kind of piece end on the same square? Then the move needs a disambiguation.
-    std::string disambiguation(const sg::chess::core::PositionInfo& t_before, const sg::chess::core::Move& t_move,
+    std::string Disambiguation(const sg::chess::core::PositionInfo& t_before, const sg::chess::core::Move& t_move,
                                const sg::chess::core::PieceType t_type)
     {
         bool ambiguous{ false };
@@ -100,7 +100,7 @@ std::string sg::chess::core::to_san(const PositionInfo& t_before, const Move& t_
         else
         {
             san += type_letter(piece->type);
-            san += disambiguation(t_before, t_move, piece->type);
+            san += Disambiguation(t_before, t_move, piece->type);
         }
 
         if (isCapture)

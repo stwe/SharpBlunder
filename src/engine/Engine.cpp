@@ -25,7 +25,7 @@
 
 namespace
 {
-    void close_if_open(int& t_fd) noexcept
+    void CloseIfOpen(int& t_fd) noexcept
     {
         if (t_fd >= 0)
         {
@@ -47,10 +47,10 @@ sg::chess::engine::Engine::Engine(const std::string& t_executable)
 
     if (pipe2(toEngine, O_CLOEXEC) != 0 || pipe2(fromEngine, O_CLOEXEC) != 0)
     {
-        close_if_open(toEngine[0]);
-        close_if_open(toEngine[1]);
-        close_if_open(fromEngine[0]);
-        close_if_open(fromEngine[1]);
+        CloseIfOpen(toEngine[0]);
+        CloseIfOpen(toEngine[1]);
+        CloseIfOpen(fromEngine[0]);
+        CloseIfOpen(fromEngine[1]);
 
         throw std::runtime_error("Cannot create pipes for the engine");
     }
@@ -58,10 +58,10 @@ sg::chess::engine::Engine::Engine(const std::string& t_executable)
     m_pid = fork();
     if (m_pid < 0)
     {
-        close_if_open(toEngine[0]);
-        close_if_open(toEngine[1]);
-        close_if_open(fromEngine[0]);
-        close_if_open(fromEngine[1]);
+        CloseIfOpen(toEngine[0]);
+        CloseIfOpen(toEngine[1]);
+        CloseIfOpen(fromEngine[0]);
+        CloseIfOpen(fromEngine[1]);
 
         throw std::runtime_error("Cannot start a process for the engine");
     }
@@ -116,7 +116,7 @@ sg::chess::engine::Engine::~Engine() noexcept
 // Communication
 //-------------------------------------------------
 
-void sg::chess::engine::Engine::Send(const std::string_view t_command)
+void sg::chess::engine::Engine::Send(const std::string_view t_command) const
 {
     std::string line{ t_command };
     line += '\n';
@@ -165,7 +165,7 @@ std::vector<std::string> sg::chess::engine::Engine::ReadUntil(const std::string_
 // Helper
 //-------------------------------------------------
 
-bool sg::chess::engine::Engine::ReadLine(std::string& t_line)
+bool sg::chess::engine::Engine::ReadLine(std::string& t_line) const
 {
     t_line.clear();
 
@@ -194,13 +194,13 @@ void sg::chess::engine::Engine::Shutdown() noexcept
     {
         [[maybe_unused]] const ssize_t written{ write(m_writeFd, "quit\n", 5) };
 
-        close_if_open(m_writeFd);
+        CloseIfOpen(m_writeFd);
         kill(m_pid, SIGTERM);
         waitpid(m_pid, nullptr, 0);
         m_pid = -1;
     }
 
-    close_if_open(m_writeFd);
+    CloseIfOpen(m_writeFd);
 
     if (m_reader != nullptr)
     {

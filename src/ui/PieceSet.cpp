@@ -23,12 +23,12 @@ namespace
 {
     constexpr std::size_t TYPES_PER_COLOR{ sg::chess::core::PIECE_LETTERS.size() };
 
-    std::size_t texture_index(const sg::chess::core::Piece t_piece)
+    std::size_t TextureIndex(const sg::chess::core::Piece t_piece)
     {
         return static_cast<std::size_t>(t_piece.color) * TYPES_PER_COLOR + static_cast<std::size_t>(t_piece.type);
     }
 
-    std::string file_name(const sg::chess::core::Piece t_piece)
+    std::string FileName(const sg::chess::core::Piece t_piece)
     {
         std::string name;
         name += t_piece.color == sg::chess::core::Color::WHITE ? 'w' : 'b';
@@ -50,9 +50,9 @@ sg::chess::ui::PieceSet::PieceSet(const std::filesystem::path& t_directory)
         for (std::size_t i{ 0 }; i < TYPES_PER_COLOR; ++i)
         {
             const core::Piece piece{ static_cast<core::PieceType>(i), color };
-            const auto path{ t_directory / file_name(piece) };
+            const auto path{ t_directory / FileName(piece) };
 
-            sf::Texture& texture{ m_textures[texture_index(piece)] };
+            sf::Texture& texture{ m_textures[TextureIndex(piece)] };
             if (!texture.loadFromFile(path))
             {
                 throw std::runtime_error("Cannot load piece image: " + path.string());
@@ -71,5 +71,5 @@ sg::chess::ui::PieceSet::PieceSet(const std::filesystem::path& t_directory)
 
 const sf::Texture& sg::chess::ui::PieceSet::Get(const core::Piece t_piece) const
 {
-    return m_textures[texture_index(t_piece)];
+    return m_textures[TextureIndex(t_piece)];
 }

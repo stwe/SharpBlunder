@@ -22,12 +22,12 @@
 
 namespace
 {
-    [[noreturn]] void fail(const std::string_view t_reason, const std::string_view t_fen)
+    [[noreturn]] void Fail(const std::string_view t_reason, const std::string_view t_fen)
     {
         throw std::invalid_argument("Invalid FEN (" + std::string(t_reason) + "): " + std::string(t_fen));
     }
 
-    std::vector<std::string_view> split_fields(const std::string_view t_fen)
+    std::vector<std::string_view> SplitFields(const std::string_view t_fen)
     {
         std::vector<std::string_view> fields;
 
@@ -48,14 +48,14 @@ namespace
         return fields;
     }
 
-    int parse_number(const std::string_view t_text, const std::string_view t_fen)
+    int ParseNumber(const std::string_view t_text, const std::string_view t_fen)
     {
         int value{ 0 };
         const auto [end, error]{ std::from_chars(t_text.data(), t_text.data() + t_text.size(), value) };
 
         if (error != std::errc{} || end != t_text.data() + t_text.size() || value < 0)
         {
-            fail("not a number: " + std::string(t_text), t_fen);
+            Fail("not a number: " + std::string(t_text), t_fen);
         }
 
         return value;
@@ -68,10 +68,10 @@ namespace
 
 sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_view t_fen)
 {
-    const auto fields{ split_fields(t_fen) };
+    const auto fields{ SplitFields(t_fen) };
     if (fields.empty() || fields.size() > 6)
     {
-        fail("expected 1 to 6 fields", t_fen);
+        Fail("expected 1 to 6 fields", t_fen);
     }
 
     Position position;
@@ -86,7 +86,7 @@ sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_v
         {
             if (file != BOARD_SIZE || rank == 0)
             {
-                fail("rank is incomplete or there are too many ranks", t_fen);
+                Fail("rank is incomplete or there are too many ranks", t_fen);
             }
 
             --rank;
@@ -97,7 +97,7 @@ sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_v
             file += c - '0';
             if (file > BOARD_SIZE)
             {
-                fail("rank has more than 8 squares", t_fen);
+                Fail("rank has more than 8 squares", t_fen);
             }
         }
         else
@@ -105,7 +105,7 @@ sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_v
             const auto piece{ from_fen_char(c) };
             if (!piece || file >= BOARD_SIZE)
             {
-                fail("unexpected character in the piece placement", t_fen);
+                Fail("unexpected character in the piece placement", t_fen);
             }
 
             position.m_squares[static_cast<std::size_t>(square_index(file, rank))] = piece;
@@ -115,7 +115,7 @@ sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_v
 
     if (rank != 0 || file != BOARD_SIZE)
     {
-        fail("board is incomplete", t_fen);
+        Fail("board is incomplete", t_fen);
     }
 
     // Field 2: side to move
@@ -131,7 +131,7 @@ sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_v
         }
         else
         {
-            fail("side to move must be 'w' or 'b'", t_fen);
+            Fail("side to move must be 'w' or 'b'", t_fen);
         }
     }
 
@@ -141,7 +141,7 @@ sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_v
         const bool valid{ fields[2] == "-" || fields[2].find_first_not_of("KQkq") == std::string_view::npos };
         if (!valid)
         {
-            fail("invalid castling rights", t_fen);
+            Fail("invalid castling rights", t_fen);
         }
 
         position.m_castling = std::string(fields[2]);
@@ -152,7 +152,7 @@ sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_v
     {
         if (fields[3] != "-" && !square_from_name(fields[3]))
         {
-            fail("invalid en passant square", t_fen);
+            Fail("invalid en passant square", t_fen);
         }
 
         position.m_enPassant = std::string(fields[3]);
@@ -161,15 +161,15 @@ sg::chess::core::Position sg::chess::core::Position::FromFen(const std::string_v
     // Field 5 and 6: move counters
     if (fields.size() > 4)
     {
-        position.m_halfmoveClock = parse_number(fields[4], t_fen);
+        position.m_halfmoveClock = ParseNumber(fields[4], t_fen);
     }
 
     if (fields.size() > 5)
     {
-        position.m_fullmoveNumber = parse_number(fields[5], t_fen);
+        position.m_fullmoveNumber = ParseNumber(fields[5], t_fen);
         if (position.m_fullmoveNumber < 1)
         {
-            fail("fullmove number must be at least 1", t_fen);
+            Fail("fullmove number must be at least 1", t_fen);
         }
     }
 
