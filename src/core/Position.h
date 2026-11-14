@@ -114,8 +114,25 @@ namespace sg::chess::core
          */
         [[nodiscard]] std::optional<int> KingSquare(Color t_color) const noexcept;
 
+        /**
+         * @brief Returns the side that moves next.
+         *
+         * @return The side to move.
+         */
         [[nodiscard]] Color SideToMove() const noexcept { return m_sideToMove; }
+
+        /**
+         * @brief Returns the number of halfmoves since the last capture or pawn move (50-move rule).
+         *
+         * @return The halfmove clock.
+         */
         [[nodiscard]] int HalfmoveClock() const noexcept { return m_halfmoveClock; }
+
+        /**
+         * @brief Returns the number of the current move. It starts at 1 and is incremented after Black's move.
+         *
+         * @return The fullmove number.
+         */
         [[nodiscard]] int FullmoveNumber() const noexcept { return m_fullmoveNumber; }
 
     private:

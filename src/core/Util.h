@@ -31,7 +31,7 @@ namespace sg::chess::core
     /**
      * @brief Separator between moves in a serialized move sequence (e.g., "e2e4 e7e5 g1f3").
      *
-     * Used by JoinMoves() and for parsing with SplitStr(). The same format is used in the repertoire files,
+     * Used by join_moves() and for parsing with split_str(). The same format is used in the repertoire files,
      * the evaluation cache, the spaced-repetition keys and the UCI "position ... moves" command.
      */
     inline constexpr char MOVE_SEPARATOR{ ' ' };
@@ -40,6 +40,19 @@ namespace sg::chess::core
     // Utils
     //-------------------------------------------------
 
+    /**
+     * @brief Finds out which Stockfish executable to start.
+     *
+     * Uses the first command line argument if there is one, else the environment variable STOCKFISH,
+     * else the name "stockfish", which is looked up in the PATH. The Arch/CachyOS package installs it to /usr/bin,
+     * which is in the PATH. The Debian/Ubuntu package uses /usr/games, which is not in the PATH of every user.
+     * That is why the Engine class tries that directory as well.
+     *
+     * @param t_argc The number of command line arguments, as passed to main().
+     * @param t_argv The command line arguments, as passed to main().
+     *
+     * @return The name or the path of the Stockfish executable.
+     */
     std::string stockfish_path(int t_argc, char** t_argv);
 
     /**
@@ -69,7 +82,7 @@ namespace sg::chess::core
      *
      * The result identifies a position by the moves leading to it, e.g. {"e2e4", "e7e5"} yields "e2e4 e7e5".
      * An empty sequence (the starting position) yields an empty string.
-     * To parse the result again, use SplitStr(result, MOVE_SEPARATOR).
+     * To parse the result again, use split_str(result, MOVE_SEPARATOR).
      *
      * @param t_moves The moves in order (UCI notation).
      *

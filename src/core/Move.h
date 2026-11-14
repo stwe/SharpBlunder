@@ -39,6 +39,11 @@ namespace sg::chess::core
         int to{ 0 };                         ///< Target square index
         std::optional<PieceType> promotion;  ///< Set if a pawn is promoted
 
+        /**
+         * @brief Compares two moves.
+         *
+         * @return True if start square, target square and promotion are equal.
+         */
         [[nodiscard]] constexpr bool operator==(const Move&) const noexcept = default;
 
         /**

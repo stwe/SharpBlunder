@@ -62,8 +62,29 @@ namespace sg::chess::engine
         // RulesProvider
         //-------------------------------------------------
 
+        /**
+         * @brief Describes a position by asking Stockfish: its legal moves and whether the king is in check.
+         *
+         * @param t_position The position.
+         *
+         * @return The position with its legal moves and check state.
+         *
+         * @throws std::runtime_error If Stockfish answers in an unexpected way or not at all.
+         */
         [[nodiscard]] core::PositionInfo Describe(const core::Position& t_position) override;
 
+        /**
+         * @brief Plays a move and describes the resulting position by asking Stockfish.
+         *
+         * The move must be legal in the given position.
+         *
+         * @param t_position The position before the move.
+         * @param t_move The move.
+         *
+         * @return The position after the move with its legal moves and check state.
+         *
+         * @throws std::runtime_error If Stockfish answers in an unexpected way or not at all.
+         */
         [[nodiscard]] core::PositionInfo Play(const core::Position& t_position, const core::Move& t_move) override;
 
     private:

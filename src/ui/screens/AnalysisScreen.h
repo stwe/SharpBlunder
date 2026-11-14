@@ -66,10 +66,31 @@ namespace sg::chess::ui
         // Screen
         //-------------------------------------------------
 
+        /**
+         * @brief Returns the name shown in the navigation bar.
+         *
+         * @return The title, "Analysis".
+         */
         [[nodiscard]] std::string_view Title() const noexcept override;
 
+        /**
+         * @brief Handles the mouse input on the board and the keys: arrow keys, Home and End step through the game, F
+         * flips the board.
+         *
+         * @param t_event The event.
+         */
         void HandleEvent(const sf::Event& t_event) override;
+
+        /**
+         * @brief Draws the board with the pieces and the highlights.
+         *
+         * @param t_target The surface to draw on.
+         */
         void Draw(sf::RenderTarget& t_target) override;
+
+        /**
+         * @brief Builds the side panel with Dear ImGui: the status line, the buttons and the list of moves.
+         */
         void DrawGui() override;
 
     private:
@@ -96,7 +117,14 @@ namespace sg::chess::ui
          */
         void OnPositionChanged();
 
+        /**
+         * @brief Builds the buttons of the side panel: step through the game, flip the board, start a new game.
+         */
         void DrawControls();
+
+        /**
+         * @brief Builds the table with the moves of the game. A click on a move jumps to that position.
+         */
         void DrawMoveList();
 
         //-------------------------------------------------

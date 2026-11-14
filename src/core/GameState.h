@@ -113,16 +113,42 @@ namespace sg::chess::core
          */
         [[nodiscard]] std::size_t PlyCount() const noexcept { return m_entries.size() - 1; }
 
+        /**
+         * @brief Tells whether there is a position before the current one.
+         *
+         * @return True if the current position is not the start position.
+         */
         [[nodiscard]] bool CanGoBack() const noexcept { return m_current > 0; }
+
+        /**
+         * @brief Tells whether there is a position after the current one.
+         *
+         * @return True if the game has moves after the current position.
+         */
         [[nodiscard]] bool CanGoForward() const noexcept { return m_current < PlyCount(); }
 
         //-------------------------------------------------
         // Navigation
         //-------------------------------------------------
 
+        /**
+         * @brief Steps back to the previous position. Does nothing at the start position.
+         */
         void GoBack() noexcept;
+
+        /**
+         * @brief Steps forward to the next position. Does nothing at the end of the game.
+         */
         void GoForward() noexcept;
+
+        /**
+         * @brief Jumps to the start position.
+         */
         void GoToStart() noexcept;
+
+        /**
+         * @brief Jumps to the position after the last move of the game.
+         */
         void GoToEnd() noexcept;
 
         /**

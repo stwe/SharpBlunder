@@ -52,8 +52,8 @@ namespace sg::chess::ui
          */
         struct Entry
         {
-            ScreenId id;
-            std::unique_ptr<Screen> screen;
+            ScreenId id; ///< The id of the screen
+            std::unique_ptr<Screen> screen; ///< The screen
         };
 
         //-------------------------------------------------
@@ -119,9 +119,30 @@ namespace sg::chess::ui
         // Frame steps (forwarded to the active screen)
         //-------------------------------------------------
 
+        /**
+         * @brief Passes an event to the active screen. Does nothing if there is none.
+         *
+         * @param t_event The event.
+         */
         void HandleEvent(const sf::Event& t_event);
+
+        /**
+         * @brief Updates the active screen. Does nothing if there is none.
+         *
+         * @param t_dt The time since the previous frame.
+         */
         void Update(sf::Time t_dt);
+
+        /**
+         * @brief Lets the active screen draw with SFML. Does nothing if there is none.
+         *
+         * @param t_target The surface to draw on.
+         */
         void Draw(sf::RenderTarget& t_target);
+
+        /**
+         * @brief Lets the active screen build its Dear ImGui widgets. Does nothing if there is none.
+         */
         void DrawGui();
 
     private:

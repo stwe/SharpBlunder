@@ -85,9 +85,32 @@ namespace sg::chess::ui
         // State (for drawing)
         //-------------------------------------------------
 
+        /**
+         * @brief Returns the square of the selected piece.
+         *
+         * @return The square, or std::nullopt if no piece is selected.
+         */
         [[nodiscard]] std::optional<int> SelectedSquare() const noexcept { return m_selected; }
+
+        /**
+         * @brief Tells whether a piece is being dragged with the mouse.
+         *
+         * @return True while the left mouse button is held down on a piece.
+         */
         [[nodiscard]] bool IsDragging() const noexcept { return m_dragging; }
+
+        /**
+         * @brief Returns the last known mouse position.
+         *
+         * @return The position in window coordinates.
+         */
         [[nodiscard]] sf::Vector2f CursorPosition() const noexcept { return m_cursor; }
+
+        /**
+         * @brief Tells whether the user has to choose the promotion piece.
+         *
+         * @return True while the promotion picker is shown.
+         */
         [[nodiscard]] bool IsPromotionPending() const noexcept { return m_promotion.has_value(); }
 
         /**
@@ -109,25 +132,65 @@ namespace sg::chess::ui
          */
         struct PendingPromotion
         {
-            int from;
-            int to;
+            int from; ///< The start square of the pawn
+            int to; ///< The target square of the pawn
         };
 
         //-------------------------------------------------
         // Helper
         //-------------------------------------------------
 
+        /**
+         * @brief Handles a press of the left mouse button: chooses the promotion piece, completes a move by a second
+         * click, or selects a piece.
+         *
+         * @param t_position The mouse position in window coordinates.
+         * @param t_info The current position with its legal moves.
+         *
+         * @return The completed move, or std::nullopt if the move is not complete yet.
+         */
         [[nodiscard]] std::optional<core::Move> OnPress(sf::Vector2f t_position, const core::PositionInfo& t_info);
+
+        /**
+         * @brief Handles the release of the left mouse button: completes a drag and drop move or cancels the selection.
+         *
+         * @param t_position The mouse position in window coordinates.
+         * @param t_info The current position with its legal moves.
+         *
+         * @return The completed move, or std::nullopt if the move is not complete yet.
+         */
         [[nodiscard]] std::optional<core::Move> OnRelease(sf::Vector2f t_position, const core::PositionInfo& t_info);
 
         /**
          * @brief Completes a move from one square to another.
          *
+         * @param t_info The current position with its legal moves.
+         * @param t_from The start square.
+         * @param t_to The target square.
+         *
          * @return The move, or std::nullopt if the move is not legal or if a promotion piece must be chosen first.
          */
         [[nodiscard]] std::optional<core::Move> TryMove(const core::PositionInfo& t_info, int t_from, int t_to);
 
+        /**
+         * @brief Tells whether a legal move leads from one square to another.
+         *
+         * @param t_info The current position with its legal moves.
+         * @param t_from The start square.
+         * @param t_to The target square.
+         *
+         * @return True if there is at least one such move (a promotion has four).
+         */
         [[nodiscard]] static bool HasMove(const core::PositionInfo& t_info, int t_from, int t_to);
+
+        /**
+         * @brief Tells whether a square holds a piece of the side to move.
+         *
+         * @param t_info The current position with its legal moves.
+         * @param t_square The square index.
+         *
+         * @return True if the piece on the square belongs to the side to move.
+         */
         [[nodiscard]] static bool IsOwnPiece(const core::PositionInfo& t_info, int t_square);
 
         //-------------------------------------------------

@@ -59,8 +59,16 @@ namespace sg::chess::ui
         // Screen
         //-------------------------------------------------
 
+        /**
+         * @brief Returns the name shown in the navigation bar.
+         *
+         * @return The title that was given to the constructor.
+         */
         [[nodiscard]] std::string_view Title() const noexcept override;
 
+        /**
+         * @brief Shows the title and the description on a page that fills the area to the right of the navigation bar.
+         */
         void DrawGui() override;
 
     private:

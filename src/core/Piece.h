@@ -60,9 +60,14 @@ namespace sg::chess::core
      */
     struct Piece
     {
-        PieceType type;
-        Color color;
+        PieceType type; ///< The kind of piece
+        Color color; ///< The side the piece belongs to
 
+        /**
+         * @brief Compares two pieces.
+         *
+         * @return True if both pieces have the same type and the same color.
+         */
         [[nodiscard]] constexpr bool operator==(const Piece&) const noexcept = default;
     };
 

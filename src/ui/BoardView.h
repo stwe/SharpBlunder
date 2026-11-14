@@ -83,6 +83,11 @@ namespace sg::chess::ui
          */
         void Flip() noexcept { m_flipped = !m_flipped; }
 
+        /**
+         * @brief Tells whether the board is turned around.
+         *
+         * @return True if Black is at the bottom.
+         */
         [[nodiscard]] bool IsFlipped() const noexcept { return m_flipped; }
 
         //-------------------------------------------------
@@ -134,12 +139,59 @@ namespace sg::chess::ui
          */
         [[nodiscard]] sf::Vector2f SquarePosition(int t_square) const;
 
+        /**
+         * @brief Draws the 64 squares.
+         *
+         * @param t_target The surface to draw on.
+         */
         void DrawSquares(sf::RenderTarget& t_target) const;
-        void DrawHighlights(sf::RenderTarget& t_target, const core::Position& t_position, const BoardOverlay& t_overlay) const;
-        void DrawPieces(sf::RenderTarget& t_target, const core::Position& t_position, const BoardOverlay& t_overlay) const;
+
+        /**
+         * @brief Draws the highlights: last move, check, selection, and the hints for the target squares of the
+         * selected piece.
+         *
+         * @param t_target The surface to draw on.
+         * @param t_position The position. It tells a capture from a quiet move.
+         * @param t_overlay The highlights to draw.
+         */
+        void DrawHighlights(sf::RenderTarget& t_target, const core::Position& t_position,
+                            const BoardOverlay& t_overlay) const;
+
+        /**
+         * @brief Draws the pieces. A dragged piece is drawn last, under the mouse cursor.
+         *
+         * @param t_target The surface to draw on.
+         * @param t_position The position.
+         * @param t_overlay Tells which piece is dragged and where.
+         */
+        void DrawPieces(sf::RenderTarget& t_target, const core::Position& t_position,
+                        const BoardOverlay& t_overlay) const;
+
+        /**
+         * @brief Draws the bar for choosing the promotion piece.
+         *
+         * @param t_target The surface to draw on.
+         * @param t_color The side that promotes. The pieces are shown in this color.
+         */
         void DrawPromotionPicker(sf::RenderTarget& t_target, core::Color t_color) const;
 
+        /**
+         * @brief Covers a square with a translucent color.
+         *
+         * @param t_target The surface to draw on.
+         * @param t_square The square index.
+         * @param t_color The color.
+         */
         void Tint(sf::RenderTarget& t_target, int t_square, sf::Color t_color) const;
+
+        /**
+         * @brief Draws a piece, scaled to a given size.
+         *
+         * @param t_target The surface to draw on.
+         * @param t_piece The piece.
+         * @param t_topLeft The top left corner of the piece in window coordinates.
+         * @param t_size The edge length of the piece in pixels.
+         */
         void DrawPiece(sf::RenderTarget& t_target, core::Piece t_piece, sf::Vector2f t_topLeft, float t_size) const;
 
         //-------------------------------------------------
