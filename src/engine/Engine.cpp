@@ -73,7 +73,8 @@ sg::chess::engine::Engine::Engine(const std::string& t_executable)
         dup2(fromEngine[1], STDOUT_FILENO);
 
         execlp(t_executable.c_str(), t_executable.c_str(), static_cast<char*>(nullptr));
-        execl("/usr/games/stockfish", "stockfish", static_cast<char*>(nullptr)); // Debian/Ubuntu location
+        // Debian/Ubuntu: the package installs Stockfish to /usr/games, which is not in every PATH.
+        execl("/usr/games/stockfish", "stockfish", static_cast<char*>(nullptr));
 
         _exit(127); // neither worked
     }
@@ -103,7 +104,8 @@ sg::chess::engine::Engine::Engine(const std::string& t_executable)
         Shutdown();
 
         throw std::runtime_error("Cannot start Stockfish ('" + t_executable +
-                                 "'). Is it installed? (Arch/CachyOS: sudo pacman -S stockfish)");
+                                 "'). Is it installed? (Arch/CachyOS: sudo pacman -S stockfish, "
+                                 "Debian/Ubuntu: sudo apt install stockfish)");
     }
 }
 

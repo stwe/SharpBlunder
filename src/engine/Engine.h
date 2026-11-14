@@ -49,7 +49,9 @@ namespace sg::chess::engine
         /**
          * @brief Starts the engine and performs the UCI handshake.
          *
-         * If the name cannot be found, "/usr/games/stockfish" (the Debian/Ubuntu location) is tried as well.
+         * The name is looked up in the PATH first. That finds Stockfish on Arch/CachyOS, where the package installs
+         * it to /usr/bin. If the name cannot be found, "/usr/games/stockfish" is tried as well. That is where the
+         * Debian/Ubuntu package installs it, and /usr/games is not in the PATH of every user.
          *
          * @param t_executable Name or path of the engine, e.g. "stockfish".
          *
