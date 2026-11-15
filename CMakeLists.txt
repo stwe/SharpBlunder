@@ -42,6 +42,7 @@ add_executable(SharpBlunder
         src/core/Square.cpp
         src/core/Util.cpp
 
+        src/engine/Analyzer.cpp
         src/engine/Engine.cpp
         src/engine/StockfishRules.cpp
         src/engine/UciInfo.cpp
