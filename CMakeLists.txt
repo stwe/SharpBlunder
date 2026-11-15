@@ -38,11 +38,13 @@ add_executable(SharpBlunder
         src/core/Move.cpp
         src/core/Position.cpp
         src/core/San.cpp
+        src/core/Score.cpp
         src/core/Square.cpp
         src/core/Util.cpp
 
         src/engine/Engine.cpp
         src/engine/StockfishRules.cpp
+        src/engine/UciInfo.cpp
 
         src/ui/App.cpp
         src/ui/BoardView.cpp
@@ -74,3 +76,22 @@ target_link_libraries(SharpBlunder PRIVATE
         SFML::System
         ImGui-SFML::ImGui-SFML
 )
+
+# Tests: they need neither a window nor Stockfish. Run them with "ctest" in the build directory.
+enable_testing()
+
+add_executable(SharpBlunderTests
+        tests/UciInfoTests.cpp
+
+        src/core/Move.cpp
+        src/core/Score.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+
+        src/engine/UciInfo.cpp
+)
+
+target_include_directories(SharpBlunderTests PRIVATE src)
+target_compile_options(SharpBlunderTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME UciInfoTests COMMAND SharpBlunderTests)
