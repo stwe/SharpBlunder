@@ -17,8 +17,10 @@
 
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <cmath>
 #include "ui/BoardView.h"
 
 namespace
@@ -31,8 +33,14 @@ namespace
     constexpr sf::Color CHECK_COLOR{ 220, 40, 40, 170 };
     constexpr sf::Color HINT_COLOR{ 40, 160, 70, 150 };
     constexpr sf::Color PICKER_COLOR{ 30, 30, 30, 240 };
+    constexpr sf::Color ARROW_COLOR{ 20, 110, 190, 190 };
 
     constexpr float DRAGGED_PIECE_SCALE{ 1.1f };
+
+    // The arrow of the best move, as a part of the square size.
+    constexpr float ARROW_SHAFT_WIDTH{ 0.17f };
+    constexpr float ARROW_HEAD_LENGTH{ 0.4f };
+    constexpr float ARROW_HEAD_WIDTH{ 0.5f };
 
     // The promotion picker is a bar over the four middle files, 3.5 squares below the top of the board.
     constexpr float PICKER_FIRST_FILE{ 2.0f };
@@ -91,6 +99,11 @@ void sg::chess::ui::BoardView::Draw(sf::RenderTarget& t_target, const core::Posi
     DrawSquares(t_target);
     DrawHighlights(t_target, t_position, t_overlay);
     DrawPieces(t_target, t_position, t_overlay);
+
+    if (t_overlay.bestMove)
+    {
+        DrawArrow(t_target, *t_overlay.bestMove);
+    }
 
     if (t_overlay.promotionColor)
     {
@@ -200,6 +213,48 @@ void sg::chess::ui::BoardView::DrawPieces(sf::RenderTarget& t_target, const core
 
         DrawPiece(t_target, t_overlay.dragged->piece, topLeft, size);
     }
+}
+
+void sg::chess::ui::BoardView::DrawArrow(sf::RenderTarget& t_target, const core::Move& t_move) const
+{
+    const sf::Vector2f half{ m_squareSize / 2.0f, m_squareSize / 2.0f };
+    const sf::Vector2f start{ SquarePosition(t_move.from) + half };
+    const sf::Vector2f end{ SquarePosition(t_move.to) + half };
+
+    const sf::Vector2f delta{ end - start };
+    const float length{ std::hypot(delta.x, delta.y) };
+    if (length < 1.0f)
+    {
+        return;
+    }
+
+    const sf::Vector2f direction{ delta / length };
+    const sf::Vector2f side{ -direction.y, direction.x };
+
+    const float headLength{ ARROW_HEAD_LENGTH * m_squareSize };
+    const float headHalfWidth{ ARROW_HEAD_WIDTH * m_squareSize / 2.0f };
+    const float shaftWidth{ ARROW_SHAFT_WIDTH * m_squareSize };
+
+    // The tip stops a little before the center of the target square, so a captured piece stays visible.
+    const sf::Vector2f tip{ end - direction * (m_squareSize * 0.1f) };
+    const sf::Vector2f base{ tip - direction * headLength };
+
+    // SFML draws convex shapes only, and an arrow is not convex: it is a shaft and a head, which touch at the
+    // base of the head but do not overlap. So the translucent color is the same everywhere.
+    sf::ConvexShape shaft(4);
+    shaft.setPoint(0, start + side * (shaftWidth / 2.0f));
+    shaft.setPoint(1, base + side * (shaftWidth / 2.0f));
+    shaft.setPoint(2, base - side * (shaftWidth / 2.0f));
+    shaft.setPoint(3, start - side * (shaftWidth / 2.0f));
+    shaft.setFillColor(ARROW_COLOR);
+    t_target.draw(shaft);
+
+    sf::ConvexShape head(3);
+    head.setPoint(0, base + side * headHalfWidth);
+    head.setPoint(1, tip);
+    head.setPoint(2, base - side * headHalfWidth);
+    head.setFillColor(ARROW_COLOR);
+    t_target.draw(head);
 }
 
 void sg::chess::ui::BoardView::DrawPromotionPicker(sf::RenderTarget& t_target, const core::Color t_color) const

@@ -51,5 +51,6 @@ namespace sg::chess::ui
         std::vector<int> targetSquares;             ///< Squares the selected piece can move to
         std::optional<DraggedPiece> dragged;        ///< The dragged piece; its square shows no piece meanwhile
         std::optional<core::Color> promotionColor;  ///< If set, the promotion picker is shown for this side
+        std::optional<core::Move> bestMove;         ///< The move the engine likes best: it is drawn as an arrow
     };
 }

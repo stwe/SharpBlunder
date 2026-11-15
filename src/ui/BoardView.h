@@ -22,6 +22,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <array>
 #include <optional>
+#include "core/Move.h"
 #include "core/Piece.h"
 #include "core/Position.h"
 #include "ui/BoardOverlay.h"
@@ -117,7 +118,8 @@ namespace sg::chess::ui
         //-------------------------------------------------
 
         /**
-         * @brief Draws the squares, the highlights, the pieces and finally the dragged piece and the promotion picker.
+         * @brief Draws the squares, the highlights, the pieces (the dragged one last), the arrow of the best move
+         * and finally the promotion picker.
          *
          * @param t_target The surface to draw on.
          * @param t_position The position to show.
@@ -166,6 +168,14 @@ namespace sg::chess::ui
          */
         void DrawPieces(sf::RenderTarget& t_target, const core::Position& t_position,
                         const BoardOverlay& t_overlay) const;
+
+        /**
+         * @brief Draws an arrow from the start square to the target square of a move.
+         *
+         * @param t_target The surface to draw on.
+         * @param t_move The move.
+         */
+        void DrawArrow(sf::RenderTarget& t_target, const core::Move& t_move) const;
 
         /**
          * @brief Draws the bar for choosing the promotion piece.
