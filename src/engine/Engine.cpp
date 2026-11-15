@@ -163,10 +163,6 @@ std::vector<std::string> sg::chess::engine::Engine::ReadUntil(const std::string_
     throw std::runtime_error("The engine ended unexpectedly");
 }
 
-//-------------------------------------------------
-// Helper
-//-------------------------------------------------
-
 bool sg::chess::engine::Engine::ReadLine(std::string& t_line) const
 {
     t_line.clear();
@@ -190,7 +186,11 @@ bool sg::chess::engine::Engine::ReadLine(std::string& t_line) const
     return false;
 }
 
-void sg::chess::engine::Engine::Shutdown() noexcept
+//-------------------------------------------------
+// Shutdown
+//-------------------------------------------------
+
+void sg::chess::engine::Engine::Terminate() noexcept
 {
     if (m_pid > 0)
     {
@@ -203,6 +203,15 @@ void sg::chess::engine::Engine::Shutdown() noexcept
     }
 
     CloseIfOpen(m_writeFd);
+}
+
+//-------------------------------------------------
+// Helper
+//-------------------------------------------------
+
+void sg::chess::engine::Engine::Shutdown() noexcept
+{
+    Terminate();
 
     if (m_reader != nullptr)
     {

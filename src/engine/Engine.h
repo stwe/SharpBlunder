@@ -36,8 +36,9 @@ namespace sg::chess::engine
      * and read answer lines from its standard output.
      *
      * Reading blocks until the engine has answered. That is fine for short questions
-     * (legal moves take a few milliseconds), but not for a long running analysis.
-     * The engine must not be used from several threads at the same time.
+     * (legal moves take a few milliseconds). A long running analysis reads in a thread of its own,
+     * see Analyzer. Writing and reading may happen in different threads, but two threads must not
+     * write or read at the same time.
      */
     class Engine
     {
@@ -90,19 +91,34 @@ namespace sg::chess::engine
          */
         [[nodiscard]] std::vector<std::string> ReadUntil(std::string_view t_prefix);
 
+        /**
+         * @brief Reads one line, without the line break. Blocks until a whole line has arrived.
+         *
+         * This is meant for a thread that does nothing else than reading, e.g. the one of the Analyzer.
+         * Do not mix it with ReadUntil() on the same engine.
+         *
+         * @param t_line Receives the line.
+         *
+         * @return False if the engine's output has ended, e.g. after Terminate().
+         */
+        [[nodiscard]] bool ReadLine(std::string& t_line) const;
+
+        //-------------------------------------------------
+        // Shutdown
+        //-------------------------------------------------
+
+        /**
+         * @brief Stops the engine process. A thread blocked in ReadLine() then gets the end of the output.
+         *
+         * The pipes stay open until the destructor, so the reading thread can be joined first. Safe to call more
+         * than once.
+         */
+        void Terminate() noexcept;
+
     private:
         //-------------------------------------------------
         // Helper
         //-------------------------------------------------
-
-        /**
-         * @brief Reads one line, without the line break.
-         *
-         * @param t_line Receives the line.
-         *
-         * @return False if the engine's output has ended.
-         */
-        [[nodiscard]] bool ReadLine(std::string& t_line) const;
 
         /**
          * @brief Stops the process and closes the pipes. Safe to call more than once.
