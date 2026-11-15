@@ -28,6 +28,9 @@ namespace
 
     constexpr float GUI_FONT_SIZE{ 18.0f };
 
+    // The number of lines the analysis calculates (MultiPV).
+    constexpr int ANALYSIS_LINES{ 3 };
+
     // Set by CMake: absolute path of the assets directory in the source tree.
     constexpr std::string_view ASSET_DIR{ SHARPBLUNDER_ASSET_DIR };
     constexpr std::string_view GUI_FONT{ "Roboto-Medium.ttf" };
@@ -41,11 +44,12 @@ namespace
 sg::chess::ui::App::App(const std::string& t_stockfish)
     : m_engine(t_stockfish)
     , m_rules(m_engine)
+    , m_analyzer(t_stockfish, ANALYSIS_LINES)
     , m_window(WindowConfig{})
     , m_gui(m_window, std::filesystem::path{ ASSET_DIR } / "fonts" / GUI_FONT, GUI_FONT_SIZE)
     , m_pieces(std::filesystem::path{ ASSET_DIR } / "pieces" / PIECE_SET)
 {
-    m_screens.Add(ScreenId::ANALYSIS, std::make_unique<AnalysisScreen>(m_pieces, m_rules));
+    m_screens.Add(ScreenId::ANALYSIS, std::make_unique<AnalysisScreen>(m_pieces, m_rules, m_analyzer));
     m_screens.Add(ScreenId::GAMES, std::make_unique<PlaceholderScreen>(
         "My Games", "Import and analyze your games from lichess.org and chess.com."));
     m_screens.Add(ScreenId::TRAINING, std::make_unique<PlaceholderScreen>(

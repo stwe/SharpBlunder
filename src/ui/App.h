@@ -20,6 +20,7 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
 #include <string>
+#include "engine/Analyzer.h"
 #include "engine/Engine.h"
 #include "engine/StockfishRules.h"
 #include "ui/GuiLayer.h"
@@ -35,7 +36,7 @@ namespace sg::chess::ui
     //-------------------------------------------------
 
     /**
-     * @brief The application: owns the window, the engine and the screens and runs the main loop.
+     * @brief The application: owns the window, the engines and the screens and runs the main loop.
      *
      * Every frame does the same three things in the same order:
      * handle input, update the state, draw the result.
@@ -101,11 +102,12 @@ namespace sg::chess::ui
 
         // Members are initialized in the order of their declaration and destroyed in the reverse order.
         // - The engine comes first: if Stockfish is missing, the program stops before a window appears.
-        // - m_rules uses m_engine, m_gui needs m_window, and the screens use m_pieces and m_rules,
+        // - m_rules uses m_engine, m_gui needs m_window, and the screens use m_pieces, m_rules and m_analyzer,
         //   so all of them come before m_screens.
 
-        engine::Engine m_engine;         ///< The Stockfish process
+        engine::Engine m_engine;         ///< The Stockfish process for the rules
         engine::StockfishRules m_rules;  ///< Answers the questions about the rules by asking m_engine
+        engine::Analyzer m_analyzer;     ///< A second Stockfish process that analyzes the position
         Window m_window;                 ///< The main window
         GuiLayer m_gui;                  ///< Dear ImGui, connected to m_window
         PieceSet m_pieces;               ///< The piece images, shared by all screens with a board

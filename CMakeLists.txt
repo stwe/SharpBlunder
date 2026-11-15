@@ -49,6 +49,7 @@ add_executable(SharpBlunder
 
         src/ui/App.cpp
         src/ui/BoardView.cpp
+        src/ui/EvalBar.cpp
         src/ui/GuiLayer.cpp
         src/ui/MoveInput.cpp
         src/ui/NavigationBar.cpp

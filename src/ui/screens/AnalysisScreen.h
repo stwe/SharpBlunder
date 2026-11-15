@@ -17,11 +17,17 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
+#include <vector>
 #include "core/GameState.h"
+#include "core/Move.h"
 #include "core/RulesProvider.h"
+#include "engine/Analyzer.h"
 #include "ui/BoardView.h"
+#include "ui/EvalBar.h"
 #include "ui/MoveInput.h"
 #include "ui/PieceSet.h"
 #include "ui/Screen.h"
@@ -37,6 +43,10 @@ namespace sg::chess::ui
      *
      * Pieces are moved with the mouse. The played moves are listed on the right, and the user can
      * step through them with the buttons or the arrow keys.
+     *
+     * An engine analyzes the position while the page is shown: the evaluation bar left of the board,
+     * the best lines in the side panel and an arrow for the best move on the board. A check box switches
+     * the analysis off, because it uses the processor all the time.
      */
     class AnalysisScreen final : public Screen
     {
@@ -50,10 +60,11 @@ namespace sg::chess::ui
          *
          * @param t_pieces The piece images. Not owned: they must outlive this screen.
          * @param t_rules The source of the rules. Not owned: it must outlive this screen.
+         * @param t_analyzer The live analysis. Not owned: it must outlive this screen.
          *
          * @throws std::runtime_error If the rules cannot be queried.
          */
-        AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules);
+        AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules, engine::Analyzer& t_analyzer);
 
         AnalysisScreen(const AnalysisScreen& t_other) = delete;
         AnalysisScreen(AnalysisScreen&& t_other) noexcept = delete;
@@ -74,6 +85,17 @@ namespace sg::chess::ui
         [[nodiscard]] std::string_view Title() const noexcept override;
 
         /**
+         * @brief Called when the page is shown: starts the analysis again if it is switched on.
+         */
+        void OnEnter() override;
+
+        /**
+         * @brief Called when another page takes over: stops the analysis, so the engine does not use the processor
+         * for a page that is not shown.
+         */
+        void OnExit() override;
+
+        /**
          * @brief Handles the mouse input on the board and the keys: arrow keys, Home and End step through the game, F
          * flips the board.
          *
@@ -82,18 +104,40 @@ namespace sg::chess::ui
         void HandleEvent(const sf::Event& t_event) override;
 
         /**
-         * @brief Draws the board with the pieces and the highlights.
+         * @brief Moves the evaluation bar and, a few times per second, takes over the lines of the analysis.
+         *
+         * @param t_dt The time since the previous frame.
+         */
+        void Update(sf::Time t_dt) override;
+
+        /**
+         * @brief Draws the evaluation bar, the board with the pieces and the highlights.
          *
          * @param t_target The surface to draw on.
          */
         void Draw(sf::RenderTarget& t_target) override;
 
         /**
-         * @brief Builds the side panel with Dear ImGui: the status line, the buttons and the list of moves.
+         * @brief Builds the side panel with Dear ImGui: the status line, the buttons, the analysis and the list of
+         * moves. Also writes the score on the evaluation bar.
          */
         void DrawGui() override;
 
     private:
+        //-------------------------------------------------
+        // Types
+        //-------------------------------------------------
+
+        /**
+         * @brief One line of the analysis, ready to be shown.
+         */
+        struct DisplayLine
+        {
+            int depth{ 0 };         ///< Search depth in plies
+            std::string score;      ///< The score from White's point of view, e.g. "+0.35"
+            std::string variation;  ///< The first moves of the line in SAN, e.g. "1. e4 e5 2. Nf3"
+        };
+
         //-------------------------------------------------
         // Helper
         //-------------------------------------------------
@@ -123,6 +167,32 @@ namespace sg::chess::ui
         void DrawControls();
 
         /**
+         * @brief Builds the analysis part of the side panel: the check box and the best lines.
+         */
+        void DrawAnalysis();
+
+        /**
+         * @brief Takes the lines found so far from the analyzer and shows them: bar, list and arrow.
+         *
+         * Does nothing as long as the analyzer has no line for the current position, so the bar stays where it is.
+         */
+        void RefreshAnalysis();
+
+        /**
+         * @brief Writes the first moves of an analysis line in SAN, with move numbers.
+         *
+         * The moves are played on the current position with the rules provider, because SAN needs the
+         * position before and after each move. Results are cached.
+         *
+         * @param t_line The line, starting at the current position.
+         *
+         * @return The text, e.g. "1. e4 e5 2. Nf3 Nc6".
+         *
+         * @throws std::runtime_error If the rules cannot be queried.
+         */
+        [[nodiscard]] std::string VariationText(const engine::AnalysisLine& t_line);
+
+        /**
          * @brief Builds the table with the moves of the game. A click on a move jumps to that position.
          */
         void DrawMoveList();
@@ -136,6 +206,15 @@ namespace sg::chess::ui
         core::GameState m_game;          ///< The moves played on the board
         BoardView m_boardView;           ///< Draws the board
         MoveInput m_input;               ///< Turns mouse input into moves
+        core::RulesProvider& m_rules;    ///< The source of the rules (not owned)
+        engine::Analyzer& m_analyzer;    ///< The live analysis (not owned)
+        EvalBar m_evalBar;               ///< The evaluation bar left of the board
         bool m_scrollToCurrent{ true };  ///< The move list scrolls to the current move in the next frame
+
+        bool m_analysisOn{ true };                                  ///< The check box: analyze the position
+        float m_sinceRefresh{ 0.0f };                               ///< Seconds since the lines were taken over
+        std::vector<DisplayLine> m_display;                         ///< The lines shown in the panel, best first
+        std::optional<core::Move> m_bestMove;                       ///< The move of the best line (an arrow)
+        std::unordered_map<std::string, std::string> m_variations;  ///< Cache for VariationText(): "FEN|moves"
     };
 }

@@ -15,7 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <algorithm>
 #include <imgui.h>
+#include <utility>
+#include "core/San.h"
+#include "core/Util.h"
 #include "ui/Layout.h"
 #include "ui/screens/AnalysisScreen.h"
 
@@ -25,9 +29,16 @@ namespace
     constexpr float MARGIN{ 30.0f };
     constexpr float BOARD_TOP{ 40.0f };
 
-    // The board starts to the right of the navigation bar.
-    constexpr sf::Vector2f BOARD_ORIGIN{ sg::chess::ui::NAVIGATION_WIDTH + MARGIN, BOARD_TOP };
     constexpr float BOARD_PIXELS{ static_cast<float>(sg::chess::core::BOARD_SIZE) * SQUARE_SIZE };
+
+    // The evaluation bar starts to the right of the navigation bar and is as tall as the board.
+    constexpr float EVAL_BAR_WIDTH{ 36.0f };
+    constexpr float EVAL_BAR_GAP{ 10.0f };
+    constexpr sf::Vector2f EVAL_BAR_ORIGIN{ sg::chess::ui::NAVIGATION_WIDTH + MARGIN, BOARD_TOP };
+    constexpr sf::Vector2f EVAL_BAR_SIZE{ EVAL_BAR_WIDTH, BOARD_PIXELS };
+
+    // The board starts to the right of the evaluation bar.
+    constexpr sf::Vector2f BOARD_ORIGIN{ EVAL_BAR_ORIGIN.x + EVAL_BAR_WIDTH + EVAL_BAR_GAP, BOARD_TOP };
 
     // The side panel starts to the right of the board and is as tall as the board.
     constexpr float PANEL_LEFT{ BOARD_ORIGIN.x + BOARD_PIXELS + MARGIN };
@@ -40,17 +51,30 @@ namespace
 
     constexpr float NUMBER_COLUMN_WIDTH{ 56.0f };
     constexpr float BUTTON_WIDTH{ 44.0f };
+
+    // The analysis: how often the lines are taken over, and how many moves of a line are written in SAN.
+    // Every move needs a question to the rules engine, so both are kept small.
+    constexpr float REFRESH_INTERVAL{ 0.5f };
+    constexpr std::size_t MAX_VARIATION_PLIES{ 6 };
+    constexpr std::size_t MAX_CACHED_VARIATIONS{ 2000 };
+    constexpr float SCORE_COLUMN_WIDTH{ 64.0f };
 }
 
 //-------------------------------------------------
 // Ctors. / Dtor.
 //-------------------------------------------------
 
-sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules)
+sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules,
+                                              engine::Analyzer& t_analyzer)
     : m_game(t_rules)
     , m_boardView(BOARD_ORIGIN, SQUARE_SIZE, t_pieces)
     , m_input(m_boardView)
+    , m_rules(t_rules)
+    , m_analyzer(t_analyzer)
+    , m_evalBar(EVAL_BAR_ORIGIN, EVAL_BAR_SIZE)
 {
+    m_analyzer.SetPosition(m_game.Current().info.position);
+    m_sinceRefresh = REFRESH_INTERVAL;
 }
 
 //-------------------------------------------------
@@ -60,6 +84,16 @@ sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::Ru
 std::string_view sg::chess::ui::AnalysisScreen::Title() const noexcept
 {
     return "Analysis";
+}
+
+void sg::chess::ui::AnalysisScreen::OnEnter()
+{
+    m_analyzer.SetRunning(m_analysisOn);
+}
+
+void sg::chess::ui::AnalysisScreen::OnExit()
+{
+    m_analyzer.SetRunning(false);
 }
 
 void sg::chess::ui::AnalysisScreen::HandleEvent(const sf::Event& t_event)
@@ -103,8 +137,40 @@ void sg::chess::ui::AnalysisScreen::HandleEvent(const sf::Event& t_event)
     }
 }
 
+void sg::chess::ui::AnalysisScreen::Update(const sf::Time t_dt)
+{
+    const auto& info{ m_game.Current().info };
+    const bool whiteToMove{ info.position.SideToMove() == core::Color::WHITE };
+
+    // A finished game needs no engine: the result is known.
+    if (info.IsCheckmate())
+    {
+        m_evalBar.SetTarget(whiteToMove ? 0.0 : 1.0, whiteToMove ? "0-1" : "1-0");
+    }
+    else if (info.IsStalemate())
+    {
+        m_evalBar.SetTarget(0.5, "1/2");
+    }
+    else if (!m_analysisOn || !m_analyzer.IsAlive())
+    {
+        m_evalBar.SetTarget(0.5, "");
+    }
+    else
+    {
+        m_sinceRefresh += t_dt.asSeconds();
+
+        if (m_sinceRefresh >= REFRESH_INTERVAL)
+        {
+            RefreshAnalysis();
+        }
+    }
+
+    m_evalBar.Update(t_dt);
+}
+
 void sg::chess::ui::AnalysisScreen::Draw(sf::RenderTarget& t_target)
 {
+    m_evalBar.Draw(t_target, m_boardView.IsFlipped());
     m_boardView.Draw(t_target, m_game.Current().info.position, BuildOverlay());
 }
 
@@ -124,9 +190,14 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
         DrawControls();
         ImGui::Spacing();
 
+        DrawAnalysis();
+        ImGui::Spacing();
+
         DrawMoveList();
     }
     ImGui::End();
+
+    m_evalBar.DrawLabel(m_boardView.IsFlipped());
 }
 
 //-------------------------------------------------
@@ -160,6 +231,11 @@ sg::chess::ui::BoardOverlay sg::chess::ui::AnalysisScreen::BuildOverlay() const
     if (m_input.IsPromotionPending())
     {
         overlay.promotionColor = position.SideToMove();
+    }
+
+    if (m_bestMove && entry.info.IsLegal(*m_bestMove))
+    {
+        overlay.bestMove = m_bestMove;
     }
 
     return overlay;
@@ -200,6 +276,12 @@ void sg::chess::ui::AnalysisScreen::OnPositionChanged()
 {
     m_input.Reset();
     m_scrollToCurrent = true;
+
+    // The lines belong to the old position. They are dropped at once, the new ones follow in a moment.
+    m_display.clear();
+    m_bestMove.reset();
+    m_sinceRefresh = REFRESH_INTERVAL;
+    m_analyzer.SetPosition(m_game.Current().info.position);
 }
 
 void sg::chess::ui::AnalysisScreen::DrawControls()
@@ -237,6 +319,131 @@ void sg::chess::ui::AnalysisScreen::DrawControls()
         m_game.Reset();
         OnPositionChanged();
     }
+}
+
+void sg::chess::ui::AnalysisScreen::DrawAnalysis()
+{
+    if (ImGui::Checkbox("Engine analysis", &m_analysisOn))
+    {
+        m_analyzer.SetRunning(m_analysisOn);
+
+        m_display.clear();
+        m_bestMove.reset();
+        m_sinceRefresh = REFRESH_INTERVAL;
+    }
+
+    if (!m_analysisOn)
+    {
+        return;
+    }
+
+    if (!m_analyzer.IsAlive())
+    {
+        ImGui::TextWrapped("The analysis engine is not available.");
+        return;
+    }
+
+    if (m_display.empty())
+    {
+        // No lines yet, or the game is over and there is nothing to analyze.
+        if (!m_game.Current().info.legalMoves.empty())
+        {
+            ImGui::TextDisabled("Thinking...");
+        }
+
+        return;
+    }
+
+    ImGui::TextDisabled("Depth %d", m_display.front().depth);
+
+    for (const DisplayLine& line : m_display)
+    {
+        ImGui::TextUnformatted(line.score.c_str());
+        ImGui::SameLine(SCORE_COLUMN_WIDTH);
+        ImGui::TextWrapped("%s", line.variation.c_str());
+    }
+}
+
+void sg::chess::ui::AnalysisScreen::RefreshAnalysis()
+{
+    const std::vector<engine::AnalysisLine> lines{ m_analyzer.Lines() };
+    if (lines.empty())
+    {
+        return;
+    }
+
+    m_sinceRefresh = 0.0f;
+
+    // The scores of the analyzer are already seen from White, like the bar.
+    const core::Score& best{ lines.front().score };
+    m_evalBar.SetTarget(best.WhiteShare(), best.ToString());
+
+    m_display.clear();
+    for (const engine::AnalysisLine& line : lines)
+    {
+        m_display.push_back({ line.depth, line.score.ToString(), VariationText(line) });
+    }
+
+    m_bestMove = lines.front().pv.front();
+}
+
+std::string sg::chess::ui::AnalysisScreen::VariationText(const engine::AnalysisLine& t_line)
+{
+    const std::size_t plies{ std::min(t_line.pv.size(), MAX_VARIATION_PLIES) };
+
+    std::vector<std::string> uci;
+    for (std::size_t i{ 0 }; i < plies; ++i)
+    {
+        uci.push_back(t_line.pv[i].ToUci());
+    }
+
+    const std::string key{ m_game.Current().info.position.ToFen() + '|' + core::join_moves(uci) };
+    if (const auto it{ m_variations.find(key) }; it != m_variations.end())
+    {
+        return it->second;
+    }
+
+    std::string text;
+    core::PositionInfo current{ m_game.Current().info };
+
+    for (std::size_t i{ 0 }; i < plies; ++i)
+    {
+        const core::Move& move{ t_line.pv[i] };
+        if (!current.IsLegal(move))
+        {
+            break;
+        }
+
+        core::PositionInfo after{ m_rules.Play(current.position, move) };
+        const bool whiteMoves{ current.position.SideToMove() == core::Color::WHITE };
+
+        // White's moves get a number. Black's only do if the line starts with Black.
+        if (whiteMoves)
+        {
+            text += std::to_string(current.position.FullmoveNumber()) + ". ";
+        }
+        else if (i == 0)
+        {
+            text += std::to_string(current.position.FullmoveNumber()) + "... ";
+        }
+
+        text += core::to_san(current, move, after) + ' ';
+        current = std::move(after);
+    }
+
+    if (!text.empty())
+    {
+        text.pop_back();
+    }
+
+    if (m_variations.size() >= MAX_CACHED_VARIATIONS)
+    {
+        m_variations.clear();
+    }
+
+    m_variations.emplace(key, text);
+
+    return text;
 }
 
 void sg::chess::ui::AnalysisScreen::DrawMoveList()
