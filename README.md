@@ -17,8 +17,9 @@ Working today:
 - Pawn promotion with a choice of the new piece
 - Move list in Standard Algebraic Notation (`Nbd7`, `exd6`, `O-O-O`, `Rd8#`), click a move to jump to it
 - Step through the game, flip the board, start a new game
-- Live analysis with a second Stockfish process: evaluation bar next to the board, the best three lines in SAN with
-  their depth, and an arrow for the best move. A check box switches the analysis off
+- Live analysis with a second Stockfish process: evaluation bar next to the board and an arrow for the best move.
+  The three best moves are listed as rows: a colored dot (how much weaker than the best move), the score and a button
+  that plays the move. A magnifying glass opens the whole line. A check box switches the analysis off
 - Name and ECO code of the opening (for example `B90 Sicilian Defense: Najdorf Variation`), found by position, so
   transpositions work too. After the game leaves the book, the last known name stays
 - Sidebar navigation between the pages
