@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <cstring>
 #include <imgui.h>
 #include "ui/Icons.h"
 
@@ -33,7 +34,7 @@ namespace
     constexpr float LINE_THICKNESS{ 2.0f };
     constexpr float HOVER_RADIUS{ 0.5f };
 
-    // Color and tooltip of a quality.
+    // Color of a quality.
     ImU32 ColorOf(const sg::chess::core::MoveQuality t_quality)
     {
         switch (t_quality)
@@ -48,37 +49,43 @@ namespace
 
         return GOOD_COLOR;
     }
-
-    const char* DescriptionOf(const sg::chess::core::MoveQuality t_quality)
-    {
-        switch (t_quality)
-        {
-        case sg::chess::core::MoveQuality::GOOD:
-            return "Good move: the best one or almost as good.";
-        case sg::chess::core::MoveQuality::OKAY:
-            return "Playable, but clearly weaker than the best move.";
-        case sg::chess::core::MoveQuality::WEAK:
-            return "Weak move: much worse than the best one.";
-        }
-
-        return "";
-    }
 } // namespace
 
 //-------------------------------------------------
 // Icons
 //-------------------------------------------------
 
-void sg::chess::ui::quality_dot(const core::MoveQuality t_quality, const float t_size)
+const char* sg::chess::ui::describe_quality(const core::MoveQuality t_quality)
 {
-    ImGui::InvisibleButton("##quality", ImVec2(t_size, t_size));
+    switch (t_quality)
+    {
+    case core::MoveQuality::GOOD:
+        return "Good move: the best one or almost as good.";
+    case core::MoveQuality::OKAY:
+        return "Playable, but clearly weaker than the best move.";
+    case core::MoveQuality::WEAK:
+        return "Weak move: much worse than the best one.";
+    }
 
-    const ImVec2 min{ ImGui::GetItemRectMin() };
-    const ImVec2 center{ min.x + t_size / 2.0f, min.y + t_size / 2.0f };
+    return "";
+}
+
+void sg::chess::ui::draw_quality_dot(const float t_x, const float t_y, const float t_size,
+                                     const core::MoveQuality t_quality)
+{
+    const ImVec2 center{ t_x + t_size / 2.0f, t_y + t_size / 2.0f };
 
     ImGui::GetWindowDrawList()->AddCircleFilled(center, t_size * DOT_RADIUS, ColorOf(t_quality), CIRCLE_SEGMENTS);
+}
 
-    ImGui::SetItemTooltip("%s", DescriptionOf(t_quality));
+void sg::chess::ui::draw_piece_icon(const sf::Texture& t_texture, const float t_x, const float t_y, const float t_size)
+{
+    // Dear ImGui wants the OpenGL name of the texture, packed into its own texture type (as ImGui-SFML does it).
+    const unsigned int handle{ t_texture.getNativeHandle() };
+    ImTextureID id{};
+    std::memcpy(&id, &handle, sizeof handle);
+
+    ImGui::GetWindowDrawList()->AddImage(id, ImVec2(t_x, t_y), ImVec2(t_x + t_size, t_y + t_size));
 }
 
 bool sg::chess::ui::magnifier_button(const bool t_active, const float t_size, const char* t_tooltip)

@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <imgui.h>
+#include <string_view>
 #include <utility>
 #include "core/San.h"
 #include "core/Util.h"
@@ -59,9 +60,15 @@ namespace
     constexpr std::size_t MAX_VARIATION_PLIES{ 6 };
     constexpr std::size_t MAX_CACHED_VARIATIONS{ 2000 };
 
-    // The rows of the recommendations: the button starts after the dot and the score, the button has a fixed width.
-    constexpr float MOVE_BUTTON_OFFSET{ 92.0f };
-    constexpr float MOVE_BUTTON_WIDTH{ 168.0f };
+    // The rows of the recommendations: the move starts after the dot and the score. The piece icon is a little
+    // smaller than a row.
+    constexpr float SCORE_OFFSET{ 4.0f };
+    constexpr float MOVE_OFFSET{ 92.0f };
+    constexpr float PIECE_ICON_SIZE{ 28.0f };
+    constexpr float PIECE_ICON_GAP{ 2.0f };
+
+    // The letters of the pieces in SAN. Castling ("O-O") starts with another letter and keeps its text.
+    constexpr std::string_view PIECE_LETTERS{ "KQRBN" };
 }
 
 //-------------------------------------------------
@@ -73,6 +80,7 @@ sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::Ru
     : m_game(t_rules)
     , m_boardView(BOARD_ORIGIN, SQUARE_SIZE, t_pieces)
     , m_input(m_boardView)
+    , m_pieces(t_pieces)
     , m_rules(t_rules)
     , m_analyzer(t_analyzer)
     , m_openings(t_openings)
@@ -312,6 +320,7 @@ void sg::chess::ui::AnalysisScreen::OnPositionChanged()
 
     // The lines belong to the old position. They are dropped at once, the new ones follow in a moment.
     m_display.clear();
+    m_assessment.clear();
     m_openLines.clear();
     m_bestMove.reset();
     m_hoveredMove.reset();
@@ -367,6 +376,7 @@ void sg::chess::ui::AnalysisScreen::DrawAnalysis()
         m_analyzer.SetRunning(m_analysisOn);
 
         m_display.clear();
+        m_assessment.clear();
         m_openLines.clear();
         m_bestMove.reset();
         m_sinceRefresh = REFRESH_INTERVAL;
@@ -394,9 +404,16 @@ void sg::chess::ui::AnalysisScreen::DrawAnalysis()
         return;
     }
 
-    ImGui::TextDisabled("Depth %d", m_display.front().depth);
+    // The depth sits at the right end of the line with the check box.
+    const std::string depth{ "Depth " + std::to_string(m_display.front().depth) };
+    ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(depth.c_str()).x);
+    ImGui::TextDisabled("%s", depth.c_str());
+
+    ImGui::TextUnformatted(m_assessment.c_str());
+    ImGui::Spacing();
 
     const float rowHeight{ ImGui::GetFrameHeight() };
+    const float rowWidth{ ImGui::GetContentRegionAvail().x - rowHeight - ImGui::GetStyle().ItemSpacing.x };
     std::optional<core::Move> clicked;
 
     for (std::size_t i{ 0 }; i < m_display.size(); ++i)
@@ -404,37 +421,71 @@ void sg::chess::ui::AnalysisScreen::DrawAnalysis()
         const DisplayLine& line{ m_display[i] };
         ImGui::PushID(static_cast<int>(i));
 
-        quality_dot(line.quality, rowHeight);
-
-        ImGui::SameLine();
-        ImGui::AlignTextToFramePadding();
-        ImGui::TextUnformatted(line.score.c_str());
-
-        ImGui::SameLine(MOVE_BUTTON_OFFSET);
-        const std::string label{ "Play " + line.moveSan };
-        if (ImGui::Button(label.c_str(), ImVec2(MOVE_BUTTON_WIDTH, 0.0f)))
+        // The whole row is one clickable area. Dot, score and move are drawn on top of it.
+        // It is highlighted like a button, not in the strong color of a selected entry.
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+        const ImVec2 min{ ImGui::GetCursorScreenPos() };
+        if (ImGui::Selectable("##row", false, ImGuiSelectableFlags_None, ImVec2(rowWidth, rowHeight)))
         {
             clicked = line.move;
         }
 
+        ImGui::PopStyleColor(2);
+
+        const bool hovered{ ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip) };
         if (ImGui::IsItemHovered())
         {
             m_hoveredMove = line.move;
         }
 
-        ImGui::SameLine();
-        // The state belongs to the move, not to the row: when two lines swap places, the open one stays open.
-        const std::string moveKey{ line.move.ToUci() };
-        const bool open{ m_openLines.contains(moveKey) };
-        if (magnifier_button(open, rowHeight, open ? "Hide the line" : "Show the whole line"))
+        const ImU32 textColor{ ImGui::GetColorU32(ImGuiCol_Text) };
+        const float textY{ min.y + (rowHeight - ImGui::GetTextLineHeight()) / 2.0f };
+        ImDrawList* draw{ ImGui::GetWindowDrawList() };
+
+        draw_quality_dot(min.x, min.y, rowHeight, line.quality);
+        draw->AddText(ImVec2(min.x + rowHeight + SCORE_OFFSET, textY), textColor, line.score.c_str());
+
+        float moveX{ min.x + MOVE_OFFSET };
+        if (line.figure)
         {
-            if (open)
+            draw_piece_icon(m_pieces.Get(*line.figure), moveX, min.y + (rowHeight - PIECE_ICON_SIZE) / 2.0f,
+                            PIECE_ICON_SIZE);
+            moveX += PIECE_ICON_SIZE + PIECE_ICON_GAP;
+        }
+
+        draw->AddText(ImVec2(moveX, textY), textColor, line.moveText.c_str());
+
+        // Over the dot the tooltip explains the color, anywhere else it explains the score.
+        if (hovered && ImGui::BeginTooltip())
+        {
+            const ImVec2 dotMax{ min.x + rowHeight, min.y + rowHeight };
+
+            if (ImGui::IsMouseHoveringRect(min, dotMax))
             {
-                m_openLines.erase(moveKey);
+                ImGui::TextUnformatted(describe_quality(line.quality));
             }
             else
             {
-                m_openLines.insert(moveKey);
+                ImGui::TextUnformatted(line.description.c_str());
+                ImGui::TextDisabled("Click to play this move");
+            }
+
+            ImGui::EndTooltip();
+        }
+
+        ImGui::SameLine();
+        const bool open{ m_openLines.contains(line.move.ToUci()) };
+        if (magnifier_button(open, rowHeight, open ? "Hide the line" : "Show the whole line"))
+        {
+            // The state belongs to the move, not to the row: when two lines swap places, the open one stays open.
+            if (open)
+            {
+                m_openLines.erase(line.move.ToUci());
+            }
+            else
+            {
+                m_openLines.insert(line.move.ToUci());
             }
         }
 
@@ -468,6 +519,7 @@ void sg::chess::ui::AnalysisScreen::RefreshAnalysis()
     // The scores of the analyzer are already seen from White, like the bar.
     const core::Score& best{ lines.front().score };
     m_evalBar.SetTarget(best.WhiteShare(), best.ToString());
+    m_assessment = best.Describe();
 
     // How much weaker a line is than the best one, seen from the side to move.
     const bool whiteToMove{ m_game.Current().info.position.SideToMove() == core::Color::WHITE };
@@ -486,8 +538,21 @@ void sg::chess::ui::AnalysisScreen::RefreshAnalysis()
             continue;
         }
 
-        m_display.push_back({ line.depth, line.score.ToString(), line.pv.front(), san.firstMove,
-                              core::classify_loss(loss), san.text });
+        // A piece (not a pawn) gets an icon, and its letter in the SAN is dropped: the icon and "f3", not "Nf3".
+        std::optional<core::Piece> figure{ m_game.Current().info.position.At(line.pv.front().from) };
+        std::string moveText{ san.firstMove };
+        const bool hasLetter{ PIECE_LETTERS.find(moveText.front()) != std::string_view::npos };
+        if (figure && figure->type != core::PieceType::PAWN && hasLetter)
+        {
+            moveText.erase(0, 1);
+        }
+        else
+        {
+            figure.reset();
+        }
+
+        m_display.push_back({ line.depth, line.score.ToString(), line.score.Describe(), line.pv.front(), figure,
+                              moveText, core::classify_loss(loss), san.text });
     }
 
     m_bestMove = lines.front().pv.front();

@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <SFML/Graphics/Texture.hpp>
 #include "core/MoveQuality.h"
 
 namespace sg::chess::ui
@@ -25,24 +26,43 @@ namespace sg::chess::ui
     // Icons
     //-------------------------------------------------
 
-    // Small icons for the side panel. They are drawn with Dear ImGui shapes, so they need no image files and
-    // no special glyphs in the font. Call them while a GUI frame is being built.
+    // Small icons for the side panel. Call them while a GUI frame is being built.
+    // They draw on the draw list of the current window, so they do not change the layout.
+
+    /**
+     * @brief Describes a move quality in words, for a tooltip.
+     *
+     * @param t_quality The quality.
+     *
+     * @return The text.
+     */
+    [[nodiscard]] const char* describe_quality(core::MoveQuality t_quality);
 
     /**
      * @brief Draws a colored dot for the quality of a move: green, yellow or red.
      *
-     * The dot is a square item of the given size in the current line. A tooltip explains the color.
-     * The caller must have pushed an ID if several dots are shown.
-     *
+     * @param t_x The window position of the left edge of the square the dot is centered in.
+     * @param t_y The window position of its top edge.
+     * @param t_size The edge length of the square in pixels.
      * @param t_quality The quality of the move.
-     * @param t_size The edge length of the item in pixels, usually the height of a button.
      */
-    void quality_dot(core::MoveQuality t_quality, float t_size);
+    void draw_quality_dot(float t_x, float t_y, float t_size, core::MoveQuality t_quality);
+
+    /**
+     * @brief Draws a chess piece as a small icon.
+     *
+     * @param t_texture The image of the piece, e.g. from the PieceSet of the board.
+     * @param t_x The window position of the left edge of the icon.
+     * @param t_y The window position of its top edge.
+     * @param t_size The edge length of the icon in pixels.
+     */
+    void draw_piece_icon(const sf::Texture& t_texture, float t_x, float t_y, float t_size);
 
     /**
      * @brief Draws a button with a magnifying glass.
      *
-     * The caller must have pushed an ID if several buttons are shown.
+     * The caller must have pushed an ID if several buttons are shown. The button is a square item of the given
+     * size in the current line.
      *
      * @param t_active True if the details the button opens are shown: the glass is drawn in the accent color.
      * @param t_size The edge length of the button in pixels, usually the height of a button.
