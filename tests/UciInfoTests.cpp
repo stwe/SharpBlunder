@@ -19,25 +19,12 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include "Check.h"
 #include "core/Score.h"
 #include "engine/UciInfo.h"
 
 namespace
 {
-    int g_failures{ 0 };
-
-    // Reports a failed check and counts it. The program goes on, so one run shows all failures.
-    void Check(const bool t_condition, const char* t_text, const int t_line)
-    {
-        if (!t_condition)
-        {
-            std::cerr << "FAILED (line " << t_line << "): " << t_text << '\n';
-            ++g_failures;
-        }
-    }
-
-#define CHECK(t_condition) Check((t_condition), #t_condition, __LINE__)
-
     void TestCentipawnLine()
     {
         const auto line{ sg::chess::engine::parse_info_line(
@@ -143,9 +130,9 @@ int main()
     TestScoreText();
     TestWhiteShare();
 
-    if (g_failures != 0)
+    if (sg::chess::tests::failures() != 0)
     {
-        std::cerr << g_failures << " check(s) failed\n";
+        std::cerr << sg::chess::tests::failures() << " check(s) failed\n";
         return EXIT_FAILURE;
     }
 

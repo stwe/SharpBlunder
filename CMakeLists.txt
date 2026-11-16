@@ -36,6 +36,7 @@ add_executable(SharpBlunder
 
         src/core/GameState.cpp
         src/core/Move.cpp
+        src/core/OpeningBook.cpp
         src/core/Position.cpp
         src/core/San.cpp
         src/core/Score.cpp
@@ -93,7 +94,23 @@ add_executable(SharpBlunderTests
         src/engine/UciInfo.cpp
 )
 
-target_include_directories(SharpBlunderTests PRIVATE src)
+target_include_directories(SharpBlunderTests PRIVATE src tests)
 target_compile_options(SharpBlunderTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME UciInfoTests COMMAND SharpBlunderTests)
+
+add_executable(OpeningBookTests
+        tests/OpeningBookTests.cpp
+
+        src/core/Move.cpp
+        src/core/OpeningBook.cpp
+        src/core/Position.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(OpeningBookTests PRIVATE src tests)
+target_compile_definitions(OpeningBookTests PRIVATE SHARPBLUNDER_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
+target_compile_options(OpeningBookTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME OpeningBookTests COMMAND OpeningBookTests)
