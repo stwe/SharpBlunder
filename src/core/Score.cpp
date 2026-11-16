@@ -27,6 +27,13 @@ namespace
 
     // A mate in n moves is worth this value minus n. Far above any real advantage in centipawns.
     constexpr int MATE_CENTIPAWNS{ 100000 };
+
+    // Up to this advantage in centipawns, the words are: equal, slightly better, better, much better.
+    // Beyond the last limit the side is winning.
+    constexpr int EQUAL_LIMIT{ 25 };
+    constexpr int SLIGHT_LIMIT{ 75 };
+    constexpr int BETTER_LIMIT{ 200 };
+    constexpr int MUCH_BETTER_LIMIT{ 500 };
 } // namespace
 
 //-------------------------------------------------
@@ -59,6 +66,35 @@ int sg::chess::core::Score::Centipawns() const noexcept
     const int size{ MATE_CENTIPAWNS - std::abs(value) };
 
     return value < 0 ? -size : size;
+}
+
+std::string sg::chess::core::Score::Describe() const
+{
+    if (kind == Kind::MATE)
+    {
+        return std::string(value < 0 ? "Black" : "White") + " mates in " + std::to_string(std::abs(value));
+    }
+
+    const int advantage{ std::abs(value) };
+
+    if (advantage <= EQUAL_LIMIT)
+    {
+        return "Equal";
+    }
+
+    const std::string who{ value < 0 ? "Black" : "White" };
+
+    if (advantage <= SLIGHT_LIMIT)
+    {
+        return who + " is slightly better";
+    }
+
+    if (advantage <= BETTER_LIMIT)
+    {
+        return who + " is better";
+    }
+
+    return who + (advantage <= MUCH_BETTER_LIMIT ? " is much better" : " is winning");
 }
 
 std::string sg::chess::core::Score::ToString() const

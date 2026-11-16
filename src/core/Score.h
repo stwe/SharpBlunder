@@ -82,6 +82,16 @@ namespace sg::chess::core
         [[nodiscard]] int Centipawns() const noexcept;
 
         /**
+         * @brief Describes the score in words for someone who does not read centipawns.
+         *
+         * This score must be seen from White. Examples: "Equal", "White is slightly better", "Black is winning",
+         * "White mates in 3". The limits are listed in Score.cpp.
+         *
+         * @return The text.
+         */
+        [[nodiscard]] std::string Describe() const;
+
+        /**
          * @brief Writes the score as short text for the bar and the list of lines.
          *
          * This score must be seen from White. A value of 35 centipawns gives "+0.35", a mate in three for Black "-M3".

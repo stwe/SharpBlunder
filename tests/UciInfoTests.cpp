@@ -126,6 +126,20 @@ namespace
         CHECK(sg::chess::core::classify_loss(lost) == MoveQuality::WEAK);
     }
 
+    void TestDescribe()
+    {
+        using sg::chess::core::Score;
+
+        CHECK((Score{ Score::Kind::CENTIPAWNS, 0 }.Describe() == "Equal"));
+        CHECK((Score{ Score::Kind::CENTIPAWNS, -25 }.Describe() == "Equal"));
+        CHECK((Score{ Score::Kind::CENTIPAWNS, 40 }.Describe() == "White is slightly better"));
+        CHECK((Score{ Score::Kind::CENTIPAWNS, -120 }.Describe() == "Black is better"));
+        CHECK((Score{ Score::Kind::CENTIPAWNS, 350 }.Describe() == "White is much better"));
+        CHECK((Score{ Score::Kind::CENTIPAWNS, -900 }.Describe() == "Black is winning"));
+        CHECK((Score{ Score::Kind::MATE, 3 }.Describe() == "White mates in 3"));
+        CHECK((Score{ Score::Kind::MATE, -2 }.Describe() == "Black mates in 2"));
+    }
+
     void TestWhiteShare()
     {
         using sg::chess::core::Score;
@@ -153,6 +167,7 @@ int main()
     TestScoreSides();
     TestScoreText();
     TestCentipawnsAndQuality();
+    TestDescribe();
     TestWhiteShare();
 
     if (sg::chess::tests::failures() != 0)
