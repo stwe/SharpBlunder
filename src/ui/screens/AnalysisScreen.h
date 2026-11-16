@@ -24,6 +24,7 @@
 #include <vector>
 #include "core/GameState.h"
 #include "core/Move.h"
+#include "core/OpeningBook.h"
 #include "core/RulesProvider.h"
 #include "engine/Analyzer.h"
 #include "ui/BoardView.h"
@@ -47,6 +48,9 @@ namespace sg::chess::ui
      * An engine analyzes the position while the page is shown: the evaluation bar left of the board,
      * the best lines in the side panel and an arrow for the best move on the board. A check box switches
      * the analysis off, because it uses the processor all the time.
+     *
+     * The name of the opening is shown above the buttons. It belongs to the last position of the game
+     * (up to the current one) that is in the opening book, so it stays when the game leaves the book.
      */
     class AnalysisScreen final : public Screen
     {
@@ -61,10 +65,12 @@ namespace sg::chess::ui
          * @param t_pieces The piece images. Not owned: they must outlive this screen.
          * @param t_rules The source of the rules. Not owned: it must outlive this screen.
          * @param t_analyzer The live analysis. Not owned: it must outlive this screen.
+         * @param t_openings The names of the openings. Not owned: it must outlive this screen.
          *
          * @throws std::runtime_error If the rules cannot be queried.
          */
-        AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules, engine::Analyzer& t_analyzer);
+        AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules, engine::Analyzer& t_analyzer,
+                       const core::OpeningBook& t_openings);
 
         AnalysisScreen(const AnalysisScreen& t_other) = delete;
         AnalysisScreen(AnalysisScreen&& t_other) noexcept = delete;
@@ -157,6 +163,12 @@ namespace sg::chess::ui
         [[nodiscard]] std::string StatusText() const;
 
         /**
+         * @brief Looks for the opening of the game: from the current position back to the start,
+         * the first position that is in the opening book.
+         */
+        void UpdateOpening();
+
+        /**
          * @brief Called after the position on the board has changed by navigation or by a move.
          */
         void OnPositionChanged();
@@ -208,8 +220,11 @@ namespace sg::chess::ui
         MoveInput m_input;               ///< Turns mouse input into moves
         core::RulesProvider& m_rules;    ///< The source of the rules (not owned)
         engine::Analyzer& m_analyzer;    ///< The live analysis (not owned)
+        const core::OpeningBook& m_openings;  ///< The names of the openings (not owned)
         EvalBar m_evalBar;               ///< The evaluation bar left of the board
         bool m_scrollToCurrent{ true };  ///< The move list scrolls to the current move in the next frame
+
+        std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name
 
         bool m_analysisOn{ true };                                  ///< The check box: analyze the position
         float m_sinceRefresh{ 0.0f };                               ///< Seconds since the lines were taken over

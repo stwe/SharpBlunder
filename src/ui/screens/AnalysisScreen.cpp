@@ -65,16 +65,18 @@ namespace
 //-------------------------------------------------
 
 sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules,
-                                              engine::Analyzer& t_analyzer)
+                                              engine::Analyzer& t_analyzer, const core::OpeningBook& t_openings)
     : m_game(t_rules)
     , m_boardView(BOARD_ORIGIN, SQUARE_SIZE, t_pieces)
     , m_input(m_boardView)
     , m_rules(t_rules)
     , m_analyzer(t_analyzer)
+    , m_openings(t_openings)
     , m_evalBar(EVAL_BAR_ORIGIN, EVAL_BAR_SIZE)
 {
     m_analyzer.SetPosition(m_game.Current().info.position);
     m_sinceRefresh = REFRESH_INTERVAL;
+    UpdateOpening();
 }
 
 //-------------------------------------------------
@@ -185,6 +187,14 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
     {
         const std::string status{ StatusText() };
         ImGui::TextUnformatted(status.c_str());
+
+        if (m_opening)
+        {
+            ImGui::TextDisabled("%s", m_opening->eco.c_str());
+            ImGui::SameLine();
+            ImGui::TextWrapped("%s", m_opening->name.c_str());
+        }
+
         ImGui::Spacing();
 
         DrawControls();
@@ -272,6 +282,23 @@ std::string sg::chess::ui::AnalysisScreen::StatusText() const
     return text;
 }
 
+void sg::chess::ui::AnalysisScreen::UpdateOpening()
+{
+    m_opening.reset();
+
+    const auto entries{ m_game.Entries() };
+
+    // Walk back until a position has a name. A game that has left the book keeps the last name.
+    for (std::size_t ply{ m_game.CurrentPly() + 1 }; ply > 0; --ply)
+    {
+        if (const auto opening{ m_openings.Find(entries[ply - 1].info.position) })
+        {
+            m_opening = opening;
+            return;
+        }
+    }
+}
+
 void sg::chess::ui::AnalysisScreen::OnPositionChanged()
 {
     m_input.Reset();
@@ -282,6 +309,7 @@ void sg::chess::ui::AnalysisScreen::OnPositionChanged()
     m_bestMove.reset();
     m_sinceRefresh = REFRESH_INTERVAL;
     m_analyzer.SetPosition(m_game.Current().info.position);
+    UpdateOpening();
 }
 
 void sg::chess::ui::AnalysisScreen::DrawControls()

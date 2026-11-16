@@ -20,6 +20,7 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
 #include <string>
+#include "core/OpeningBook.h"
 #include "engine/Analyzer.h"
 #include "engine/Engine.h"
 #include "engine/StockfishRules.h"
@@ -50,11 +51,11 @@ namespace sg::chess::ui
 
         /**
          * @brief Creates the application: starts Stockfish, opens the window, sets up the GUI,
-         *        loads the pieces and creates the screens.
+         *        loads the pieces and the opening names and creates the screens.
          *
          * @param t_stockfish Name or path of the Stockfish executable.
          *
-         * @throws std::runtime_error If Stockfish cannot be started or the GUI font or the piece images cannot be loaded.
+         * @throws std::runtime_error If Stockfish cannot be started or the GUI font, the piece images or the opening names cannot be loaded.
          */
         explicit App(const std::string& t_stockfish);
 
@@ -102,8 +103,8 @@ namespace sg::chess::ui
 
         // Members are initialized in the order of their declaration and destroyed in the reverse order.
         // - The engine comes first: if Stockfish is missing, the program stops before a window appears.
-        // - m_rules uses m_engine, m_gui needs m_window, and the screens use m_pieces, m_rules and m_analyzer,
-        //   so all of them come before m_screens.
+        // - m_rules uses m_engine, m_gui needs m_window, and the screens use m_pieces, m_rules, m_analyzer
+        //   and m_openings, so all of them come before m_screens.
 
         engine::Engine m_engine;         ///< The Stockfish process for the rules
         engine::StockfishRules m_rules;  ///< Answers the questions about the rules by asking m_engine
@@ -111,6 +112,7 @@ namespace sg::chess::ui
         Window m_window;                 ///< The main window
         GuiLayer m_gui;                  ///< Dear ImGui, connected to m_window
         PieceSet m_pieces;               ///< The piece images, shared by all screens with a board
+        core::OpeningBook m_openings;    ///< The names of the openings
         ScreenManager m_screens;         ///< All pages of the application
         NavigationBar m_navigation;      ///< The menu on the left
         sf::Clock m_clock;               ///< Measures the time of a frame
