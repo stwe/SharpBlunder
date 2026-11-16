@@ -21,9 +21,11 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include "core/GameState.h"
 #include "core/Move.h"
+#include "core/MoveQuality.h"
 #include "core/OpeningBook.h"
 #include "core/RulesProvider.h"
 #include "engine/Analyzer.h"
@@ -46,8 +48,12 @@ namespace sg::chess::ui
      * step through them with the buttons or the arrow keys.
      *
      * An engine analyzes the position while the page is shown: the evaluation bar left of the board,
-     * the best lines in the side panel and an arrow for the best move on the board. A check box switches
+     * the recommendations in the side panel and an arrow for the best move on the board. A check box switches
      * the analysis off, because it uses the processor all the time.
+     *
+     * Every recommendation is one row: a colored dot (how good the move is), the score, a button that plays
+     * the move, and a magnifying glass that opens the whole line. While the mouse is on the button of a row,
+     * the board shows the arrow of that move.
      *
      * The name of the opening is shown above the buttons. It belongs to the last position of the game
      * (up to the current one) that is in the opening book, so it stays when the game leaves the book.
@@ -139,9 +145,21 @@ namespace sg::chess::ui
          */
         struct DisplayLine
         {
-            int depth{ 0 };         ///< Search depth in plies
-            std::string score;      ///< The score from White's point of view, e.g. "+0.35"
-            std::string variation;  ///< The first moves of the line in SAN, e.g. "1. e4 e5 2. Nf3"
+            int depth{ 0 };                 ///< Search depth in plies
+            std::string score;              ///< The score from White's point of view, e.g. "+0.35"
+            core::Move move;                ///< The first move of the line
+            std::string moveSan;            ///< That move in SAN, e.g. "Nf3"
+            core::MoveQuality quality;      ///< How much weaker the move is than the best one
+            std::string variation;          ///< The first moves of the line in SAN, e.g. "1. e4 e5 2. Nf3"
+        };
+
+        /**
+         * @brief A line of the analysis written in SAN.
+         */
+        struct SanLine
+        {
+            std::string firstMove;  ///< The first move, e.g. "Nf3"
+            std::string text;       ///< The first moves with move numbers, e.g. "1. Nf3 d5 2. d4"
         };
 
         //-------------------------------------------------
@@ -179,7 +197,9 @@ namespace sg::chess::ui
         void DrawControls();
 
         /**
-         * @brief Builds the analysis part of the side panel: the check box and the best lines.
+         * @brief Builds the analysis part of the side panel: the check box and one row for each recommended move.
+         *
+         * A click on the button of a row plays the move, a click on the magnifying glass shows or hides the line.
          */
         void DrawAnalysis();
 
@@ -198,11 +218,11 @@ namespace sg::chess::ui
          *
          * @param t_line The line, starting at the current position.
          *
-         * @return The text, e.g. "1. e4 e5 2. Nf3 Nc6".
+         * @return The first move and the text, e.g. "Nf3" and "1. Nf3 d5 2. d4".
          *
          * @throws std::runtime_error If the rules cannot be queried.
          */
-        [[nodiscard]] std::string VariationText(const engine::AnalysisLine& t_line);
+        [[nodiscard]] SanLine ToSan(const engine::AnalysisLine& t_line);
 
         /**
          * @brief Builds the table with the moves of the game. A click on a move jumps to that position.
@@ -226,10 +246,12 @@ namespace sg::chess::ui
 
         std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name
 
-        bool m_analysisOn{ true };                                  ///< The check box: analyze the position
-        float m_sinceRefresh{ 0.0f };                               ///< Seconds since the lines were taken over
-        std::vector<DisplayLine> m_display;                         ///< The lines shown in the panel, best first
-        std::optional<core::Move> m_bestMove;                       ///< The move of the best line (an arrow)
-        std::unordered_map<std::string, std::string> m_variations;  ///< Cache for VariationText(): "FEN|moves"
+        bool m_analysisOn{ true };                              ///< The check box: analyze the position
+        float m_sinceRefresh{ 0.0f };                           ///< Seconds since the lines were taken over
+        std::vector<DisplayLine> m_display;                     ///< The lines shown in the panel, best first
+        std::unordered_set<std::string> m_openLines;            ///< First moves (UCI) of the lines shown in full
+        std::optional<core::Move> m_bestMove;                   ///< The move of the best line (an arrow)
+        std::optional<core::Move> m_hoveredMove;                ///< The move of the row under the mouse (an arrow)
+        std::unordered_map<std::string, SanLine> m_variations;  ///< Cache for ToSan(): "FEN|moves"
     };
 }

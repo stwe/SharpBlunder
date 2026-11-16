@@ -20,6 +20,7 @@
 #include <utility>
 #include "core/San.h"
 #include "core/Util.h"
+#include "ui/Icons.h"
 #include "ui/Layout.h"
 #include "ui/screens/AnalysisScreen.h"
 
@@ -57,7 +58,10 @@ namespace
     constexpr float REFRESH_INTERVAL{ 0.5f };
     constexpr std::size_t MAX_VARIATION_PLIES{ 6 };
     constexpr std::size_t MAX_CACHED_VARIATIONS{ 2000 };
-    constexpr float SCORE_COLUMN_WIDTH{ 64.0f };
+
+    // The rows of the recommendations: the button starts after the dot and the score, the button has a fixed width.
+    constexpr float MOVE_BUTTON_OFFSET{ 92.0f };
+    constexpr float MOVE_BUTTON_WIDTH{ 168.0f };
 }
 
 //-------------------------------------------------
@@ -243,9 +247,11 @@ sg::chess::ui::BoardOverlay sg::chess::ui::AnalysisScreen::BuildOverlay() const
         overlay.promotionColor = position.SideToMove();
     }
 
-    if (m_bestMove && entry.info.IsLegal(*m_bestMove))
+    // The arrow shows the move of the row under the mouse, or else the best move.
+    const std::optional<core::Move>& arrow{ m_hoveredMove ? m_hoveredMove : m_bestMove };
+    if (arrow && entry.info.IsLegal(*arrow))
     {
-        overlay.bestMove = m_bestMove;
+        overlay.bestMove = arrow;
     }
 
     return overlay;
@@ -306,7 +312,9 @@ void sg::chess::ui::AnalysisScreen::OnPositionChanged()
 
     // The lines belong to the old position. They are dropped at once, the new ones follow in a moment.
     m_display.clear();
+    m_openLines.clear();
     m_bestMove.reset();
+    m_hoveredMove.reset();
     m_sinceRefresh = REFRESH_INTERVAL;
     m_analyzer.SetPosition(m_game.Current().info.position);
     UpdateOpening();
@@ -351,11 +359,15 @@ void sg::chess::ui::AnalysisScreen::DrawControls()
 
 void sg::chess::ui::AnalysisScreen::DrawAnalysis()
 {
-    if (ImGui::Checkbox("Engine analysis", &m_analysisOn))
+    // Set again below if the mouse rests on a row.
+    m_hoveredMove.reset();
+
+    if (ImGui::Checkbox("Engine recommendations", &m_analysisOn))
     {
         m_analyzer.SetRunning(m_analysisOn);
 
         m_display.clear();
+        m_openLines.clear();
         m_bestMove.reset();
         m_sinceRefresh = REFRESH_INTERVAL;
     }
@@ -384,11 +396,62 @@ void sg::chess::ui::AnalysisScreen::DrawAnalysis()
 
     ImGui::TextDisabled("Depth %d", m_display.front().depth);
 
-    for (const DisplayLine& line : m_display)
+    const float rowHeight{ ImGui::GetFrameHeight() };
+    std::optional<core::Move> clicked;
+
+    for (std::size_t i{ 0 }; i < m_display.size(); ++i)
     {
+        const DisplayLine& line{ m_display[i] };
+        ImGui::PushID(static_cast<int>(i));
+
+        quality_dot(line.quality, rowHeight);
+
+        ImGui::SameLine();
+        ImGui::AlignTextToFramePadding();
         ImGui::TextUnformatted(line.score.c_str());
-        ImGui::SameLine(SCORE_COLUMN_WIDTH);
-        ImGui::TextWrapped("%s", line.variation.c_str());
+
+        ImGui::SameLine(MOVE_BUTTON_OFFSET);
+        const std::string label{ "Play " + line.moveSan };
+        if (ImGui::Button(label.c_str(), ImVec2(MOVE_BUTTON_WIDTH, 0.0f)))
+        {
+            clicked = line.move;
+        }
+
+        if (ImGui::IsItemHovered())
+        {
+            m_hoveredMove = line.move;
+        }
+
+        ImGui::SameLine();
+        // The state belongs to the move, not to the row: when two lines swap places, the open one stays open.
+        const std::string moveKey{ line.move.ToUci() };
+        const bool open{ m_openLines.contains(moveKey) };
+        if (magnifier_button(open, rowHeight, open ? "Hide the line" : "Show the whole line"))
+        {
+            if (open)
+            {
+                m_openLines.erase(moveKey);
+            }
+            else
+            {
+                m_openLines.insert(moveKey);
+            }
+        }
+
+        if (open)
+        {
+            ImGui::Indent(rowHeight);
+            ImGui::TextWrapped("%s", line.variation.c_str());
+            ImGui::Unindent(rowHeight);
+        }
+
+        ImGui::PopID();
+    }
+
+    // Playing a move changes the position and with it m_display, so this must wait until the loop is done.
+    if (clicked && m_game.Play(*clicked))
+    {
+        OnPositionChanged();
     }
 }
 
@@ -406,16 +469,31 @@ void sg::chess::ui::AnalysisScreen::RefreshAnalysis()
     const core::Score& best{ lines.front().score };
     m_evalBar.SetTarget(best.WhiteShare(), best.ToString());
 
+    // How much weaker a line is than the best one, seen from the side to move.
+    const bool whiteToMove{ m_game.Current().info.position.SideToMove() == core::Color::WHITE };
+    const int sign{ whiteToMove ? 1 : -1 };
+    const int bestValue{ best.Centipawns() };
+
     m_display.clear();
     for (const engine::AnalysisLine& line : lines)
     {
-        m_display.push_back({ line.depth, line.score.ToString(), VariationText(line) });
+        const int loss{ sign * (bestValue - line.score.Centipawns()) };
+        const SanLine san{ ToSan(line) };
+
+        // A line whose first move is not legal here cannot be played. That should not happen.
+        if (san.firstMove.empty())
+        {
+            continue;
+        }
+
+        m_display.push_back({ line.depth, line.score.ToString(), line.pv.front(), san.firstMove,
+                              core::classify_loss(loss), san.text });
     }
 
     m_bestMove = lines.front().pv.front();
 }
 
-std::string sg::chess::ui::AnalysisScreen::VariationText(const engine::AnalysisLine& t_line)
+sg::chess::ui::AnalysisScreen::SanLine sg::chess::ui::AnalysisScreen::ToSan(const engine::AnalysisLine& t_line)
 {
     const std::size_t plies{ std::min(t_line.pv.size(), MAX_VARIATION_PLIES) };
 
@@ -431,7 +509,7 @@ std::string sg::chess::ui::AnalysisScreen::VariationText(const engine::AnalysisL
         return it->second;
     }
 
-    std::string text;
+    SanLine result;
     core::PositionInfo current{ m_game.Current().info };
 
     for (std::size_t i{ 0 }; i < plies; ++i)
@@ -448,20 +526,26 @@ std::string sg::chess::ui::AnalysisScreen::VariationText(const engine::AnalysisL
         // White's moves get a number. Black's only do if the line starts with Black.
         if (whiteMoves)
         {
-            text += std::to_string(current.position.FullmoveNumber()) + ". ";
+            result.text += std::to_string(current.position.FullmoveNumber()) + ". ";
         }
         else if (i == 0)
         {
-            text += std::to_string(current.position.FullmoveNumber()) + "... ";
+            result.text += std::to_string(current.position.FullmoveNumber()) + "... ";
         }
 
-        text += core::to_san(current, move, after) + ' ';
+        const std::string san{ core::to_san(current, move, after) };
+        if (i == 0)
+        {
+            result.firstMove = san;
+        }
+
+        result.text += san + ' ';
         current = std::move(after);
     }
 
-    if (!text.empty())
+    if (!result.text.empty())
     {
-        text.pop_back();
+        result.text.pop_back();
     }
 
     if (m_variations.size() >= MAX_CACHED_VARIATIONS)
@@ -469,9 +553,9 @@ std::string sg::chess::ui::AnalysisScreen::VariationText(const engine::AnalysisL
         m_variations.clear();
     }
 
-    m_variations.emplace(key, text);
+    m_variations.emplace(key, result);
 
-    return text;
+    return result;
 }
 
 void sg::chess::ui::AnalysisScreen::DrawMoveList()
