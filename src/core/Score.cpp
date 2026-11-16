@@ -24,6 +24,9 @@ namespace
 {
     // Same curve as lichess uses for its evaluation bar: 1 / (1 + e^(-k * cp)).
     constexpr double CURVE_FACTOR{ 0.00368208 };
+
+    // A mate in n moves is worth this value minus n. Far above any real advantage in centipawns.
+    constexpr int MATE_CENTIPAWNS{ 100000 };
 } // namespace
 
 //-------------------------------------------------
@@ -44,6 +47,18 @@ double sg::chess::core::Score::WhiteShare() const noexcept
     }
 
     return 1.0 / (1.0 + std::exp(-CURVE_FACTOR * static_cast<double>(value)));
+}
+
+int sg::chess::core::Score::Centipawns() const noexcept
+{
+    if (kind == Kind::CENTIPAWNS)
+    {
+        return value;
+    }
+
+    const int size{ MATE_CENTIPAWNS - std::abs(value) };
+
+    return value < 0 ? -size : size;
 }
 
 std::string sg::chess::core::Score::ToString() const

@@ -36,6 +36,7 @@ add_executable(SharpBlunder
 
         src/core/GameState.cpp
         src/core/Move.cpp
+        src/core/MoveQuality.cpp
         src/core/OpeningBook.cpp
         src/core/Position.cpp
         src/core/San.cpp
@@ -87,6 +88,7 @@ add_executable(SharpBlunderTests
         tests/UciInfoTests.cpp
 
         src/core/Move.cpp
+        src/core/MoveQuality.cpp
         src/core/Score.cpp
         src/core/Square.cpp
         src/core/Util.cpp

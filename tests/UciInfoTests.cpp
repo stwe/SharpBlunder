@@ -20,6 +20,7 @@
 #include <iostream>
 #include <string>
 #include "Check.h"
+#include "core/MoveQuality.h"
 #include "core/Score.h"
 #include "engine/UciInfo.h"
 
@@ -102,6 +103,29 @@ namespace
         CHECK((Score{ Score::Kind::MATE, -2 }.ToString() == "-M2"));
     }
 
+    void TestCentipawnsAndQuality()
+    {
+        using sg::chess::core::MoveQuality;
+        using sg::chess::core::Score;
+
+        CHECK((Score{ Score::Kind::CENTIPAWNS, -35 }.Centipawns() == -35));
+
+        // A mate is worth more than any advantage, a shorter mate more than a longer one, and the sign stays.
+        CHECK((Score{ Score::Kind::MATE, 5 }.Centipawns() > 5000));
+        CHECK((Score{ Score::Kind::MATE, 2 }.Centipawns() > Score{ Score::Kind::MATE, 5 }.Centipawns()));
+        CHECK((Score{ Score::Kind::MATE, -2 }.Centipawns() < -5000));
+
+        CHECK(sg::chess::core::classify_loss(-3) == MoveQuality::GOOD);
+        CHECK(sg::chess::core::classify_loss(50) == MoveQuality::GOOD);
+        CHECK(sg::chess::core::classify_loss(51) == MoveQuality::OKAY);
+        CHECK(sg::chess::core::classify_loss(150) == MoveQuality::OKAY);
+        CHECK(sg::chess::core::classify_loss(151) == MoveQuality::WEAK);
+
+        // Missing a mate in 3 for a normal advantage is a weak move.
+        const int lost{ Score{ Score::Kind::MATE, 3 }.Centipawns() - Score{ Score::Kind::CENTIPAWNS, 400 }.Centipawns() };
+        CHECK(sg::chess::core::classify_loss(lost) == MoveQuality::WEAK);
+    }
+
     void TestWhiteShare()
     {
         using sg::chess::core::Score;
@@ -128,6 +152,7 @@ int main()
     TestSkippedLines();
     TestScoreSides();
     TestScoreText();
+    TestCentipawnsAndQuality();
     TestWhiteShare();
 
     if (sg::chess::tests::failures() != 0)

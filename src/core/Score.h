@@ -72,6 +72,16 @@ namespace sg::chess::core
         [[nodiscard]] double WhiteShare() const noexcept;
 
         /**
+         * @brief Turns the score into centipawns, so two scores can be compared.
+         *
+         * A forced mate counts as a huge value. A shorter mate counts more than a longer one.
+         * The sign stays: a mate for the other side is a huge negative value.
+         *
+         * @return The value in centipawns.
+         */
+        [[nodiscard]] int Centipawns() const noexcept;
+
+        /**
          * @brief Writes the score as short text for the bar and the list of lines.
          *
          * This score must be seen from White. A value of 35 centipawns gives "+0.35", a mate in three for Black "-M3".
