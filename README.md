@@ -17,11 +17,14 @@ Working today:
 - Pawn promotion with a choice of the new piece
 - Move list in Standard Algebraic Notation (`Nbd7`, `exd6`, `O-O-O`, `Rd8#`), click a move to jump to it
 - Step through the game, flip the board, start a new game
+- Live analysis with a second Stockfish process: evaluation bar next to the board, the best three lines in SAN with
+  their depth, and an arrow for the best move. A check box switches the analysis off
+- Name and ECO code of the opening (for example `B90 Sicilian Defense: Najdorf Variation`), found by position, so
+  transpositions work too. After the game leaves the book, the last known name stays
 - Sidebar navigation between the pages
 
 Planned, not implemented yet:
 
-- Live analysis with Stockfish (evaluation bar, best moves)
 - Import and analysis of your games from lichess.org and chess.com
 - Training of your own opening repertoire with spaced repetition
 - Settings
@@ -101,11 +104,15 @@ of that directory in the executable, so run CMake again if you move the source d
 ## Project layout
 
 ```
-assets/        piece images (pieces/cburnett), GUI font (fonts), each with its license
-src/core/      chess model without any graphics: Position, Move, Piece, SAN notation, GameState, RulesProvider
-src/engine/    Stockfish as a child process (Engine) and the rules from Stockfish (StockfishRules)
-src/ui/        window, Dear ImGui layer, navigation, board view, mouse input, pages (screens/)
-tools/         render_pieces.sh turns the SVG pieces into the PNG files the program loads
+assets/        piece images (pieces/cburnett), GUI font (fonts), opening names (openings), each with its license
+src/core/      chess model without any graphics: Position, Move, Piece, SAN notation, GameState, RulesProvider,
+               Score, OpeningBook
+src/engine/    Stockfish as a child process (Engine), the rules from Stockfish (StockfishRules), the live
+               analysis (Analyzer) and the parser for its UCI lines
+src/ui/        window, Dear ImGui layer, navigation, board view, evaluation bar, mouse input, pages (screens/)
+tests/         test programs, run them with ctest in the build directory
+tools/         render_pieces.sh turns the SVG pieces into the PNG files the program loads,
+               update_openings.sh builds assets/openings/openings.tsv again from the Lichess data
 ```
 
 `core` does not depend on anything else. The rest of the program only knows the `RulesProvider` interface,
@@ -131,6 +138,7 @@ It uses these third-party works, which keep their own licenses:
 |------------------------------------------------------------|--------------------|-------------------------------------|
 | Piece set `cburnett` by Colin M. L. Burnett (via Lichess)  | GPL 2 or later     | `assets/pieces/cburnett`            |
 | Font Roboto Medium by Christian Robertson                  | Apache License 2.0 | `assets/fonts`                      |
+| [Opening names](https://github.com/lichess-org/chess-openings) by Lichess | CC0        | `assets/openings`                   |
 | [SFML](https://www.sfml-dev.org/)                          | zlib/libpng        | linked, installed on your system    |
 | [Dear ImGui](https://github.com/ocornut/imgui)             | MIT                | downloaded by CMake                 |
 | [ImGui-SFML](https://github.com/SFML/imgui-sfml)           | MIT                | downloaded by CMake                 |
