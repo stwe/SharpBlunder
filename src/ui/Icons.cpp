@@ -25,6 +25,11 @@ namespace
     constexpr ImU32 OKAY_COLOR{ IM_COL32(240, 180, 40, 255) };
     constexpr ImU32 WEAK_COLOR{ IM_COL32(220, 70, 60, 255) };
 
+    // The light square the piece icons stand on, like the light squares of the board. Without it, black pieces
+    // would hardly be seen on the dark panel.
+    constexpr ImU32 PIECE_BACKGROUND{ IM_COL32(240, 217, 181, 255) };
+    constexpr float PIECE_BACKGROUND_ROUNDING{ 4.0f };
+
     constexpr float DOT_RADIUS{ 0.3f }; // as a part of the item size
     constexpr int CIRCLE_SEGMENTS{ 24 };
 
@@ -85,7 +90,12 @@ void sg::chess::ui::draw_piece_icon(const sf::Texture& t_texture, const float t_
     ImTextureID id{};
     std::memcpy(&id, &handle, sizeof handle);
 
-    ImGui::GetWindowDrawList()->AddImage(id, ImVec2(t_x, t_y), ImVec2(t_x + t_size, t_y + t_size));
+    ImDrawList* draw{ ImGui::GetWindowDrawList() };
+    const ImVec2 min{ t_x, t_y };
+    const ImVec2 max{ t_x + t_size, t_y + t_size };
+
+    draw->AddRectFilled(min, max, PIECE_BACKGROUND, PIECE_BACKGROUND_ROUNDING);
+    draw->AddImage(id, min, max);
 }
 
 bool sg::chess::ui::magnifier_button(const bool t_active, const float t_size, const char* t_tooltip)

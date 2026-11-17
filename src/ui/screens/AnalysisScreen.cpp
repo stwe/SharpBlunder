@@ -64,8 +64,12 @@ namespace
     // smaller than a row.
     constexpr float SCORE_OFFSET{ 4.0f };
     constexpr float MOVE_OFFSET{ 92.0f };
-    constexpr float PIECE_ICON_SIZE{ 28.0f };
-    constexpr float PIECE_ICON_GAP{ 2.0f };
+    constexpr float PIECE_ICON_SIZE{ 22.0f };
+    constexpr float PIECE_ICON_GAP{ 3.0f };
+
+    // The same in the whole line that the magnifying glass opens: the icons are smaller there.
+    constexpr float VARIATION_ICON_SIZE{ 20.0f };
+    constexpr float VARIATION_LINE_HEIGHT{ 24.0f };
 
     // The letters of the pieces in SAN. Castling ("O-O") starts with another letter and keeps its text.
     constexpr std::string_view PIECE_LETTERS{ "KQRBN" };
@@ -446,15 +450,17 @@ void sg::chess::ui::AnalysisScreen::DrawAnalysis()
         draw_quality_dot(min.x, min.y, rowHeight, line.quality);
         draw->AddText(ImVec2(min.x + rowHeight + SCORE_OFFSET, textY), textColor, line.score.c_str());
 
+        // The first move of the line, with the icon of the piece if there is one.
+        const SanMove& first{ line.moves.front() };
         float moveX{ min.x + MOVE_OFFSET };
-        if (line.figure)
+        if (first.figure)
         {
-            draw_piece_icon(m_pieces.Get(*line.figure), moveX, min.y + (rowHeight - PIECE_ICON_SIZE) / 2.0f,
+            draw_piece_icon(m_pieces.Get(*first.figure), moveX, min.y + (rowHeight - PIECE_ICON_SIZE) / 2.0f,
                             PIECE_ICON_SIZE);
             moveX += PIECE_ICON_SIZE + PIECE_ICON_GAP;
         }
 
-        draw->AddText(ImVec2(moveX, textY), textColor, line.moveText.c_str());
+        draw->AddText(ImVec2(moveX, textY), textColor, first.text.c_str());
 
         // Over the dot the tooltip explains the color, anywhere else it explains the score.
         if (hovered && ImGui::BeginTooltip())
@@ -492,7 +498,7 @@ void sg::chess::ui::AnalysisScreen::DrawAnalysis()
         if (open)
         {
             ImGui::Indent(rowHeight);
-            ImGui::TextWrapped("%s", line.variation.c_str());
+            DrawVariation(line.moves);
             ImGui::Unindent(rowHeight);
         }
 
@@ -533,26 +539,13 @@ void sg::chess::ui::AnalysisScreen::RefreshAnalysis()
         const SanLine san{ ToSan(line) };
 
         // A line whose first move is not legal here cannot be played. That should not happen.
-        if (san.firstMove.empty())
+        if (san.moves.empty())
         {
             continue;
         }
 
-        // A piece (not a pawn) gets an icon, and its letter in the SAN is dropped: the icon and "f3", not "Nf3".
-        std::optional<core::Piece> figure{ m_game.Current().info.position.At(line.pv.front().from) };
-        std::string moveText{ san.firstMove };
-        const bool hasLetter{ PIECE_LETTERS.find(moveText.front()) != std::string_view::npos };
-        if (figure && figure->type != core::PieceType::PAWN && hasLetter)
-        {
-            moveText.erase(0, 1);
-        }
-        else
-        {
-            figure.reset();
-        }
-
-        m_display.push_back({ line.depth, line.score.ToString(), line.score.Describe(), line.pv.front(), figure,
-                              moveText, core::classify_loss(loss), san.text });
+        m_display.push_back({ line.depth, line.score.ToString(), line.score.Describe(), line.pv.front(),
+                              core::classify_loss(loss), san.moves });
     }
 
     m_bestMove = lines.front().pv.front();
@@ -587,30 +580,32 @@ sg::chess::ui::AnalysisScreen::SanLine sg::chess::ui::AnalysisScreen::ToSan(cons
 
         core::PositionInfo after{ m_rules.Play(current.position, move) };
         const bool whiteMoves{ current.position.SideToMove() == core::Color::WHITE };
+        const std::string san{ core::to_san(current, move, after) };
+
+        SanMove entry;
 
         // White's moves get a number. Black's only do if the line starts with Black.
         if (whiteMoves)
         {
-            result.text += std::to_string(current.position.FullmoveNumber()) + ". ";
+            entry.number = std::to_string(current.position.FullmoveNumber()) + ".";
         }
         else if (i == 0)
         {
-            result.text += std::to_string(current.position.FullmoveNumber()) + "... ";
+            entry.number = std::to_string(current.position.FullmoveNumber()) + "...";
         }
 
-        const std::string san{ core::to_san(current, move, after) };
-        if (i == 0)
+        // A piece (not a pawn) gets an icon, and its letter in the SAN is dropped: the icon and "f3", not "Nf3".
+        // Castling ("O-O") starts with another letter and keeps its text.
+        entry.text = san;
+        const auto piece{ current.position.At(move.from) };
+        if (piece && piece->type != core::PieceType::PAWN && PIECE_LETTERS.find(san.front()) != std::string_view::npos)
         {
-            result.firstMove = san;
+            entry.figure = piece;
+            entry.text.erase(0, 1);
         }
 
-        result.text += san + ' ';
+        result.moves.push_back(std::move(entry));
         current = std::move(after);
-    }
-
-    if (!result.text.empty())
-    {
-        result.text.pop_back();
     }
 
     if (m_variations.size() >= MAX_CACHED_VARIATIONS)
@@ -621,6 +616,58 @@ sg::chess::ui::AnalysisScreen::SanLine sg::chess::ui::AnalysisScreen::ToSan(cons
     m_variations.emplace(key, result);
 
     return result;
+}
+
+void sg::chess::ui::AnalysisScreen::DrawVariation(const std::vector<SanMove>& t_moves) const
+{
+    const ImVec2 start{ ImGui::GetCursorScreenPos() };
+    const float width{ ImGui::GetContentRegionAvail().x };
+    const float gap{ ImGui::GetStyle().ItemSpacing.x };
+    const float numberGap{ ImGui::CalcTextSize(" ").x };
+
+    ImDrawList* draw{ ImGui::GetWindowDrawList() };
+    const ImU32 textColor{ ImGui::GetColorU32(ImGuiCol_Text) };
+    const ImU32 numberColor{ ImGui::GetColorU32(ImGuiCol_TextDisabled) };
+    const float textOffset{ (VARIATION_LINE_HEIGHT - ImGui::GetTextLineHeight()) / 2.0f };
+
+    float x{ 0.0f };
+    float y{ 0.0f };
+
+    for (const SanMove& move : t_moves)
+    {
+        const float numberWidth{ move.number.empty() ? 0.0f : ImGui::CalcTextSize(move.number.c_str()).x + numberGap };
+        const float iconWidth{ move.figure ? VARIATION_ICON_SIZE + PIECE_ICON_GAP : 0.0f };
+        const float moveWidth{ numberWidth + iconWidth + ImGui::CalcTextSize(move.text.c_str()).x };
+
+        // A move is never split: it goes to the next line if it does not fit.
+        if (x > 0.0f && x + moveWidth > width)
+        {
+            x = 0.0f;
+            y += VARIATION_LINE_HEIGHT;
+        }
+
+        float cursor{ start.x + x };
+
+        if (!move.number.empty())
+        {
+            draw->AddText(ImVec2(cursor, start.y + y + textOffset), numberColor, move.number.c_str());
+            cursor += numberWidth;
+        }
+
+        if (move.figure)
+        {
+            const float iconTop{ start.y + y + (VARIATION_LINE_HEIGHT - VARIATION_ICON_SIZE) / 2.0f };
+            draw_piece_icon(m_pieces.Get(*move.figure), cursor, iconTop, VARIATION_ICON_SIZE);
+            cursor += iconWidth;
+        }
+
+        draw->AddText(ImVec2(cursor, start.y + y + textOffset), textColor, move.text.c_str());
+
+        x += moveWidth + gap;
+    }
+
+    // The drawing above does not move the cursor, so the space it uses is reserved here.
+    ImGui::Dummy(ImVec2(width, y + VARIATION_LINE_HEIGHT));
 }
 
 void sg::chess::ui::AnalysisScreen::DrawMoveList()

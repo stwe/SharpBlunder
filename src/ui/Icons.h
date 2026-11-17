@@ -49,7 +49,8 @@ namespace sg::chess::ui
     void draw_quality_dot(float t_x, float t_y, float t_size, core::MoveQuality t_quality);
 
     /**
-     * @brief Draws a chess piece as a small icon.
+     * @brief Draws a chess piece as a small icon, on a light square. That way black pieces stand out
+     * from the dark panel.
      *
      * @param t_texture The image of the piece, e.g. from the PieceSet of the board.
      * @param t_x The window position of the left edge of the icon.

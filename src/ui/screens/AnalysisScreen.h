@@ -143,27 +143,34 @@ namespace sg::chess::ui
         //-------------------------------------------------
 
         /**
+         * @brief One move of a line, written for the display.
+         */
+        struct SanMove
+        {
+            std::string number;                 ///< "1." before a White move, "1..." before a Black one, or empty
+            std::optional<core::Piece> figure;  ///< The piece that moves: shown as an icon instead of a letter
+            std::string text;                   ///< The move in SAN, without the piece letter if there is an icon
+        };
+
+        /**
+         * @brief A line of the analysis written in SAN: the first moves, ready to be shown.
+         */
+        struct SanLine
+        {
+            std::vector<SanMove> moves;  ///< The moves, starting at the current position
+        };
+
+        /**
          * @brief One line of the analysis, ready to be shown.
          */
         struct DisplayLine
         {
-            int depth{ 0 };                    ///< Search depth in plies
-            std::string score;                 ///< The score from White's point of view, e.g. "+0.35"
-            std::string description;           ///< The score in words, e.g. "White is slightly better"
-            core::Move move;                   ///< The first move of the line
-            std::optional<core::Piece> figure; ///< The piece that moves: shown as an icon instead of a letter
-            std::string moveText;              ///< The move in SAN, without the letter of the piece if there is an icon
-            core::MoveQuality quality;         ///< How much weaker the move is than the best one
-            std::string variation;             ///< The first moves of the line in SAN, e.g. "1. e4 e5 2. Nf3"
-        };
-
-        /**
-         * @brief A line of the analysis written in SAN.
-         */
-        struct SanLine
-        {
-            std::string firstMove;  ///< The first move, e.g. "Nf3"
-            std::string text;       ///< The first moves with move numbers, e.g. "1. Nf3 d5 2. d4"
+            int depth{ 0 };                ///< Search depth in plies
+            std::string score;             ///< The score from White's point of view, e.g. "+0.35"
+            std::string description;       ///< The score in words, e.g. "White is slightly better"
+            core::Move move;               ///< The first move of the line
+            core::MoveQuality quality;     ///< How much weaker the move is than the best one
+            std::vector<SanMove> moves;    ///< The first moves of the line; the first one is the move of the row
         };
 
         //-------------------------------------------------
@@ -222,11 +229,19 @@ namespace sg::chess::ui
          *
          * @param t_line The line, starting at the current position.
          *
-         * @return The first move and the text, e.g. "Nf3" and "1. Nf3 d5 2. d4".
+         * @return The moves, e.g. "1." knight "f3", "d5", "2." "d4".
          *
          * @throws std::runtime_error If the rules cannot be queried.
          */
         [[nodiscard]] SanLine ToSan(const engine::AnalysisLine& t_line);
+
+        /**
+         * @brief Draws the moves of a line one after another, with the icons of the pieces, and breaks the line where
+         * the panel ends.
+         *
+         * @param t_moves The moves.
+         */
+        void DrawVariation(const std::vector<SanMove>& t_moves) const;
 
         /**
          * @brief Builds the table with the moves of the game. A click on a move jumps to that position.
