@@ -20,17 +20,12 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
 #include "core/GameState.h"
-#include "core/Move.h"
-#include "core/MoveQuality.h"
 #include "core/OpeningBook.h"
-#include "core/Piece.h"
 #include "core/RulesProvider.h"
 #include "engine/Analyzer.h"
 #include "ui/BoardView.h"
+#include "ui/EnginePanel.h"
 #include "ui/EvalBar.h"
 #include "ui/MoveInput.h"
 #include "ui/PieceSet.h"
@@ -49,13 +44,7 @@ namespace sg::chess::ui
      * step through them with the buttons or the arrow keys.
      *
      * An engine analyzes the position while the page is shown: the evaluation bar left of the board,
-     * the recommendations in the side panel and an arrow for the best move on the board. A check box switches
-     * the analysis off, because it uses the processor all the time.
-     *
-     * Every recommendation is one row: a colored dot (how good the move is), the score, and the move with
-     * the icon of the piece. A click on the row plays the move, a magnifying glass at its end opens the whole line.
-     * While the mouse is on a row, the board shows the arrow of that move. Above the rows, one line says in
-     * words who is better.
+     * the recommendations in the side panel (see EnginePanel) and an arrow for the best move on the board.
      *
      * The name of the opening is shown above the buttons. It belongs to the last position of the game
      * (up to the current one) that is in the opening book, so it stays when the game leaves the book.
@@ -139,41 +128,6 @@ namespace sg::chess::ui
 
     private:
         //-------------------------------------------------
-        // Types
-        //-------------------------------------------------
-
-        /**
-         * @brief One move of a line, written for the display.
-         */
-        struct SanMove
-        {
-            std::string number;                 ///< "1." before a White move, "1..." before a Black one, or empty
-            std::optional<core::Piece> figure;  ///< The piece that moves: shown as an icon instead of a letter
-            std::string text;                   ///< The move in SAN, without the piece letter if there is an icon
-        };
-
-        /**
-         * @brief A line of the analysis written in SAN: the first moves, ready to be shown.
-         */
-        struct SanLine
-        {
-            std::vector<SanMove> moves;  ///< The moves, starting at the current position
-        };
-
-        /**
-         * @brief One line of the analysis, ready to be shown.
-         */
-        struct DisplayLine
-        {
-            int depth{ 0 };                ///< Search depth in plies
-            std::string score;             ///< The score from White's point of view, e.g. "+0.35"
-            std::string description;       ///< The score in words, e.g. "White is slightly better"
-            core::Move move;               ///< The first move of the line
-            core::MoveQuality quality;     ///< How much weaker the move is than the best one
-            std::vector<SanMove> moves;    ///< The first moves of the line; the first one is the move of the row
-        };
-
-        //-------------------------------------------------
         // Helper
         //-------------------------------------------------
 
@@ -208,42 +162,6 @@ namespace sg::chess::ui
         void DrawControls();
 
         /**
-         * @brief Builds the analysis part of the side panel: the check box and one row for each recommended move.
-         *
-         * A click on a row plays the move, a click on the magnifying glass shows or hides the line.
-         */
-        void DrawAnalysis();
-
-        /**
-         * @brief Takes the lines found so far from the analyzer and shows them: bar, list and arrow.
-         *
-         * Does nothing as long as the analyzer has no line for the current position, so the bar stays where it is.
-         */
-        void RefreshAnalysis();
-
-        /**
-         * @brief Writes the first moves of an analysis line in SAN, with move numbers.
-         *
-         * The moves are played on the current position with the rules provider, because SAN needs the
-         * position before and after each move. Results are cached.
-         *
-         * @param t_line The line, starting at the current position.
-         *
-         * @return The moves, e.g. "1." knight "f3", "d5", "2." "d4".
-         *
-         * @throws std::runtime_error If the rules cannot be queried.
-         */
-        [[nodiscard]] SanLine ToSan(const engine::AnalysisLine& t_line);
-
-        /**
-         * @brief Draws the moves of a line one after another, with the icons of the pieces, and breaks the line where
-         * the panel ends.
-         *
-         * @param t_moves The moves.
-         */
-        void DrawVariation(const std::vector<SanMove>& t_moves) const;
-
-        /**
          * @brief Builds the table with the moves of the game. A click on a move jumps to that position.
          */
         void DrawMoveList();
@@ -257,22 +175,11 @@ namespace sg::chess::ui
         core::GameState m_game;          ///< The moves played on the board
         BoardView m_boardView;           ///< Draws the board
         MoveInput m_input;               ///< Turns mouse input into moves
-        const PieceSet& m_pieces;        ///< The piece images, also used as small icons in the panel (not owned)
-        core::RulesProvider& m_rules;    ///< The source of the rules (not owned)
-        engine::Analyzer& m_analyzer;    ///< The live analysis (not owned)
         const core::OpeningBook& m_openings;  ///< The names of the openings (not owned)
         EvalBar m_evalBar;               ///< The evaluation bar left of the board
+        EnginePanel m_enginePanel;       ///< The recommended moves in the side panel
         bool m_scrollToCurrent{ true };  ///< The move list scrolls to the current move in the next frame
 
         std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name
-
-        bool m_analysisOn{ true };                              ///< The check box: analyze the position
-        float m_sinceRefresh{ 0.0f };                           ///< Seconds since the lines were taken over
-        std::vector<DisplayLine> m_display;                     ///< The lines shown in the panel, best first
-        std::string m_assessment;                               ///< The best line in words, e.g. "Equal"
-        std::unordered_set<std::string> m_openLines;            ///< First moves (UCI) of the lines shown in full
-        std::optional<core::Move> m_bestMove;                   ///< The move of the best line (an arrow)
-        std::optional<core::Move> m_hoveredMove;                ///< The move of the row under the mouse (an arrow)
-        std::unordered_map<std::string, SanLine> m_variations;  ///< Cache for ToSan(): "FEN|moves"
     };
 }
