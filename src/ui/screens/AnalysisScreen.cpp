@@ -48,6 +48,9 @@ namespace
                                             ImGuiWindowFlags_NoMove |
                                             ImGuiWindowFlags_NoCollapse |
                                             ImGuiWindowFlags_NoSavedSettings };
+
+    constexpr float HEADER_BUTTON_WIDTH{ 52.0f };
+    constexpr const char* NEW_GAME_POPUP{ "New game" };
 }
 
 //-------------------------------------------------
@@ -174,20 +177,9 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
 
     if (ImGui::Begin("##analysis", nullptr, PANEL_FLAGS))
     {
-        const std::string status{ StatusText() };
-        ImGui::TextUnformatted(status.c_str());
-
-        if (m_opening)
-        {
-            ImGui::TextDisabled("%s", m_opening->eco.c_str());
-            ImGui::SameLine();
-            ImGui::TextWrapped("%s", m_opening->name.c_str());
-        }
-
-        ImGui::Spacing();
-
-        DrawControls();
-        ImGui::Spacing();
+        // Three zones from the top: the game (name, status), the engine, and the moves with the navigation.
+        DrawHeader();
+        ImGui::Separator();
 
         if (const auto clicked{ m_enginePanel.Draw(m_game.Current().info) })
         {
@@ -198,9 +190,14 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
             }
         }
 
-        ImGui::Spacing();
+        ImGui::Separator();
 
-        if (m_notationPanel.DrawMoveList(m_game))
+        bool changed{ m_notationPanel.DrawMoveList(m_game) };
+
+        ImGui::Separator();
+        changed = m_notationPanel.DrawNavigation(m_game) || changed;
+
+        if (changed)
         {
             OnPositionChanged();
         }
@@ -276,12 +273,6 @@ std::string sg::chess::ui::AnalysisScreen::StatusText() const
         text += " (check)";
     }
 
-    // 100 halfmoves without a capture or a pawn move: a player may claim a draw.
-    if (info.position.HalfmoveClock() >= 100)
-    {
-        text += " - 50-move rule: a draw can be claimed";
-    }
-
     return text;
 }
 
@@ -310,27 +301,78 @@ void sg::chess::ui::AnalysisScreen::OnPositionChanged()
     UpdateOpening();
 }
 
-void sg::chess::ui::AnalysisScreen::DrawControls()
+void sg::chess::ui::AnalysisScreen::DrawHeader()
 {
-    if (m_notationPanel.DrawNavigation(m_game))
+    // The name of the opening, or a neutral title if the game has none (yet).
+    if (m_opening)
     {
-        OnPositionChanged();
+        ImGui::TextDisabled("%s", m_opening->eco.c_str());
+        ImGui::SameLine();
+        ImGui::TextWrapped("%s", m_opening->name.c_str());
+    }
+    else
+    {
+        ImGui::TextUnformatted("Analysis board");
     }
 
-    ImGui::SameLine();
-    ImGui::Dummy(ImVec2(10.0f, 0.0f));
-    ImGui::SameLine();
+    // The status on the left, the buttons at the right end of the same line.
+    const std::string status{ StatusText() };
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted(status.c_str());
 
-    if (ImGui::Button("Flip"))
+    const float spacing{ ImGui::GetStyle().ItemSpacing.x };
+    ImGui::SameLine(ImGui::GetContentRegionMax().x - 2.0f * HEADER_BUTTON_WIDTH - spacing);
+
+    if (ImGui::Button("Flip", ImVec2(HEADER_BUTTON_WIDTH, 0.0f)))
     {
         m_boardView.Flip();
     }
 
     ImGui::SameLine();
 
-    if (ImGui::Button("New"))
+    // A game with moves is not thrown away by one click.
+    if (ImGui::Button("New", ImVec2(HEADER_BUTTON_WIDTH, 0.0f)))
     {
-        m_game.Reset();
-        OnPositionChanged();
+        if (m_game.PlyCount() == 0)
+        {
+            m_game.Reset();
+            OnPositionChanged();
+        }
+        else
+        {
+            ImGui::OpenPopup(NEW_GAME_POPUP);
+        }
+    }
+
+    const ImVec2 displaySize{ ImGui::GetIO().DisplaySize };
+    ImGui::SetNextWindowPos(ImVec2(displaySize.x / 2.0f, displaySize.y / 2.0f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal(NEW_GAME_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::TextUnformatted("Throw away the moves and start a new game?");
+        ImGui::Spacing();
+
+        if (ImGui::Button("Start new game"))
+        {
+            m_game.Reset();
+            OnPositionChanged();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        // The Escape key cancels, like the button.
+        if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    // 100 halfmoves without a capture or a pawn move: a player may claim a draw.
+    if (m_game.Current().info.position.HalfmoveClock() >= 100)
+    {
+        ImGui::TextDisabled("50-move rule: a draw can be claimed");
     }
 }

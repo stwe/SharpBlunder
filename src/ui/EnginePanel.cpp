@@ -108,10 +108,29 @@ void sg::chess::ui::EnginePanel::Update(const sf::Time t_dt, const core::Positio
 
 std::optional<sg::chess::core::Move> sg::chess::ui::EnginePanel::Draw(const core::PositionInfo& t_info)
 {
+    const float top{ ImGui::GetCursorPosY() };
+    const auto clicked{ DrawContent(t_info) };
+
+    // Fill up to the minimum height. The spacing after the last item is already part of the cursor position.
+    const float missing{ MinimumHeight() - (ImGui::GetCursorPosY() - top) - ImGui::GetStyle().ItemSpacing.y };
+    if (missing > 0.0f)
+    {
+        ImGui::Dummy(ImVec2(0.0f, missing));
+    }
+
+    return clicked;
+}
+
+//-------------------------------------------------
+// Helper
+//-------------------------------------------------
+
+std::optional<sg::chess::core::Move> sg::chess::ui::EnginePanel::DrawContent(const core::PositionInfo& t_info)
+{
     // Set again below if the mouse rests on a row.
     m_hoveredMove.reset();
 
-    if (ImGui::Checkbox("Engine recommendations", &m_analysisOn))
+    if (ImGui::Checkbox("Engine", &m_analysisOn))
     {
         m_analyzer.SetRunning(m_analysisOn);
 
@@ -246,9 +265,16 @@ std::optional<sg::chess::core::Move> sg::chess::ui::EnginePanel::Draw(const core
     return clicked;
 }
 
-//-------------------------------------------------
-// Helper
-//-------------------------------------------------
+float sg::chess::ui::EnginePanel::MinimumHeight() const
+{
+    const float spacing{ ImGui::GetStyle().ItemSpacing.y };
+
+    // The check box, the line with the verdict, a small gap and one row for every line of the analysis.
+    const float header{ ImGui::GetFrameHeight() + spacing + ImGui::GetTextLineHeight() + spacing + spacing };
+    const float rows{ static_cast<float>(m_analyzer.LineCount()) * (ImGui::GetFrameHeight() + spacing) };
+
+    return header + rows;
+}
 
 void sg::chess::ui::EnginePanel::Refresh(const core::PositionInfo& t_info)
 {

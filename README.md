@@ -111,7 +111,9 @@ src/core/      chess model without any graphics: Position, Move, Piece, SAN nota
                Score, OpeningBook
 src/engine/    Stockfish as a child process (Engine), the rules from Stockfish (StockfishRules), the live
                analysis (Analyzer) and the parser for its UCI lines
-src/ui/        window, Dear ImGui layer, navigation, board view, evaluation bar, mouse input, pages (screens/)
+src/ui/        window, Dear ImGui layer, navigation, board view, evaluation bar, mouse input, pages (screens/).
+               The side panel of the analysis page has three zones: the game (name, status, Flip, New),
+               the engine (EnginePanel) and the moves with the navigation (NotationPanel)
 tests/         test programs, run them with ctest in the build directory
 tools/         render_pieces.sh turns the SVG pieces into the PNG files the program loads,
                update_openings.sh builds assets/openings/openings.tsv again from the Lichess data

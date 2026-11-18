@@ -140,6 +140,9 @@ namespace sg::chess::ui
         /**
          * @brief Builds the check box and the rows with Dear ImGui. Call it while a GUI frame is being built.
          *
+         * The panel is always at least as tall as with all rows shown, also while the engine is still thinking or
+         * the analysis is switched off. That way the parts below it do not move. An opened line makes it taller.
+         *
          * @param t_info The current position.
          *
          * @return The move of the row that was clicked, or std::nullopt. The caller plays it.
@@ -181,6 +184,22 @@ namespace sg::chess::ui
         //-------------------------------------------------
         // Helper
         //-------------------------------------------------
+
+        /**
+         * @brief Builds the check box and the rows, without the padding to the minimum height.
+         *
+         * @param t_info The current position.
+         *
+         * @return The move of the row that was clicked, or std::nullopt.
+         */
+        [[nodiscard]] std::optional<core::Move> DrawContent(const core::PositionInfo& t_info);
+
+        /**
+         * @brief Calculates the height of the panel with all rows shown but no line opened.
+         *
+         * @return The height in pixels.
+         */
+        [[nodiscard]] float MinimumHeight() const;
 
         /**
          * @brief Takes the lines found so far from the analyzer and prepares them for the display.

@@ -112,6 +112,13 @@ namespace sg::chess::engine
         [[nodiscard]] bool IsAlive() const noexcept { return !m_failed; }
 
         /**
+         * @brief Returns the number of lines the engine calculates (MultiPV).
+         *
+         * @return The number of lines.
+         */
+        [[nodiscard]] int LineCount() const noexcept { return m_lineCount; }
+
+        /**
          * @brief Returns the current lines, best first. This is a copy, so it is safe to keep.
          *
          * The scores are seen from White: positive is good for White, whoever is to move.

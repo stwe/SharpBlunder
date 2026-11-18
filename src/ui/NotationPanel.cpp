@@ -21,7 +21,13 @@
 namespace
 {
     constexpr float NUMBER_COLUMN_WIDTH{ 56.0f };
-    constexpr float BUTTON_WIDTH{ 40.0f };
+    constexpr float BUTTON_WIDTH{ 64.0f };
+
+    // The line below the table: a separator and a row of buttons.
+    float NavigationHeight()
+    {
+        return ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y * 2.0f + 1.0f;
+    }
 } // namespace
 
 //-------------------------------------------------
@@ -31,6 +37,15 @@ namespace
 bool sg::chess::ui::NotationPanel::DrawNavigation(core::GameState& t_game)
 {
     bool changed{ false };
+
+    // Four buttons with the spacing between them, centered in the window.
+    const float spacing{ ImGui::GetStyle().ItemSpacing.x };
+    const float width{ 4.0f * BUTTON_WIDTH + 3.0f * spacing };
+    const float indent{ (ImGui::GetContentRegionAvail().x - width) / 2.0f };
+    if (indent > 0.0f)
+    {
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
+    }
 
     // Runs one navigation action.
     const auto navigate = [&t_game, &changed](const bool t_enabled, const char* t_label,
@@ -60,7 +75,7 @@ bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game)
 {
     constexpr ImGuiTableFlags tableFlags{ ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV };
 
-    if (!ImGui::BeginTable("##moves", 3, tableFlags, ImVec2(0.0f, ImGui::GetContentRegionAvail().y)))
+    if (!ImGui::BeginTable("##moves", 3, tableFlags, ImVec2(0.0f, ImGui::GetContentRegionAvail().y - NavigationHeight())))
     {
         return false;
     }

@@ -142,7 +142,7 @@ namespace sg::chess::ui
         /**
          * @brief Describes the situation on the board in one line, e.g. "White to move" or "Checkmate".
          *
-         * @return The text.
+         * @return The text. It is short: the hint about the 50-move rule is not part of it.
          */
         [[nodiscard]] std::string StatusText() const;
 
@@ -158,9 +158,10 @@ namespace sg::chess::ui
         void OnPositionChanged();
 
         /**
-         * @brief Builds the buttons of the side panel: step through the game, flip the board, start a new game.
+         * @brief Builds the top of the side panel: the name of the opening, the status of the game, and the buttons
+         * that flip the board and start a new game. A new game asks first if moves have been played.
          */
-        void DrawControls();
+        void DrawHeader();
 
         //-------------------------------------------------
         // Member

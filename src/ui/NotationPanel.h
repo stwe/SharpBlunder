@@ -63,8 +63,9 @@ namespace sg::chess::ui
 
         /**
          * @brief Builds the buttons that step through the game: to the start, back, forward, to the end.
+         * They are centered in the line.
          *
-         * Call it while a GUI frame is being built.
+         * Call it while a GUI frame is being built. It belongs at the bottom of the window, below DrawMoveList().
          *
          * @param t_game The game. A click changes its current position.
          *
@@ -75,7 +76,8 @@ namespace sg::chess::ui
         /**
          * @brief Builds the table with the moves of the game. A click on a move jumps to that position.
          *
-         * Call it while a GUI frame is being built. The table fills the rest of the window.
+         * Call it while a GUI frame is being built. The table fills the rest of the window, but leaves room for
+         * the navigation buttons below it.
          *
          * @param t_game The game. A click changes its current position.
          *
