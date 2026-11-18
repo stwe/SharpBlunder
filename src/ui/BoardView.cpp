@@ -20,7 +20,9 @@
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <cfloat>
 #include <cmath>
+#include <imgui.h>
 #include "ui/BoardView.h"
 
 namespace
@@ -36,6 +38,11 @@ namespace
     constexpr sf::Color ARROW_COLOR{ 20, 110, 190, 190 };
 
     constexpr float DRAGGED_PIECE_SCALE{ 1.1f };
+
+    // The labels outside the board: a light gray that can be read on the dark window background.
+    constexpr ImU32 COORDINATE_COLOR{ IM_COL32(190, 187, 180, 255) };
+    constexpr float COORDINATE_FONT_SIZE{ 16.0f };
+    constexpr float COORDINATE_MARGIN{ 6.0f };
 
     // The arrow of the best move, as a part of the square size.
     constexpr float ARROW_SHAFT_WIDTH{ 0.17f };
@@ -108,6 +115,35 @@ void sg::chess::ui::BoardView::Draw(sf::RenderTarget& t_target, const core::Posi
     if (t_overlay.promotionColor)
     {
         DrawPromotionPicker(t_target, *t_overlay.promotionColor);
+    }
+}
+
+void sg::chess::ui::BoardView::DrawCoordinates() const
+{
+    // The background list is drawn after SFML but behind the Dear ImGui windows.
+    ImDrawList* draw{ ImGui::GetBackgroundDrawList() };
+    ImFont* font{ ImGui::GetFont() };
+    const float boardSize{ static_cast<float>(core::BOARD_SIZE) * m_squareSize };
+
+    for (int i{ 0 }; i < core::BOARD_SIZE; ++i)
+    {
+        const float center{ (static_cast<float>(i) + 0.5f) * m_squareSize };
+
+        // Column i shows this file, row i shows this rank (see SquareAt()).
+        const int file{ m_flipped ? core::BOARD_SIZE - 1 - i : i };
+        const int rank{ m_flipped ? i : core::BOARD_SIZE - 1 - i };
+
+        const char fileLabel[2]{ static_cast<char>('a' + file), '\0' };
+        const ImVec2 fileSize{ font->CalcTextSizeA(COORDINATE_FONT_SIZE, FLT_MAX, 0.0f, fileLabel) };
+        draw->AddText(font, COORDINATE_FONT_SIZE,
+                      ImVec2(m_origin.x + center - fileSize.x / 2.0f, m_origin.y + boardSize + COORDINATE_MARGIN),
+                      COORDINATE_COLOR, fileLabel);
+
+        const char rankLabel[2]{ static_cast<char>('1' + rank), '\0' };
+        const ImVec2 rankSize{ font->CalcTextSizeA(COORDINATE_FONT_SIZE, FLT_MAX, 0.0f, rankLabel) };
+        draw->AddText(font, COORDINATE_FONT_SIZE,
+                      ImVec2(m_origin.x - COORDINATE_MARGIN - rankSize.x, m_origin.y + center - rankSize.y / 2.0f),
+                      COORDINATE_COLOR, rankLabel);
     }
 }
 

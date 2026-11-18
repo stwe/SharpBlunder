@@ -16,7 +16,7 @@ Working today:
 - Highlights for the last move, the king in check and the target squares of the selected piece
 - Pawn promotion with a choice of the new piece
 - Move list in Standard Algebraic Notation (`Nbd7`, `exd6`, `O-O-O`, `Rd8#`), click a move to jump to it
-- Step through the game, flip the board, start a new game
+- Step through the game, flip the board (the labels a-h and 1-8 outside the board turn with it), start a new game
 - Live analysis with a second Stockfish process: evaluation bar next to the board and an arrow for the best move.
   The three best moves are listed as rows: a colored dot (how much weaker than the best move), the score and the
   move with the icon of the piece. A click on a row plays the move, a magnifying glass opens the whole line. One line

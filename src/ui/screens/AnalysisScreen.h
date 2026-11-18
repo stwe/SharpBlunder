@@ -133,7 +133,7 @@ namespace sg::chess::ui
 
         /**
          * @brief Builds the side panel with Dear ImGui: the status line, the buttons, the analysis and the list of
-         * moves. Also writes the score on the evaluation bar.
+         * moves. Also writes the score on the evaluation bar and the labels around the board.
          */
         void DrawGui() override;
 

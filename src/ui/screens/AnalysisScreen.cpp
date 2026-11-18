@@ -35,7 +35,8 @@ namespace
 
     // The evaluation bar starts to the right of the navigation bar and is as tall as the board.
     constexpr float EVAL_BAR_WIDTH{ 36.0f };
-    constexpr float EVAL_BAR_GAP{ 10.0f };
+    // The gap also holds the numbers of the ranks. The files are written below the board, where there is room.
+    constexpr float EVAL_BAR_GAP{ 26.0f };
     constexpr sf::Vector2f EVAL_BAR_ORIGIN{ sg::chess::ui::NAVIGATION_WIDTH + MARGIN, BOARD_TOP };
     constexpr sf::Vector2f EVAL_BAR_SIZE{ EVAL_BAR_WIDTH, BOARD_PIXELS };
 
@@ -43,7 +44,9 @@ namespace
     constexpr sf::Vector2f BOARD_ORIGIN{ EVAL_BAR_ORIGIN.x + EVAL_BAR_WIDTH + EVAL_BAR_GAP, BOARD_TOP };
 
     // The side panel starts to the right of the board and is as tall as the board.
-    constexpr float PANEL_LEFT{ BOARD_ORIGIN.x + BOARD_PIXELS + MARGIN };
+    // The gap to the board is smaller than the margin, so the panel stays wide enough for its buttons.
+    constexpr float PANEL_GAP{ 18.0f };
+    constexpr float PANEL_LEFT{ BOARD_ORIGIN.x + BOARD_PIXELS + PANEL_GAP };
 
     constexpr ImGuiWindowFlags PANEL_FLAGS{ ImGuiWindowFlags_NoTitleBar |
                                             ImGuiWindowFlags_NoResize |
@@ -52,7 +55,7 @@ namespace
                                             ImGuiWindowFlags_NoSavedSettings };
 
     constexpr float NUMBER_COLUMN_WIDTH{ 56.0f };
-    constexpr float BUTTON_WIDTH{ 44.0f };
+    constexpr float BUTTON_WIDTH{ 40.0f };
 
     // The analysis: how often the lines are taken over, and how many moves of a line are written in SAN.
     // Every move needs a question to the rules engine, so both are kept small.
@@ -224,6 +227,7 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
     ImGui::End();
 
     m_evalBar.DrawLabel(m_boardView.IsFlipped());
+    m_boardView.DrawCoordinates();
 }
 
 //-------------------------------------------------

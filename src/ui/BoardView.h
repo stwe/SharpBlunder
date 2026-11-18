@@ -127,6 +127,15 @@ namespace sg::chess::ui
          */
         void Draw(sf::RenderTarget& t_target, const core::Position& t_position, const BoardOverlay& t_overlay = {}) const;
 
+        /**
+         * @brief Writes the labels outside the board: the files (a to h) below it and the ranks (1 to 8) to its left.
+         *
+         * The labels follow the orientation: when the board is turned around, they run the other way.
+         * They are drawn with Dear ImGui, so call this while a GUI frame is being built. They need a little space
+         * around the board: about 20 pixels to the left and 25 below.
+         */
+        void DrawCoordinates() const;
+
     private:
         //-------------------------------------------------
         // Helper
