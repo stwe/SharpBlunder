@@ -28,6 +28,7 @@
 #include "ui/EnginePanel.h"
 #include "ui/EvalBar.h"
 #include "ui/MoveInput.h"
+#include "ui/NotationPanel.h"
 #include "ui/PieceSet.h"
 #include "ui/Screen.h"
 
@@ -161,11 +162,6 @@ namespace sg::chess::ui
          */
         void DrawControls();
 
-        /**
-         * @brief Builds the table with the moves of the game. A click on a move jumps to that position.
-         */
-        void DrawMoveList();
-
         //-------------------------------------------------
         // Member
         //-------------------------------------------------
@@ -178,7 +174,7 @@ namespace sg::chess::ui
         const core::OpeningBook& m_openings;  ///< The names of the openings (not owned)
         EvalBar m_evalBar;               ///< The evaluation bar left of the board
         EnginePanel m_enginePanel;       ///< The recommended moves in the side panel
-        bool m_scrollToCurrent{ true };  ///< The move list scrolls to the current move in the next frame
+        NotationPanel m_notationPanel;   ///< The list of moves and the navigation buttons
 
         std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name
     };

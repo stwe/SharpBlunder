@@ -48,9 +48,6 @@ namespace
                                             ImGuiWindowFlags_NoMove |
                                             ImGuiWindowFlags_NoCollapse |
                                             ImGuiWindowFlags_NoSavedSettings };
-
-    constexpr float NUMBER_COLUMN_WIDTH{ 56.0f };
-    constexpr float BUTTON_WIDTH{ 40.0f };
 }
 
 //-------------------------------------------------
@@ -203,7 +200,10 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
 
         ImGui::Spacing();
 
-        DrawMoveList();
+        if (m_notationPanel.DrawMoveList(m_game))
+        {
+            OnPositionChanged();
+        }
     }
     ImGui::End();
 
@@ -305,31 +305,19 @@ void sg::chess::ui::AnalysisScreen::UpdateOpening()
 void sg::chess::ui::AnalysisScreen::OnPositionChanged()
 {
     m_input.Reset();
-    m_scrollToCurrent = true;
+    m_notationPanel.ScrollToCurrent();
     m_enginePanel.PositionChanged(m_game.Current().info);
     UpdateOpening();
 }
 
 void sg::chess::ui::AnalysisScreen::DrawControls()
 {
-    // Runs one navigation action and updates the screen.
-    const auto navigate = [this](const bool t_enabled, const char* t_label, void (core::GameState::*t_action)() noexcept)
+    if (m_notationPanel.DrawNavigation(m_game))
     {
-        ImGui::BeginDisabled(!t_enabled);
-        if (ImGui::Button(t_label, ImVec2(BUTTON_WIDTH, 0.0f)))
-        {
-            (m_game.*t_action)();
-            OnPositionChanged();
-        }
-        ImGui::EndDisabled();
-        ImGui::SameLine();
-    };
+        OnPositionChanged();
+    }
 
-    navigate(m_game.CanGoBack(), "|<", &core::GameState::GoToStart);
-    navigate(m_game.CanGoBack(), "<", &core::GameState::GoBack);
-    navigate(m_game.CanGoForward(), ">", &core::GameState::GoForward);
-    navigate(m_game.CanGoForward(), ">|", &core::GameState::GoToEnd);
-
+    ImGui::SameLine();
     ImGui::Dummy(ImVec2(10.0f, 0.0f));
     ImGui::SameLine();
 
@@ -345,59 +333,4 @@ void sg::chess::ui::AnalysisScreen::DrawControls()
         m_game.Reset();
         OnPositionChanged();
     }
-}
-
-void sg::chess::ui::AnalysisScreen::DrawMoveList()
-{
-    constexpr ImGuiTableFlags tableFlags{ ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV };
-
-    if (!ImGui::BeginTable("##moves", 3, tableFlags, ImVec2(0.0f, ImGui::GetContentRegionAvail().y)))
-    {
-        return;
-    }
-
-    ImGui::TableSetupScrollFreeze(0, 1);
-    ImGui::TableSetupColumn("##number", ImGuiTableColumnFlags_WidthFixed, NUMBER_COLUMN_WIDTH);
-    ImGui::TableSetupColumn("White", ImGuiTableColumnFlags_WidthStretch);
-    ImGui::TableSetupColumn("Black", ImGuiTableColumnFlags_WidthStretch);
-    ImGui::TableHeadersRow();
-
-    const auto entries{ m_game.Entries() };
-
-    for (std::size_t ply{ 1 }; ply < entries.size(); ++ply)
-    {
-        const auto& before{ entries[ply - 1].info.position };
-        const bool whiteMoved{ before.SideToMove() == core::Color::WHITE };
-
-        // A new row starts with each White move, and with the first move if Black begins.
-        if (whiteMoved || ply == 1)
-        {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TextDisabled(whiteMoved ? "%d." : "%d...", before.FullmoveNumber());
-        }
-
-        ImGui::TableSetColumnIndex(whiteMoved ? 1 : 2);
-
-        // The same move text can appear many times, so every entry gets its own id.
-        ImGui::PushID(static_cast<int>(ply));
-
-        const bool isCurrent{ ply == m_game.CurrentPly() };
-        if (ImGui::Selectable(entries[ply].san.c_str(), isCurrent))
-        {
-            m_game.GoTo(ply);
-            OnPositionChanged();
-        }
-
-        if (isCurrent && m_scrollToCurrent)
-        {
-            ImGui::SetScrollHereY(0.5f);
-        }
-
-        ImGui::PopID();
-    }
-
-    m_scrollToCurrent = false;
-
-    ImGui::EndTable();
 }
