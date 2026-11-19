@@ -119,3 +119,19 @@ target_compile_definitions(OpeningBookTests PRIVATE SHARPBLUNDER_ASSET_DIR="${CM
 target_compile_options(OpeningBookTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME OpeningBookTests COMMAND OpeningBookTests)
+
+add_executable(GameStateTests
+        tests/GameStateTests.cpp
+
+        src/core/GameState.cpp
+        src/core/Move.cpp
+        src/core/Position.cpp
+        src/core/San.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(GameStateTests PRIVATE src tests)
+target_compile_options(GameStateTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME GameStateTests COMMAND GameStateTests)

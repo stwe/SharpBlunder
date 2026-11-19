@@ -16,6 +16,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <imgui.h>
+#include <optional>
 #include "ui/NotationPanel.h"
 
 namespace
@@ -86,13 +87,22 @@ bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game)
     ImGui::TableSetupColumn("Black", ImGuiTableColumnFlags_WidthStretch);
     ImGui::TableHeadersRow();
 
-    const auto entries{ t_game.Entries() };
+    // For now only the main line is shown.
     bool changed{ false };
+    int ply{ 0 };
 
-    for (std::size_t ply{ 1 }; ply < entries.size(); ++ply)
+    std::optional<core::GameState::NodeId> id;
+    if (!t_game.At(0).children.empty())
     {
-        const auto& before{ entries[ply - 1].info.position };
+        id = t_game.At(0).children.front();
+    }
+
+    while (id)
+    {
+        const core::GameState::Node& node{ t_game.At(*id) };
+        const auto& before{ t_game.At(*node.parent).info.position };
         const bool whiteMoved{ before.SideToMove() == core::Color::WHITE };
+        ++ply;
 
         // A new row starts with each White move, and with the first move if Black begins.
         if (whiteMoved || ply == 1)
@@ -105,12 +115,12 @@ bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game)
         ImGui::TableSetColumnIndex(whiteMoved ? 1 : 2);
 
         // The same move text can appear many times, so every entry gets its own id.
-        ImGui::PushID(static_cast<int>(ply));
+        ImGui::PushID(static_cast<int>(*id));
 
-        const bool isCurrent{ ply == t_game.CurrentPly() };
-        if (ImGui::Selectable(entries[ply].san.c_str(), isCurrent))
+        const bool isCurrent{ *id == t_game.CurrentId() };
+        if (ImGui::Selectable(node.san.c_str(), isCurrent))
         {
-            t_game.GoTo(ply);
+            t_game.GoTo(*id);
             changed = true;
         }
 
@@ -120,6 +130,8 @@ bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game)
         }
 
         ImGui::PopID();
+
+        id = node.children.empty() ? std::nullopt : std::optional{ node.children.front() };
     }
 
     m_scrollToCurrent = false;

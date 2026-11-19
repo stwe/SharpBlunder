@@ -280,16 +280,21 @@ void sg::chess::ui::AnalysisScreen::UpdateOpening()
 {
     m_opening.reset();
 
-    const auto entries{ m_game.Entries() };
+    // Walk back along the moves that led here until a position has a name. A game that has left the book
+    // keeps the last name, and a variation finds the name of the line it belongs to.
+    std::optional<core::GameState::NodeId> id{ m_game.CurrentId() };
 
-    // Walk back until a position has a name. A game that has left the book keeps the last name.
-    for (std::size_t ply{ m_game.CurrentPly() + 1 }; ply > 0; --ply)
+    while (id)
     {
-        if (const auto opening{ m_openings.Find(entries[ply - 1].info.position) })
+        const core::GameState::Node& node{ m_game.At(*id) };
+
+        if (const auto opening{ m_openings.Find(node.info.position) })
         {
             m_opening = opening;
             return;
         }
+
+        id = node.parent;
     }
 }
 
@@ -333,7 +338,7 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
     // A game with moves is not thrown away by one click.
     if (ImGui::Button("New", ImVec2(HEADER_BUTTON_WIDTH, 0.0f)))
     {
-        if (m_game.PlyCount() == 0)
+        if (!m_game.HasMoves())
         {
             m_game.Reset();
             OnPositionChanged();

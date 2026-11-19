@@ -16,6 +16,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <algorithm>
+#include <utility>
 #include "core/GameState.h"
 #include "core/San.h"
 
@@ -31,7 +32,29 @@ sg::chess::core::GameState::GameState(RulesProvider& t_rules)
 sg::chess::core::GameState::GameState(RulesProvider& t_rules, const Position& t_start)
     : m_rules(t_rules)
 {
-    m_entries.push_back({ m_rules.Describe(t_start), std::nullopt, "" });
+    m_nodes.push_back({ m_rules.Describe(t_start), std::nullopt, "", std::nullopt, {} });
+}
+
+//-------------------------------------------------
+// Query
+//-------------------------------------------------
+
+bool sg::chess::core::GameState::IsMainLine(const NodeId t_id) const noexcept
+{
+    NodeId id{ t_id };
+
+    while (m_nodes[id].parent)
+    {
+        const NodeId parent{ *m_nodes[id].parent };
+        if (m_nodes[parent].children.front() != id)
+        {
+            return false;
+        }
+
+        id = parent;
+    }
+
+    return true;
 }
 
 //-------------------------------------------------
@@ -42,7 +65,7 @@ void sg::chess::core::GameState::GoBack() noexcept
 {
     if (CanGoBack())
     {
-        --m_current;
+        m_current = *m_nodes[m_current].parent;
     }
 }
 
@@ -50,7 +73,7 @@ void sg::chess::core::GameState::GoForward() noexcept
 {
     if (CanGoForward())
     {
-        ++m_current;
+        m_current = m_nodes[m_current].children.front();
     }
 }
 
@@ -61,12 +84,18 @@ void sg::chess::core::GameState::GoToStart() noexcept
 
 void sg::chess::core::GameState::GoToEnd() noexcept
 {
-    m_current = PlyCount();
+    while (CanGoForward())
+    {
+        GoForward();
+    }
 }
 
-void sg::chess::core::GameState::GoTo(const std::size_t t_ply) noexcept
+void sg::chess::core::GameState::GoTo(const NodeId t_id) noexcept
 {
-    m_current = std::min(t_ply, PlyCount());
+    if (t_id < m_nodes.size())
+    {
+        m_current = t_id;
+    }
 }
 
 //-------------------------------------------------
@@ -75,33 +104,112 @@ void sg::chess::core::GameState::GoTo(const std::size_t t_ply) noexcept
 
 bool sg::chess::core::GameState::Play(const Move& t_move)
 {
-    const PositionInfo& before{ Current().info };
-
-    if (!before.IsLegal(t_move))
+    if (!Current().info.IsLegal(t_move))
     {
         return false;
     }
 
-    // The same move as the next one of the game: do not throw the rest of the game away.
-    if (CanGoForward() && m_entries[m_current + 1].move == t_move)
+    // The game has this move here already: do not add it a second time.
+    for (const NodeId child : Current().children)
     {
-        ++m_current;
-        return true;
+        if (m_nodes[child].move == t_move)
+        {
+            m_current = child;
+            return true;
+        }
     }
 
-    PositionInfo after{ m_rules.Play(before.position, t_move) };
-    std::string san{ to_san(before, t_move, after) };
+    PositionInfo after{ m_rules.Play(Current().info.position, t_move) };
+    std::string san{ to_san(Current().info, t_move, after) };
 
-    // 'before' refers into m_entries, so it must not be used after the vector changes.
-    m_entries.resize(m_current + 1);
-    m_entries.push_back({ std::move(after), t_move, std::move(san) });
-    ++m_current;
+    // The new node is appended last: a position keeps the order of its moves, the first one is the main line.
+    // The vector may grow here, so no reference into it is kept.
+    const NodeId id{ m_nodes.size() };
+    m_nodes.push_back({ std::move(after), t_move, std::move(san), m_current, {} });
+    m_nodes[m_current].children.push_back(id);
+    m_current = id;
 
     return true;
 }
 
+void sg::chess::core::GameState::Promote(const NodeId t_id)
+{
+    if (t_id == 0 || t_id >= m_nodes.size())
+    {
+        return;
+    }
+
+    NodeId id{ t_id };
+
+    while (m_nodes[id].parent)
+    {
+        const NodeId parent{ *m_nodes[id].parent };
+        auto& siblings{ m_nodes[parent].children };
+
+        // Move the node to the front. The others keep their order.
+        const auto it{ std::ranges::find(siblings, id) };
+        std::rotate(siblings.begin(), it, it + 1);
+
+        id = parent;
+    }
+}
+
+void sg::chess::core::GameState::DeleteFrom(const NodeId t_id)
+{
+    if (t_id == 0 || t_id >= m_nodes.size())
+    {
+        return;
+    }
+
+    // Collect the node and everything after it.
+    std::vector<bool> removed(m_nodes.size(), false);
+    std::vector<NodeId> pending{ t_id };
+
+    while (!pending.empty())
+    {
+        const NodeId id{ pending.back() };
+        pending.pop_back();
+
+        removed[id] = true;
+        pending.insert(pending.end(), m_nodes[id].children.begin(), m_nodes[id].children.end());
+    }
+
+    const NodeId parentOfDeleted{ *m_nodes[t_id].parent };
+    std::erase(m_nodes[parentOfDeleted].children, t_id);
+
+    // The nodes that stay get new ids. The order is kept, so a parent always comes before its children.
+    std::vector<NodeId> newId(m_nodes.size(), 0);
+    std::vector<Node> kept;
+
+    for (NodeId id{ 0 }; id < m_nodes.size(); ++id)
+    {
+        if (!removed[id])
+        {
+            newId[id] = kept.size();
+            kept.push_back(std::move(m_nodes[id]));
+        }
+    }
+
+    for (Node& node : kept)
+    {
+        if (node.parent)
+        {
+            node.parent = newId[*node.parent];
+        }
+
+        for (NodeId& child : node.children)
+        {
+            child = newId[child];
+        }
+    }
+
+    m_current = removed[m_current] ? newId[parentOfDeleted] : newId[m_current];
+    m_nodes = std::move(kept);
+}
+
 void sg::chess::core::GameState::Reset() noexcept
 {
-    m_entries.resize(1);
+    m_nodes.resize(1);
+    m_nodes[0].children.clear();
     m_current = 0;
 }
