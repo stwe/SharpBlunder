@@ -16,6 +16,9 @@ Working today:
 - Highlights for the last move, the king in check and the target squares of the selected piece
 - Pawn promotion with a choice of the new piece
 - Move list in Standard Algebraic Notation (`Nbd7`, `exd6`, `O-O-O`, `Rd8#`), click a move to jump to it
+- Variations like on lichess: take a move back and play another one, and the game keeps both. The main line is a
+  table, variations are written below the move they belong to (nested ones in parentheses). A right click on a move
+  makes its line the main line or deletes it
 - Step through the game, flip the board (the labels a-h and 1-8 outside the board turn with it), start a new game
 - Live analysis with a second Stockfish process: evaluation bar next to the board and an arrow for the best move.
   The three best moves are listed as rows: a colored dot (how much weaker than the best move), the score and the

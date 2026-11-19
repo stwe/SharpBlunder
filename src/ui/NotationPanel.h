@@ -74,14 +74,19 @@ namespace sg::chess::ui
         [[nodiscard]] bool DrawNavigation(core::GameState& t_game);
 
         /**
-         * @brief Builds the table with the moves of the game. A click on a move jumps to that position.
+         * @brief Builds the list of moves. A click on a move jumps to that position.
          *
-         * Call it while a GUI frame is being built. The table fills the rest of the window, but leaves room for
+         * The main line is a table: a row for each move number, a column for White and one for Black. Variations
+         * are written below the move they are an alternative to, indented and in parentheses where they are nested.
+         * A click with the right mouse button on a move opens a menu: make its line the main line, or delete
+         * the move and everything after it.
+         *
+         * Call it while a GUI frame is being built. The list fills the rest of the window, but leaves room for
          * the navigation buttons below it.
          *
-         * @param t_game The game. A click changes its current position.
+         * @param t_game The game. A click changes its current position, the menu its moves.
          *
-         * @return True if the position has changed.
+         * @return True if the current position has changed.
          */
         [[nodiscard]] bool DrawMoveList(core::GameState& t_game);
 
