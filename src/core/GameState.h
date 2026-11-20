@@ -58,7 +58,29 @@ namespace sg::chess::core
         using NodeId = std::size_t;
 
         /**
+         * @brief What a person or a program has written about a move.
+         *
+         * The parts follow the PGN format: a comment in braces, commands inside a comment such as the clock
+         * of lichess ("[%clk 0:03:00]"), and numeric annotation glyphs ("$1" for "!").
+         */
+        struct Annotation
+        {
+            std::string comment;    ///< The text, without the commands. It is shown and edited.
+            std::string commands;   ///< The commands of the comment, e.g. "[%clk 0:03:00]". Kept as they are.
+            std::vector<int> nags;  ///< The numeric annotation glyphs, e.g. 1 for "!" and 4 for "??"
+
+            /**
+             * @brief Tells whether there is nothing to show or to save.
+             *
+             * @return True if there is no comment, no command and no glyph.
+             */
+            [[nodiscard]] bool IsEmpty() const noexcept { return comment.empty() && commands.empty() && nags.empty(); }
+        };
+
+        /**
          * @brief One position of the game and the move that led to it.
+         *
+         * The annotation of the start position is the comment on the whole game.
          */
         struct Node
         {
@@ -67,6 +89,8 @@ namespace sg::chess::core
             std::string san;               ///< That move in SAN (empty for the start position)
             std::optional<NodeId> parent;  ///< The previous position (empty for the start position)
             std::vector<NodeId> children;  ///< The following positions: the first is the main line
+            Annotation note;               ///< What is written about this move
+            std::string lineComment;       ///< A comment on the whole variation that starts with this move
         };
 
         //-------------------------------------------------
@@ -118,6 +142,13 @@ namespace sg::chess::core
          * @return The node.
          */
         [[nodiscard]] const Node& At(const NodeId t_id) const noexcept { return m_nodes[t_id]; }
+
+        /**
+         * @brief Returns the number of nodes: the start position and all moves of the main line and the variations.
+         *
+         * @return The number of nodes.
+         */
+        [[nodiscard]] std::size_t NodeCount() const noexcept { return m_nodes.size(); }
 
         /**
          * @brief Tells whether any move has been played.
@@ -201,10 +232,32 @@ namespace sg::chess::core
         bool Play(const Move& t_move);
 
         /**
+         * @brief Replaces the annotation of a node.
+         *
+         * @param t_id The id of the node. An id that does not exist is ignored.
+         * @param t_note The new annotation.
+         */
+        void SetAnnotation(NodeId t_id, Annotation t_note);
+
+        /**
+         * @brief Replaces the comment on the whole line that starts with a node.
+         *
+         * Only the first move of a variation shows it. The main line has no line comment of its own: the comment
+         * on the start position is the comment on the game.
+         *
+         * @param t_id The id of the node. An id that does not exist is ignored.
+         * @param t_comment The new comment. An empty text removes it.
+         */
+        void SetLineComment(NodeId t_id, std::string t_comment);
+
+        /**
          * @brief Makes the line of a node the main line.
          *
          * The node becomes the first child of its parent, and so does that parent in its own parent, up to the
          * start position. The current position does not change.
+         *
+         * A line that is not a variation any more has no line comment. The comment is not lost: it is put in
+         * front of the comment on the first move of the line.
          *
          * @param t_id The id of the node. The start position and ids that do not exist are ignored.
          */
@@ -221,9 +274,19 @@ namespace sg::chess::core
         void DeleteFrom(NodeId t_id);
 
         /**
-         * @brief Removes all moves and returns to the start position.
+         * @brief Removes all moves and the annotations and returns to the start position.
          */
         void Reset() noexcept;
+
+        /**
+         * @brief Takes over the game of another GameState, which is left empty and must not be used any more.
+         *
+         * The rules of this object stay. It is used to load a game: build it in a GameState of its own and move it
+         * here when it is complete, so a game that fails to load does not destroy the current one.
+         *
+         * @param t_other The other game.
+         */
+        void ReplaceWith(GameState&& t_other) noexcept;
 
     private:
         //-------------------------------------------------

@@ -17,74 +17,18 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
-#include <string>
-#include <string_view>
+#include <utility>
 #include <vector>
 #include "Check.h"
+#include "FakeRules.h"
 #include "core/GameState.h"
 #include "core/Move.h"
-#include "core/RulesProvider.h"
 
 namespace
 {
     using sg::chess::core::GameState;
     using sg::chess::core::Move;
-    using sg::chess::core::Position;
-    using sg::chess::core::PositionInfo;
-
-    constexpr const char* AFTER_E4{ "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1" };
-    constexpr const char* AFTER_E4_E5{ "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2" };
-    constexpr const char* AFTER_E4_E5_NF3{ "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2" };
-    constexpr const char* AFTER_E4_C5{ "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2" };
-    constexpr const char* AFTER_D4{ "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1" };
-
-    /**
-     * @brief Rules for a handful of opening moves, so the tests need no Stockfish.
-     *
-     * It knows exactly the positions and moves listed in the constructor. Everything else has no legal move.
-     */
-    class FakeRules final : public sg::chess::core::RulesProvider
-    {
-    public:
-        FakeRules()
-        {
-            Add(Position::START_FEN, "e2e4", AFTER_E4);
-            Add(Position::START_FEN, "d2d4", AFTER_D4);
-            Add(AFTER_E4, "e7e5", AFTER_E4_E5);
-            Add(AFTER_E4, "c7c5", AFTER_E4_C5);
-            Add(AFTER_E4_E5, "g1f3", AFTER_E4_E5_NF3);
-        }
-
-        [[nodiscard]] PositionInfo Describe(const Position& t_position) override
-        {
-            PositionInfo info;
-            info.position = t_position;
-
-            for (const auto& [key, next] : m_next)
-            {
-                if (key.first == t_position.ToFen())
-                {
-                    info.legalMoves.push_back(*Move::FromUci(key.second));
-                }
-            }
-
-            return info;
-        }
-
-        [[nodiscard]] PositionInfo Play(const Position& t_position, const Move& t_move) override
-        {
-            return Describe(Position::FromFen(m_next.at({ t_position.ToFen(), t_move.ToUci() })));
-        }
-
-    private:
-        void Add(const std::string_view t_from, const std::string& t_uci, const std::string_view t_to)
-        {
-            m_next[{ Position::FromFen(t_from).ToFen(), t_uci }] = Position::FromFen(t_to).ToFen();
-        }
-
-        std::map<std::pair<std::string, std::string>, std::string> m_next;
-    };
+    using sg::chess::tests::FakeRules;
 
     Move Uci(const char* t_uci)
     {
@@ -229,6 +173,76 @@ namespace
         CHECK(game.HasMoves());
     }
 
+    void TestAnnotations()
+    {
+        FakeRules rules;
+        GameState game{ rules };
+
+        CHECK(game.Play(Uci("e2e4")));
+        const GameState::NodeId e4{ game.CurrentId() };
+
+        game.SetAnnotation(e4, { "A good move.", "[%clk 0:03:00]", { 1 } });
+        CHECK(game.At(e4).note.comment == "A good move.");
+        CHECK(game.At(e4).note.commands == "[%clk 0:03:00]");
+        CHECK(game.At(e4).note.nags == std::vector<int>{ 1 });
+        CHECK(!game.At(e4).note.IsEmpty());
+
+        // The comment on the game is the annotation of the start position.
+        game.SetAnnotation(0, { "About the whole game.", "", {} });
+        CHECK(game.At(0).note.comment == "About the whole game.");
+
+        // An id that does not exist is ignored.
+        game.SetAnnotation(99, { "nowhere", "", {} });
+        game.SetLineComment(99, "nowhere");
+        CHECK(game.NodeCount() == 2);
+
+        // Reset removes the comment on the game as well.
+        game.Reset();
+        CHECK(game.At(0).note.IsEmpty());
+    }
+
+    void TestLineCommentAndPromote()
+    {
+        FakeRules rules;
+        GameState game{ rules };
+
+        CHECK(game.Play(Uci("e2e4")));
+        game.GoToStart();
+        CHECK(game.Play(Uci("d2d4")));
+
+        const GameState::NodeId d4{ game.CurrentId() };
+        game.SetLineComment(d4, "The queen's pawn.");
+        game.SetAnnotation(d4, { "Solid.", "", {} });
+        CHECK(game.At(d4).lineComment == "The queen's pawn.");
+
+        // A variation that becomes the main line has no line comment any more. It is kept in front of the move comment.
+        game.Promote(d4);
+        CHECK(game.At(d4).lineComment.empty());
+        CHECK(game.At(d4).note.comment == "The queen's pawn.\nSolid.");
+
+        // The line that was the main line is a variation now, without a line comment.
+        const GameState::NodeId e4{ game.At(0).children[1] };
+        CHECK(game.At(e4).san == "e4");
+        CHECK(game.At(e4).lineComment.empty());
+    }
+
+    void TestReplaceWith()
+    {
+        FakeRules rules;
+        GameState first{ rules };
+        GameState second{ rules };
+
+        CHECK(second.Play(Uci("d2d4")));
+        second.SetAnnotation(1, { "Loaded.", "", {} });
+        second.GoToStart();
+
+        first.ReplaceWith(std::move(second));
+        CHECK(first.HasMoves());
+        CHECK(first.CurrentId() == 0);
+        CHECK(first.At(1).san == "d4");
+        CHECK(first.At(1).note.comment == "Loaded.");
+    }
+
     void TestReset()
     {
         FakeRules rules;
@@ -253,6 +267,9 @@ int main()
     TestGoForwardFollowsTheMainLine();
     TestPromote();
     TestDelete();
+    TestAnnotations();
+    TestLineCommentAndPromote();
+    TestReplaceWith();
     TestReset();
 
     if (sg::chess::tests::failures() != 0)

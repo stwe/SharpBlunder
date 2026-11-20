@@ -32,7 +32,7 @@ sg::chess::core::GameState::GameState(RulesProvider& t_rules)
 sg::chess::core::GameState::GameState(RulesProvider& t_rules, const Position& t_start)
     : m_rules(t_rules)
 {
-    m_nodes.push_back({ m_rules.Describe(t_start), std::nullopt, "", std::nullopt, {} });
+    m_nodes.push_back({ m_rules.Describe(t_start), std::nullopt, "", std::nullopt, {}, {}, "" });
 }
 
 //-------------------------------------------------
@@ -125,11 +125,27 @@ bool sg::chess::core::GameState::Play(const Move& t_move)
     // The new node is appended last: a position keeps the order of its moves, the first one is the main line.
     // The vector may grow here, so no reference into it is kept.
     const NodeId id{ m_nodes.size() };
-    m_nodes.push_back({ std::move(after), t_move, std::move(san), m_current, {} });
+    m_nodes.push_back({ std::move(after), t_move, std::move(san), m_current, {}, {}, "" });
     m_nodes[m_current].children.push_back(id);
     m_current = id;
 
     return true;
+}
+
+void sg::chess::core::GameState::SetAnnotation(const NodeId t_id, Annotation t_note)
+{
+    if (t_id < m_nodes.size())
+    {
+        m_nodes[t_id].note = std::move(t_note);
+    }
+}
+
+void sg::chess::core::GameState::SetLineComment(const NodeId t_id, std::string t_comment)
+{
+    if (t_id < m_nodes.size())
+    {
+        m_nodes[t_id].lineComment = std::move(t_comment);
+    }
 }
 
 void sg::chess::core::GameState::Promote(const NodeId t_id)
@@ -148,7 +164,19 @@ void sg::chess::core::GameState::Promote(const NodeId t_id)
 
         // Move the node to the front. The others keep their order.
         const auto it{ std::ranges::find(siblings, id) };
-        std::rotate(siblings.begin(), it, it + 1);
+        if (it != siblings.begin())
+        {
+            // The line is not a variation any more, so its line comment would not be shown. It stays as a part of
+            // the comment on the first move.
+            Node& node{ m_nodes[id] };
+            if (!node.lineComment.empty())
+            {
+                node.note.comment = node.lineComment + (node.note.comment.empty() ? "" : "\n" + node.note.comment);
+                node.lineComment.clear();
+            }
+
+            std::rotate(siblings.begin(), it, it + 1);
+        }
 
         id = parent;
     }
@@ -211,5 +239,16 @@ void sg::chess::core::GameState::Reset() noexcept
 {
     m_nodes.resize(1);
     m_nodes[0].children.clear();
+    m_nodes[0].note = {};
     m_current = 0;
+}
+
+void sg::chess::core::GameState::ReplaceWith(GameState&& t_other) noexcept
+{
+    m_nodes = std::move(t_other.m_nodes);
+    m_current = t_other.m_current;
+
+    // The other game must not be left without a start position.
+    t_other.m_nodes.clear();
+    t_other.m_current = 0;
 }
