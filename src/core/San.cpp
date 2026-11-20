@@ -128,3 +128,129 @@ std::string sg::chess::core::to_san(const PositionInfo& t_before, const Move& t_
 
     return san;
 }
+
+std::optional<sg::chess::core::Move> sg::chess::core::from_san(const PositionInfo& t_position, std::string_view t_san)
+{
+    std::string_view san{ t_san };
+
+    // Check, checkmate and the glyphs for good and bad moves do not change the move.
+    while (!san.empty() && (san.back() == '+' || san.back() == '#' || san.back() == '!' || san.back() == '?'))
+    {
+        san.remove_suffix(1);
+    }
+
+    if (san.empty())
+    {
+        return std::nullopt;
+    }
+
+    // Castling: the letter O, or the digit 0 that some programs write.
+    if (san.front() == 'O' || san.front() == '0')
+    {
+        const bool shortCastling{ san == "O-O" || san == "0-0" };
+        const bool longCastling{ san == "O-O-O" || san == "0-0-0" };
+        if (!shortCastling && !longCastling)
+        {
+            return std::nullopt;
+        }
+
+        for (const Move& move : t_position.legalMoves)
+        {
+            const auto piece{ t_position.position.At(move.from) };
+            const bool isKingMove{ piece && piece->type == PieceType::KING &&
+                                   std::abs(file_of(move.to) - file_of(move.from)) == 2 };
+
+            if (isKingMove && (file_of(move.to) > file_of(move.from)) == shortCastling)
+            {
+                return move;
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    // The piece: a capital letter. No letter means a pawn.
+    PieceType type{ PieceType::PAWN };
+    if (std::string_view{ "KQRBN" }.find(san.front()) != std::string_view::npos)
+    {
+        type = from_fen_char(san.front())->type;
+        san.remove_prefix(1);
+    }
+
+    // A letter at the end is the piece of a promotion, with or without "=".
+    std::optional<PieceType> promotion;
+    if (san.size() >= 2 && std::string_view{ "QRBNqrbn" }.find(san.back()) != std::string_view::npos)
+    {
+        promotion = from_fen_char(san.back())->type;
+        san.remove_suffix(1);
+
+        if (!san.empty() && san.back() == '=')
+        {
+            san.remove_suffix(1);
+        }
+    }
+
+    // The target square are the last two characters.
+    if (san.size() < 2)
+    {
+        return std::nullopt;
+    }
+
+    const auto target{ square_from_name(san.substr(san.size() - 2)) };
+    if (!target)
+    {
+        return std::nullopt;
+    }
+
+    san.remove_suffix(2);
+
+    if (!san.empty() && san.back() == 'x')
+    {
+        san.remove_suffix(1);
+    }
+
+    // What is left says where the piece comes from: a file, a rank, or both. The pawn that captures is told by its file.
+    std::optional<int> fromFile;
+    std::optional<int> fromRank;
+
+    for (const char c : san)
+    {
+        if (c >= 'a' && c <= 'h')
+        {
+            fromFile = c - 'a';
+        }
+        else if (c >= '1' && c <= '8')
+        {
+            fromRank = c - '1';
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    std::optional<Move> found;
+
+    for (const Move& move : t_position.legalMoves)
+    {
+        const auto piece{ t_position.position.At(move.from) };
+
+        const bool matches{ piece && piece->type == type && move.to == *target && move.promotion == promotion &&
+                            (!fromFile || file_of(move.from) == *fromFile) &&
+                            (!fromRank || rank_of(move.from) == *fromRank) };
+        if (!matches)
+        {
+            continue;
+        }
+
+        // A second move that fits: the text does not tell which piece is meant.
+        if (found)
+        {
+            return std::nullopt;
+        }
+
+        found = move;
+    }
+
+    return found;
+}

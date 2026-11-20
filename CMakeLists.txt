@@ -135,3 +135,18 @@ target_include_directories(GameStateTests PRIVATE src tests)
 target_compile_options(GameStateTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME GameStateTests COMMAND GameStateTests)
+
+add_executable(SanTests
+        tests/SanTests.cpp
+
+        src/core/Move.cpp
+        src/core/Position.cpp
+        src/core/San.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(SanTests PRIVATE src tests)
+target_compile_options(SanTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME SanTests COMMAND SanTests)
