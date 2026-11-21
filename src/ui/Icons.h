@@ -72,4 +72,20 @@ namespace sg::chess::ui
      * @return True in the frame in which the button was clicked.
      */
     [[nodiscard]] bool magnifier_button(bool t_active, float t_size, const char* t_tooltip);
+
+    /**
+     * @brief Draws a button with a speech bubble: the sign for a comment.
+     *
+     * The caller must have pushed an ID if several buttons are shown. The button is a square item of the given
+     * size in the current line.
+     *
+     * @param t_filled True if there is a comment: the bubble is filled. Otherwise only its outline is drawn,
+     *                 faint, as an invitation to write one.
+     * @param t_active True if the comment is shown in full: the bubble gets a light outline.
+     * @param t_size The edge length of the button in pixels, usually the height of a line of text.
+     * @param t_color The color of a filled bubble, as ABGR (see IM_COL32).
+     *
+     * @return True in the frame in which the button was clicked.
+     */
+    [[nodiscard]] bool comment_icon(bool t_filled, bool t_active, float t_size, unsigned int t_color);
 } // namespace sg::chess::ui

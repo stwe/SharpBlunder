@@ -17,6 +17,10 @@
 
 #pragma once
 
+#include <array>
+#include <cstdint>
+#include <optional>
+#include <unordered_set>
 #include "core/GameState.h"
 
 namespace sg::chess::ui
@@ -31,10 +35,38 @@ namespace sg::chess::ui
      * The panel changes the position of the GameState it is given (a click on a move, a navigation button)
      * and tells the caller whether it did. Everything that follows from a new position, such as the analysis,
      * is the business of the caller.
+     *
+     * It also shows the comments and lets the user write them. There are comments on single moves (a speech bubble
+     * next to the move), on a variation (a speech bubble in the header of the variation) and on the whole game
+     * (in the header of the main line). A comment is shown when the mouse rests on its bubble, or in full after
+     * a click on the bubble, or all of them at once with a check box.
      */
     class NotationPanel
     {
     public:
+        //-------------------------------------------------
+        // Types
+        //-------------------------------------------------
+
+        /**
+         * @brief The three things a comment can belong to.
+         */
+        enum class CommentKind
+        {
+            MOVE,  ///< A single move
+            LINE,  ///< The variation that starts with a move
+            GAME   ///< The whole game: the comment on the start position
+        };
+
+        /**
+         * @brief A comment: what it belongs to, and the node.
+         */
+        struct CommentRef
+        {
+            CommentKind kind{ CommentKind::MOVE };  ///< What the comment belongs to
+            core::GameState::NodeId id{ 0 };        ///< The node: the move, or the first move of the variation
+        };
+
         //-------------------------------------------------
         // Ctors. / Dtor.
         //-------------------------------------------------
@@ -78,8 +110,11 @@ namespace sg::chess::ui
          *
          * The main line is a table: a row for each move number, a column for White and one for Black. Variations
          * are written below the move they are an alternative to, indented and in parentheses where they are nested.
-         * A click with the right mouse button on a move opens a menu: make its line the main line, or delete
-         * the move and everything after it.
+         * A click with the right mouse button on a move opens a menu: write a comment, make its line the main line,
+         * or delete the move and everything after it.
+         *
+         * The comments are shown with a speech bubble. Above the list, a check box shows all of them in full, as
+         * soon as the game has any.
          *
          * Call it while a GUI frame is being built. The list fills the rest of the window, but leaves room for
          * the navigation buttons below it.
@@ -92,9 +127,35 @@ namespace sg::chess::ui
 
     private:
         //-------------------------------------------------
+        // Helper
+        //-------------------------------------------------
+
+        /**
+         * @brief Opens the window in which a comment is written.
+         *
+         * @param t_game The game. The window starts with the comment that is there.
+         * @param t_ref The comment to edit.
+         */
+        void BeginEdit(const core::GameState& t_game, CommentRef t_ref);
+
+        /**
+         * @brief Builds the window in which a comment is written, if it is open. Saving changes the game.
+         *
+         * @param t_game The game.
+         */
+        void DrawEditor(core::GameState& t_game);
+
+        //-------------------------------------------------
         // Member
         //-------------------------------------------------
 
-        bool m_scrollToCurrent{ true };  ///< The move list scrolls to the current move in the next frame
+        // The longest comment that can be written. The text of a comment that is longer is cut off.
+        static constexpr std::size_t EDIT_BUFFER_SIZE{ 4096 };
+
+        bool m_scrollToCurrent{ true };                      ///< The list scrolls to the current move in the next frame
+        bool m_showAllComments{ false };                     ///< All comments are shown in full
+        std::unordered_set<std::uint64_t> m_openComments;    ///< The comments opened with a click on their bubble
+        CommentRef m_editTarget;                             ///< The comment that is written in the window
+        std::array<char, EDIT_BUFFER_SIZE> m_editBuffer{};   ///< The text in the window
     };
 }

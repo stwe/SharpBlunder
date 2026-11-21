@@ -39,6 +39,17 @@ namespace
     constexpr float LINE_THICKNESS{ 2.0f };
     constexpr float HOVER_RADIUS{ 0.5f };
 
+    // The speech bubble, as parts of the item size: the rounded rectangle and the tail at its lower left.
+    constexpr float BUBBLE_LEFT{ 0.1f };
+    constexpr float BUBBLE_RIGHT{ 0.9f };
+    constexpr float BUBBLE_TOP{ 0.14f };
+    constexpr float BUBBLE_BOTTOM{ 0.66f };
+    constexpr float BUBBLE_ROUNDING{ 0.2f };
+    constexpr float TAIL_FROM{ 0.2f };
+    constexpr float TAIL_TO{ 0.4f };
+    constexpr float TAIL_TIP{ 0.9f };
+    constexpr float DOT_SIZE{ 0.055f };
+
     // Color of a quality.
     ImU32 ColorOf(const sg::chess::core::MoveQuality t_quality)
     {
@@ -125,6 +136,61 @@ bool sg::chess::ui::magnifier_button(const bool t_active, const float t_size, co
                   ImVec2(lens.x + handleEnd * DIAGONAL, lens.y + handleEnd * DIAGONAL), color, LINE_THICKNESS);
 
     ImGui::SetItemTooltip("%s", t_tooltip);
+
+    return clicked;
+}
+
+bool sg::chess::ui::comment_icon(const bool t_filled, const bool t_active, const float t_size,
+                                 const unsigned int t_color)
+{
+    const bool clicked{ ImGui::InvisibleButton("##comment", ImVec2(t_size, t_size)) };
+    const bool hovered{ ImGui::IsItemHovered() };
+
+    const ImVec2 min{ ImGui::GetItemRectMin() };
+    ImDrawList* draw{ ImGui::GetWindowDrawList() };
+
+    const ImVec2 topLeft{ min.x + t_size * BUBBLE_LEFT, min.y + t_size * BUBBLE_TOP };
+    const ImVec2 bottomRight{ min.x + t_size * BUBBLE_RIGHT, min.y + t_size * BUBBLE_BOTTOM };
+    const float rounding{ t_size * BUBBLE_ROUNDING };
+
+    // The tail points down to the left, like the one of a speech bubble in a comic.
+    const ImVec2 tailA{ min.x + t_size * TAIL_FROM, bottomRight.y - 1.0f };
+    const ImVec2 tailB{ min.x + t_size * TAIL_TO, bottomRight.y - 1.0f };
+    const ImVec2 tailTip{ min.x + t_size * TAIL_FROM, min.y + t_size * TAIL_TIP };
+
+    if (t_filled)
+    {
+        // A little brighter under the mouse.
+        const ImU32 color{ hovered ? IM_COL32(255, 255, 255, 255) : static_cast<ImU32>(t_color) };
+
+        draw->AddRectFilled(topLeft, bottomRight, color, rounding);
+        draw->AddTriangleFilled(tailA, tailB, tailTip, color);
+
+        // Three dots, as if there was text in the bubble.
+        const float y{ (topLeft.y + bottomRight.y) / 2.0f };
+        const float step{ (bottomRight.x - topLeft.x) / 4.0f };
+        for (int i{ 1 }; i <= 3; ++i)
+        {
+            draw->AddCircleFilled(ImVec2(topLeft.x + step * static_cast<float>(i), y), t_size * DOT_SIZE,
+                                  IM_COL32(40, 40, 40, 255), 8);
+        }
+
+        if (t_active)
+        {
+            const ImVec2 outerTopLeft{ topLeft.x - 2.0f, topLeft.y - 2.0f };
+            const ImVec2 outerBottomRight{ bottomRight.x + 2.0f, bottomRight.y + 2.0f };
+
+            draw->AddRect(outerTopLeft, outerBottomRight, ImGui::GetColorU32(ImGuiCol_Text), rounding + 2.0f, 0, 1.0f);
+        }
+    }
+    else
+    {
+        // Only the outline, faint: there is nothing to read yet.
+        const ImU32 color{ ImGui::GetColorU32(hovered ? ImGuiCol_Text : ImGuiCol_TextDisabled) };
+
+        draw->AddRect(topLeft, bottomRight, color, rounding, 0, 1.2f);
+        draw->AddTriangle(tailA, tailB, tailTip, color, 1.2f);
+    }
 
     return clicked;
 }
