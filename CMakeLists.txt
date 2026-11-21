@@ -35,6 +35,7 @@ add_executable(SharpBlunder
         src/main.cpp
 
         src/core/GameState.cpp
+        src/core/Material.cpp
         src/core/Move.cpp
         src/core/MoveQuality.cpp
         src/core/OpeningBook.cpp
@@ -186,3 +187,20 @@ target_include_directories(PositionCheckTests PRIVATE src tests)
 target_compile_options(PositionCheckTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME PositionCheckTests COMMAND PositionCheckTests)
+
+add_executable(MaterialTests
+        tests/MaterialTests.cpp
+
+        src/core/GameState.cpp
+        src/core/Material.cpp
+        src/core/Move.cpp
+        src/core/Position.cpp
+        src/core/San.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(MaterialTests PRIVATE src tests)
+target_compile_options(MaterialTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME MaterialTests COMMAND MaterialTests)
