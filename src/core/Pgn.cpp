@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <utility>
 #include "core/Pgn.h"
+#include "core/PositionCheck.h"
 #include "core/San.h"
 
 namespace
@@ -736,6 +737,11 @@ sg::chess::core::PgnGame sg::chess::core::pgn_read(const std::string_view t_text
         catch (const std::exception&)
         {
             throw std::runtime_error("PGN: the FEN tag is not a valid position: " + fen);
+        }
+
+        if (const auto problem{ check_position(start) })
+        {
+            throw std::runtime_error("PGN: the FEN tag is not a playable position: " + *problem);
         }
     }
 

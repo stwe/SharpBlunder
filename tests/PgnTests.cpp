@@ -310,6 +310,9 @@ namespace
         CHECK(!ErrorOf("( 1. e4 ) *").empty());
         CHECK(!ErrorOf("1. e4 $ *").empty());
         CHECK(!ErrorOf("[FEN \"nonsense\"]\n\n*").empty());
+
+        // A FEN that is written correctly but cannot be played is refused as well: here there is no Black king.
+        CHECK(ErrorOf("[FEN \"8/8/8/8/8/8/8/4K3 w - - 0 1\"]\n\n*").find("playable") != std::string::npos);
         CHECK(!ErrorOf("[White \"unfinished]\n\n*").empty());
 
         // A correct game gives no error.

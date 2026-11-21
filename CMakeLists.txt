@@ -40,6 +40,7 @@ add_executable(SharpBlunder
         src/core/OpeningBook.cpp
         src/core/Pgn.cpp
         src/core/Position.cpp
+        src/core/PositionCheck.cpp
         src/core/San.cpp
         src/core/Score.cpp
         src/core/Square.cpp
@@ -160,6 +161,7 @@ add_executable(PgnTests
         src/core/Move.cpp
         src/core/Pgn.cpp
         src/core/Position.cpp
+        src/core/PositionCheck.cpp
         src/core/San.cpp
         src/core/Square.cpp
         src/core/Util.cpp
@@ -169,3 +171,18 @@ target_include_directories(PgnTests PRIVATE src tests)
 target_compile_options(PgnTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME PgnTests COMMAND PgnTests)
+
+add_executable(PositionCheckTests
+        tests/PositionCheckTests.cpp
+
+        src/core/Move.cpp
+        src/core/Position.cpp
+        src/core/PositionCheck.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(PositionCheckTests PRIVATE src tests)
+target_compile_options(PositionCheckTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME PositionCheckTests COMMAND PositionCheckTests)
