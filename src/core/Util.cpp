@@ -16,6 +16,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdlib>
+#include <ctime>
 #include <ranges>
 #include "core/Util.h"
 
@@ -48,6 +49,19 @@ std::filesystem::path sg::chess::core::data_dir()
     std::filesystem::create_directories(dir, ec);
 
     return dir;
+}
+
+std::string sg::chess::core::format_local_time(const std::string& t_format)
+{
+    const std::time_t now{ std::time(nullptr) };
+
+    std::tm local{};
+    localtime_r(&now, &local);
+
+    char text[128];
+    const std::size_t length{ std::strftime(text, sizeof text, t_format.c_str(), &local) };
+
+    return std::string{ text, length };
 }
 
 std::vector<std::string> sg::chess::core::split_str(std::string_view t_s, char t_d)

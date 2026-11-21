@@ -89,6 +89,11 @@ namespace sg::chess::ui
          */
         void ScrollToCurrent() noexcept { m_scrollToCurrent = true; }
 
+        /**
+         * @brief Forgets what was opened in the list. Call it when another game has been loaded.
+         */
+        void Reset() noexcept;
+
         //-------------------------------------------------
         // Frame steps
         //-------------------------------------------------
@@ -106,6 +111,17 @@ namespace sg::chess::ui
         [[nodiscard]] bool DrawNavigation(core::GameState& t_game);
 
         /**
+         * @brief Builds the check box that shows all comments in full, if the game has any comment.
+         *
+         * Call it while a GUI frame is being built, above DrawMoveList().
+         *
+         * @param t_game The game.
+         *
+         * @return True if the check box was drawn, so the caller can put something next to it.
+         */
+        [[nodiscard]] bool DrawCommentToggle(const core::GameState& t_game);
+
+        /**
          * @brief Builds the list of moves. A click on a move jumps to that position.
          *
          * The main line is a table: a row for each move number, a column for White and one for Black. Variations
@@ -113,8 +129,7 @@ namespace sg::chess::ui
          * A click with the right mouse button on a move opens a menu: write a comment, make its line the main line,
          * or delete the move and everything after it.
          *
-         * The comments are shown with a speech bubble. Above the list, a check box shows all of them in full, as
-         * soon as the game has any.
+         * The comments are shown with a speech bubble.
          *
          * Call it while a GUI frame is being built. The list fills the rest of the window, but leaves room for
          * the navigation buttons below it.

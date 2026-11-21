@@ -22,6 +22,7 @@
 #include <string_view>
 #include "core/GameState.h"
 #include "core/OpeningBook.h"
+#include "core/Pgn.h"
 #include "core/RulesProvider.h"
 #include "engine/Analyzer.h"
 #include "ui/BoardView.h"
@@ -29,6 +30,7 @@
 #include "ui/EvalBar.h"
 #include "ui/MoveInput.h"
 #include "ui/NotationPanel.h"
+#include "ui/PgnMenu.h"
 #include "ui/PieceSet.h"
 #include "ui/Screen.h"
 
@@ -176,6 +178,8 @@ namespace sg::chess::ui
         EvalBar m_evalBar;               ///< The evaluation bar left of the board
         EnginePanel m_enginePanel;       ///< The recommended moves in the side panel
         NotationPanel m_notationPanel;   ///< The list of moves and the navigation buttons
+        PgnMenu m_pgnMenu;               ///< Copy, paste, save and open a game as PGN
+        core::PgnHeaders m_headers;      ///< The tags of the game, for PGN
 
         std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name
     };

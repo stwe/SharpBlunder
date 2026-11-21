@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <imgui.h>
+#include "core/Util.h"
 #include "ui/Layout.h"
 #include "ui/screens/AnalysisScreen.h"
 
@@ -65,6 +66,8 @@ sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::Ru
     , m_openings(t_openings)
     , m_evalBar(EVAL_BAR_ORIGIN, EVAL_BAR_SIZE)
     , m_enginePanel(t_pieces, t_rules, t_analyzer)
+    , m_pgnMenu(t_rules)
+    , m_headers(core::PgnHeaders::MakeDefault(core::format_local_time("%Y.%m.%d")))
 {
     m_enginePanel.PositionChanged(m_game.Current().info);
     UpdateOpening();
@@ -192,7 +195,26 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
 
         ImGui::Separator();
 
-        bool changed{ m_notationPanel.DrawMoveList(m_game) };
+        // Above the list: the check box for the comments at the left, the PGN button at the right end.
+        const bool toggleDrawn{ m_notationPanel.DrawCommentToggle(m_game) };
+        const float pgnX{ ImGui::GetContentRegionMax().x - PgnMenu::ButtonWidth() };
+        if (toggleDrawn)
+        {
+            ImGui::SameLine(pgnX);
+        }
+        else
+        {
+            ImGui::SetCursorPosX(pgnX);
+        }
+
+        bool changed{ m_pgnMenu.Draw(m_game, m_headers) };
+        if (changed)
+        {
+            // Another game has been opened: everything that belonged to the old one is dropped.
+            m_notationPanel.Reset();
+        }
+
+        changed = m_notationPanel.DrawMoveList(m_game) || changed;
 
         ImGui::Separator();
         changed = m_notationPanel.DrawNavigation(m_game) || changed;
@@ -341,6 +363,7 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
         if (!m_game.HasMoves())
         {
             m_game.Reset();
+            m_headers = core::PgnHeaders::MakeDefault(core::format_local_time("%Y.%m.%d"));
             OnPositionChanged();
         }
         else
@@ -350,7 +373,8 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
     }
 
     const ImVec2 displaySize{ ImGui::GetIO().DisplaySize };
-    ImGui::SetNextWindowPos(ImVec2(displaySize.x / 2.0f, displaySize.y / 2.0f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowPos(ImVec2(displaySize.x / 2.0f, displaySize.y / 2.0f), ImGuiCond_Appearing,
+                            ImVec2(0.5f, 0.5f));
 
     if (ImGui::BeginPopupModal(NEW_GAME_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
@@ -360,6 +384,8 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
         if (ImGui::Button("Start new game"))
         {
             m_game.Reset();
+            m_headers = core::PgnHeaders::MakeDefault(core::format_local_time("%Y.%m.%d"));
+            m_notationPanel.Reset();
             OnPositionChanged();
             ImGui::CloseCurrentPopup();
         }

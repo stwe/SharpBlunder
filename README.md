@@ -19,6 +19,11 @@ Working today:
 - Variations like on lichess: take a move back and play another one, and the game keeps both. The main line is a
   table, variations are written below the move they belong to (nested ones in parentheses). A right click on a move
   makes its line the main line or deletes it
+- Comments, as in PGN: on single moves (a speech bubble next to the move, shown when the mouse rests on it or after a
+  click), on a variation (in its header) and on the whole game. A check box shows all of them at once
+- Games are read and written as PGN, with variations, comments, the lichess clock and evaluation commands
+  (`[%clk ...]`, `[%eval ...]` are kept as they are) and the glyphs (`$1`, `!`, `?`). The PGN button copies the game to
+  the clipboard, pastes a game from it, and saves or opens a file. Files go to `~/.chess/games` by default
 - Step through the game, flip the board (the labels a-h and 1-8 outside the board turn with it), start a new game
 - Live analysis with a second Stockfish process: evaluation bar next to the board and an arrow for the best move.
   The three best moves are listed as rows: a colored dot (how much weaker than the best move), the score and the

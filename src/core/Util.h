@@ -65,6 +65,15 @@ namespace sg::chess::core
     std::filesystem::path data_dir();
 
     /**
+     * @brief Writes the current local time as text.
+     *
+     * @param t_format A format as for std::strftime, e.g. "%Y.%m.%d" for the date of a PGN game.
+     *
+     * @return The formatted time. It is empty if the format gives no text.
+     */
+    std::string format_local_time(const std::string& t_format);
+
+    /**
      * @brief Splits a string view by a given delimiter.
      *
      * Empty tokens between and after delimiters are preserved ("a\t\t" yields three tokens).

@@ -591,14 +591,27 @@ bool sg::chess::ui::NotationPanel::DrawNavigation(core::GameState& t_game)
     return changed;
 }
 
-bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game)
+void sg::chess::ui::NotationPanel::Reset() noexcept
+{
+    m_openComments.clear();
+    m_scrollToCurrent = true;
+}
+
+bool sg::chess::ui::NotationPanel::DrawCommentToggle(const core::GameState& t_game)
 {
     // The check box is only there if there is something to show.
-    if (HasComments(t_game))
+    if (!HasComments(t_game))
     {
-        ImGui::Checkbox("Show all comments", &m_showAllComments);
+        return false;
     }
 
+    ImGui::Checkbox("Show all comments", &m_showAllComments);
+
+    return true;
+}
+
+bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game)
+{
     // The header stays where it is while the list scrolls. It is a table of its own, as wide as the list below,
     // which always has a scroll bar.
     const float width{ ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ScrollbarSize };

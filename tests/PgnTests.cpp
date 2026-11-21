@@ -25,6 +25,7 @@
 #include "FakeRules.h"
 #include "core/GameState.h"
 #include "core/Pgn.h"
+#include "core/Util.h"
 
 namespace
 {
@@ -287,6 +288,16 @@ namespace
         return "";
     }
 
+    void TestDate()
+    {
+        // "2026.11.20": four digits, a dot, two digits, a dot, two digits.
+        const std::string date{ sg::chess::core::format_local_time("%Y.%m.%d") };
+
+        CHECK(date.size() == 10);
+        CHECK(date[4] == '.' && date[7] == '.');
+        CHECK(sg::chess::core::PgnHeaders::MakeDefault(date).Get("Date") == date);
+    }
+
     void TestErrors()
     {
         // The messages tell what is wrong and where.
@@ -314,6 +325,7 @@ int main()
     TestReadVariations();
     TestSetupFen();
     TestOddFiles();
+    TestDate();
     TestErrors();
 
     if (sg::chess::tests::failures() != 0)
