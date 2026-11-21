@@ -36,6 +36,7 @@ namespace sg::chess::tests
     constexpr const char* AFTER_E4_E5{ "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2" };
     constexpr const char* AFTER_E4_E5_NF3{ "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2" };
     constexpr const char* AFTER_E4_E5_NF3_NC6{ "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3" };
+    constexpr const char* AFTER_D4_NF6{ "rnbqkb1r/pppppppp/5n2/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 1 2" };
     constexpr const char* AFTER_D4_D5{ "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2" };
     constexpr const char* AFTER_E4_C5{ "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2" };
     constexpr const char* AFTER_D4{ "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1" };
@@ -57,6 +58,7 @@ namespace sg::chess::tests
             Add(AFTER_E4_E5, "g1f3", AFTER_E4_E5_NF3);
             Add(AFTER_E4_E5_NF3, "b8c6", AFTER_E4_E5_NF3_NC6);
             Add(AFTER_D4, "d7d5", AFTER_D4_D5);
+            Add(AFTER_D4, "g8f6", AFTER_D4_NF6);
         }
 
         [[nodiscard]] PositionInfo Describe(const Position& t_position) override

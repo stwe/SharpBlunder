@@ -38,6 +38,7 @@ add_executable(SharpBlunder
         src/core/Move.cpp
         src/core/MoveQuality.cpp
         src/core/OpeningBook.cpp
+        src/core/Pgn.cpp
         src/core/Position.cpp
         src/core/San.cpp
         src/core/Score.cpp
@@ -150,3 +151,20 @@ target_include_directories(SanTests PRIVATE src tests)
 target_compile_options(SanTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME SanTests COMMAND SanTests)
+
+add_executable(PgnTests
+        tests/PgnTests.cpp
+
+        src/core/GameState.cpp
+        src/core/Move.cpp
+        src/core/Pgn.cpp
+        src/core/Position.cpp
+        src/core/San.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(PgnTests PRIVATE src tests)
+target_compile_options(PgnTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME PgnTests COMMAND PgnTests)
