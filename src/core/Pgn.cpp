@@ -662,6 +662,30 @@ void sg::chess::core::PgnHeaders::Set(const std::string_view t_name, const std::
     }
 }
 
+void sg::chess::core::PgnHeaders::Remove(const std::string_view t_name)
+{
+    std::erase_if(tags, [t_name](const PgnTag& t_tag) { return t_tag.name == t_name; });
+}
+
+std::string sg::chess::core::PgnHeaders::PlayerName(const Color t_color) const
+{
+    const std::string name{ Trim(Get(t_color == Color::WHITE ? "White" : "Black")) };
+
+    if (name.empty() || name == "?")
+    {
+        return t_color == Color::WHITE ? "White" : "Black";
+    }
+
+    return name;
+}
+
+std::string sg::chess::core::PgnHeaders::PlayerRating(const Color t_color) const
+{
+    const std::string rating{ Trim(Get(t_color == Color::WHITE ? "WhiteElo" : "BlackElo")) };
+
+    return rating == "?" || rating == "-" ? "" : rating;
+}
+
 //-------------------------------------------------
 // Writing and reading
 //-------------------------------------------------

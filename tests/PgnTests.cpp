@@ -288,6 +288,30 @@ namespace
         return "";
     }
 
+    void TestPlayers()
+    {
+        using sg::chess::core::Color;
+
+        PgnHeaders headers{ PgnHeaders::MakeDefault("2026.11.20") };
+
+        // Nothing known: the sides are named by their color, and there is no rating.
+        CHECK(headers.PlayerName(Color::WHITE) == "White");
+        CHECK(headers.PlayerName(Color::BLACK) == "Black");
+        CHECK(headers.PlayerRating(Color::WHITE).empty());
+
+        headers.Set("White", "  Carlsen, Magnus ");
+        headers.Set("WhiteElo", "2882");
+        headers.Set("BlackElo", "?");
+        CHECK(headers.PlayerName(Color::WHITE) == "Carlsen, Magnus");
+        CHECK(headers.PlayerRating(Color::WHITE) == "2882");
+        CHECK(headers.PlayerRating(Color::BLACK).empty());
+
+        headers.Remove("WhiteElo");
+        headers.Remove("Nothing");
+        CHECK(headers.PlayerRating(Color::WHITE).empty());
+        CHECK(headers.Get("WhiteElo").empty());
+    }
+
     void TestDate()
     {
         // "2026.11.20": four digits, a dot, two digits, a dot, two digits.
@@ -328,6 +352,7 @@ int main()
     TestReadVariations();
     TestSetupFen();
     TestOddFiles();
+    TestPlayers();
     TestDate();
     TestErrors();
 

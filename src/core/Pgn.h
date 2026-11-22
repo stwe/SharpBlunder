@@ -72,6 +72,32 @@ namespace sg::chess::core
          * @param t_value The new value.
          */
         void Set(std::string_view t_name, std::string_view t_value);
+
+        /**
+         * @brief Removes a tag. Does nothing if there is no such tag.
+         *
+         * @param t_name The name of the tag.
+         */
+        void Remove(std::string_view t_name);
+
+        /**
+         * @brief Returns the name of a player for display.
+         *
+         * @param t_color The side.
+         *
+         * @return The name from the tag White or Black, or "White" or "Black" if the tag is missing, empty or
+         *         "?" (the PGN way to say that something is not known).
+         */
+        [[nodiscard]] std::string PlayerName(Color t_color) const;
+
+        /**
+         * @brief Returns the rating of a player for display.
+         *
+         * @param t_color The side.
+         *
+         * @return The value of the tag WhiteElo or BlackElo, or an empty text if it is missing, "?" or "-".
+         */
+        [[nodiscard]] std::string PlayerRating(Color t_color) const;
     };
 
     //-------------------------------------------------
