@@ -23,6 +23,7 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
+#include "core/PositionCheck.h"
 #include "core/Util.h"
 #include "ui/PgnMenu.h"
 
@@ -34,8 +35,9 @@ namespace
     constexpr const char* MENU_POPUP{ "##pgn_menu" };
     constexpr const char* SAVE_POPUP{ "Save PGN file" };
     constexpr const char* OPEN_POPUP{ "Open PGN file" };
+    constexpr const char* FEN_POPUP{ "Position (FEN)" };
     constexpr const char* REPLACE_POPUP{ "Replace the game?" };
-    constexpr const char* ERROR_POPUP{ "PGN error" };
+    constexpr const char* ERROR_POPUP{ "Error" };
 
     constexpr float PATH_WIDTH{ 460.0f };
     constexpr std::size_t MAX_LISTED_FILES{ 10 };
@@ -135,6 +137,18 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
             action = Action::OPEN;
         }
 
+        ImGui::Separator();
+
+        if (ImGui::MenuItem("Copy FEN of this position"))
+        {
+            action = Action::COPY_FEN;
+        }
+
+        if (ImGui::MenuItem("Set up from FEN..."))
+        {
+            action = Action::SETUP_FEN;
+        }
+
         ImGui::EndPopup();
     }
 
@@ -158,6 +172,15 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
     case Action::OPEN:
         SetPath(GamesDirectory().string() + "/");
         ImGui::OpenPopup(OPEN_POPUP);
+        break;
+    case Action::COPY_FEN:
+        ImGui::SetClipboardText(t_game.Current().info.position.ToFen().c_str());
+        m_notice = "Copied";
+        m_noticeUntil = ImGui::GetTime() + NOTICE_SECONDS;
+        break;
+    case Action::SETUP_FEN:
+        SetFen(t_game.Current().info.position.ToFen());
+        ImGui::OpenPopup(FEN_POPUP);
         break;
     case Action::NONE:
         break;
@@ -249,6 +272,48 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
         ImGui::EndPopup();
     }
 
+    // The window for the position: the FEN of the position on the board, which can be changed or replaced by another.
+    CenterNextWindow();
+    if (ImGui::BeginPopupModal(FEN_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::TextUnformatted("The position on the board as FEN. Write or paste another one to start a game from it:");
+        ImGui::SetNextItemWidth(PATH_WIDTH);
+
+        // A click into the field selects all of it, so a pasted or typed FEN replaces the old one.
+        ImGui::InputText("##fen", m_fen.data(), m_fen.size(), ImGuiInputTextFlags_AutoSelectAll);
+        ImGui::Spacing();
+
+        if (ImGui::Button("Copy"))
+        {
+            ImGui::SetClipboardText(m_fen.data());
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Paste"))
+        {
+            const char* text{ ImGui::GetClipboardText() };
+            SetFen(text != nullptr ? text : "");
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Set up"))
+        {
+            opened = LoadFen(m_fen.data(), t_game, t_headers);
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
     // The question before a game with moves is replaced.
     CenterNextWindow();
     if (ImGui::BeginPopupModal(REPLACE_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
@@ -258,7 +323,8 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
         if (ImGui::Button("Replace"))
         {
-            opened = Replace(m_pending, t_game, t_headers);
+            opened = m_pendingIsFen ? ReplaceWithFen(m_pending, t_game, t_headers)
+                                    : Replace(m_pending, t_game, t_headers);
             m_pending.clear();
             ImGui::CloseCurrentPopup();
         }
@@ -307,7 +373,54 @@ bool sg::chess::ui::PgnMenu::Load(const std::string& t_text, core::GameState& t_
 
     // The text is read when the user has answered. A broken text is an error at that moment.
     m_pending = t_text;
+    m_pendingIsFen = false;
     m_wantReplacePopup = true;
+
+    return false;
+}
+
+bool sg::chess::ui::PgnMenu::LoadFen(const std::string& t_fen, core::GameState& t_game, core::PgnHeaders& t_headers)
+{
+    if (!t_game.HasMoves())
+    {
+        return ReplaceWithFen(t_fen, t_game, t_headers);
+    }
+
+    m_pending = t_fen;
+    m_pendingIsFen = true;
+    m_wantReplacePopup = true;
+
+    return false;
+}
+
+bool sg::chess::ui::PgnMenu::ReplaceWithFen(const std::string& t_fen, core::GameState& t_game,
+                                            core::PgnHeaders& t_headers)
+{
+    try
+    {
+        // Spaces at the ends come from copying and are no part of the FEN.
+        const std::size_t first{ t_fen.find_first_not_of(" \t\r\n") };
+        const std::size_t last{ t_fen.find_last_not_of(" \t\r\n") };
+        const std::string fen{ first == std::string::npos ? "" : t_fen.substr(first, last - first + 1) };
+
+        const core::Position position{ core::Position::FromFen(fen) };
+
+        if (const auto problem{ core::check_position(position) })
+        {
+            ShowError(*problem);
+            return false;
+        }
+
+        core::GameState game{ m_rules, position };
+        t_game.ReplaceWith(std::move(game));
+        t_headers = core::PgnHeaders::MakeDefault(core::format_local_time("%Y.%m.%d"));
+
+        return true;
+    }
+    catch (const std::exception& t_error)
+    {
+        ShowError(t_error.what());
+    }
 
     return false;
 }
@@ -384,6 +497,14 @@ void sg::chess::ui::PgnMenu::SetPath(const std::string& t_path)
 
     std::memcpy(m_path.data(), t_path.data(), length);
     m_path[length] = '\0';
+}
+
+void sg::chess::ui::PgnMenu::SetFen(const std::string& t_fen)
+{
+    const std::size_t length{ std::min(t_fen.size(), m_fen.size() - 1) };
+
+    std::memcpy(m_fen.data(), t_fen.data(), length);
+    m_fen[length] = '\0';
 }
 
 void sg::chess::ui::PgnMenu::ShowError(const std::string& t_message)

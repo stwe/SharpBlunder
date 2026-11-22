@@ -31,7 +31,7 @@ namespace sg::chess::ui
 
     /**
      * @brief The button "PGN" with its menu: copy the game to the clipboard, paste a game from it, save it to a
-     * file and open a file.
+     * file and open a file. The menu also copies the FEN of the position on the board and sets up a game from a FEN.
      *
      * Games are saved and opened in the PGN format, so other programs (lichess, chess.com, Scid, ...) can read them.
      * The default folder for files is "games" in the data directory of the program.
@@ -98,7 +98,9 @@ namespace sg::chess::ui
             COPY,
             PASTE,
             SAVE,
-            OPEN
+            OPEN,
+            COPY_FEN,
+            SETUP_FEN
         };
 
         //-------------------------------------------------
@@ -115,6 +117,30 @@ namespace sg::chess::ui
          * @return True if the game was opened.
          */
         [[nodiscard]] bool Load(const std::string& t_text, core::GameState& t_game, core::PgnHeaders& t_headers);
+
+        /**
+         * @brief Starts a new game from the position of a FEN, or asks first if the current game has moves.
+         *
+         * @param t_fen The FEN.
+         * @param t_game The game.
+         * @param t_headers The tags.
+         *
+         * @return True if the game was replaced.
+         */
+        [[nodiscard]] bool LoadFen(const std::string& t_fen, core::GameState& t_game, core::PgnHeaders& t_headers);
+
+        /**
+         * @brief Replaces the game with a new one that starts from a FEN. An error is shown in a window: the FEN is
+         * not valid, or the position cannot be played.
+         *
+         * @param t_fen The FEN.
+         * @param t_game The game.
+         * @param t_headers The tags. They are reset: it is a new game.
+         *
+         * @return True if the game was replaced.
+         */
+        [[nodiscard]] bool ReplaceWithFen(const std::string& t_fen, core::GameState& t_game,
+                                          core::PgnHeaders& t_headers);
 
         /**
          * @brief Replaces the game with the one in a PGN text. An error is shown in a window.
@@ -155,6 +181,13 @@ namespace sg::chess::ui
         void SetPath(const std::string& t_path);
 
         /**
+         * @brief Writes a text into the FEN field.
+         *
+         * @param t_fen The text. A text that is too long is cut off.
+         */
+        void SetFen(const std::string& t_fen);
+
+        /**
          * @brief Remembers an error to show in a window.
          *
          * @param t_message What went wrong.
@@ -168,7 +201,9 @@ namespace sg::chess::ui
         core::RulesProvider& m_rules;  ///< The source of the rules (not owned)
 
         std::array<char, 512> m_path{};  ///< The path in the windows for saving and opening
-        std::string m_pending;           ///< PGN text that waits for the answer to "Replace the game?"
+        std::array<char, 128> m_fen{};   ///< The FEN in the window for the position
+        std::string m_pending;           ///< PGN text or FEN that waits for the answer to "Replace the game?"
+        bool m_pendingIsFen{ false };    ///< m_pending is a FEN
         std::string m_error;             ///< The text of the last error
         std::string m_notice;            ///< What the button says for a moment: "Copied", "Saved"
         double m_noticeUntil{ 0.0 };     ///< Until when (ImGui time) the button says the notice
