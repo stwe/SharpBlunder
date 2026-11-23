@@ -56,6 +56,7 @@ add_executable(SharpBlunder
         src/ui/BoardView.cpp
         src/ui/EnginePanel.cpp
         src/ui/EvalBar.cpp
+        src/ui/GameDetails.cpp
         src/ui/GuiLayer.cpp
         src/ui/Icons.cpp
         src/ui/MoveInput.cpp

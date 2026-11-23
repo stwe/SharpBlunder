@@ -194,3 +194,35 @@ bool sg::chess::ui::comment_icon(const bool t_filled, const bool t_active, const
 
     return clicked;
 }
+
+bool sg::chess::ui::pencil_button(const float t_size, const char* t_tooltip)
+{
+    const bool clicked{ ImGui::InvisibleButton("##pencil", ImVec2(t_size, t_size)) };
+    const bool hovered{ ImGui::IsItemHovered() };
+
+    const ImVec2 min{ ImGui::GetItemRectMin() };
+    ImDrawList* draw{ ImGui::GetWindowDrawList() };
+
+    if (hovered)
+    {
+        draw->AddCircleFilled(ImVec2(min.x + t_size / 2.0f, min.y + t_size / 2.0f), t_size * HOVER_RADIUS,
+                              ImGui::GetColorU32(ImGuiCol_ButtonHovered), CIRCLE_SEGMENTS);
+    }
+
+    const ImU32 color{ ImGui::GetColorU32(ImGuiCol_Text) };
+
+    // The pencil lies diagonally: the tip at the lower left, the end at the upper right. The body is a thin
+    // quadrangle, the tip a triangle.
+    const auto point = [&min, t_size](const float t_x, const float t_y)
+    {
+        return ImVec2(min.x + t_size * t_x, min.y + t_size * t_y);
+    };
+
+    draw->AddQuadFilled(point(0.30f, 0.62f), point(0.38f, 0.70f), point(0.82f, 0.26f), point(0.74f, 0.18f), color);
+    draw->AddTriangleFilled(point(0.22f, 0.78f), point(0.30f, 0.62f), point(0.38f, 0.70f), color);
+    draw->AddLine(point(0.20f, 0.80f), point(0.45f, 0.80f), color, 1.5f);
+
+    ImGui::SetItemTooltip("%s", t_tooltip);
+
+    return clicked;
+}

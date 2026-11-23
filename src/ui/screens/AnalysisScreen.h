@@ -28,6 +28,7 @@
 #include "ui/BoardView.h"
 #include "ui/EnginePanel.h"
 #include "ui/EvalBar.h"
+#include "ui/GameDetails.h"
 #include "ui/MoveInput.h"
 #include "ui/NotationPanel.h"
 #include "ui/PgnMenu.h"
@@ -179,6 +180,7 @@ namespace sg::chess::ui
         EnginePanel m_enginePanel;       ///< The recommended moves in the side panel
         NotationPanel m_notationPanel;   ///< The list of moves and the navigation buttons
         PgnMenu m_pgnMenu;               ///< Copy, paste, save and open a game as PGN
+        GameDetails m_details;           ///< The window for the details of the game: players, result, event, ...
         core::PgnHeaders m_headers;      ///< The tags of the game, for PGN
 
         std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name

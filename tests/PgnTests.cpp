@@ -110,7 +110,7 @@ namespace
 
         const std::string expected{
             "[Event \"Analysis\"]\n"
-            "[Site \"SharpBlunder\"]\n"
+            "[Site \"?\"]\n"
             "[Date \"2026.11.20\"]\n"
             "[Round \"?\"]\n"
             "[White \"Me\"]\n"

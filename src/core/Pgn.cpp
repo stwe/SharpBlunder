@@ -635,7 +635,6 @@ sg::chess::core::PgnHeaders sg::chess::core::PgnHeaders::MakeDefault(const std::
     }
 
     headers.Set("Event", "Analysis");
-    headers.Set("Site", "SharpBlunder");
     headers.Set("Date", t_date.empty() ? NO_DATE : t_date);
 
     return headers;

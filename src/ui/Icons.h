@@ -88,4 +88,17 @@ namespace sg::chess::ui
      * @return True in the frame in which the button was clicked.
      */
     [[nodiscard]] bool comment_icon(bool t_filled, bool t_active, float t_size, unsigned int t_color);
+
+    /**
+     * @brief Draws a button with a pencil: the sign for editing.
+     *
+     * The caller must have pushed an ID if several buttons are shown. The button is a square item of the given
+     * size in the current line.
+     *
+     * @param t_size The edge length of the button in pixels.
+     * @param t_tooltip The text shown when the mouse rests on the button.
+     *
+     * @return True in the frame in which the button was clicked.
+     */
+    [[nodiscard]] bool pencil_button(float t_size, const char* t_tooltip);
 } // namespace sg::chess::ui

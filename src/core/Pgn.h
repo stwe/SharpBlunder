@@ -48,7 +48,8 @@ namespace sg::chess::core
         std::vector<PgnTag> tags;  ///< All tags except SetUp and FEN
 
         /**
-         * @brief Creates the seven tags that every PGN game has, with values for a game that was analyzed here.
+         * @brief Creates the seven tags that every PGN game has. The event is "Analysis", the other values are not
+         * known yet ("?").
          *
          * @param t_date The date as "YYYY.MM.DD", or "????.??.??" if it is not known.
          *

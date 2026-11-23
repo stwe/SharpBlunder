@@ -21,6 +21,7 @@
 #include <optional>
 #include <sstream>
 #include <string>
+#include <utility>
 #include "ui/Icons.h"
 #include "ui/NotationPanel.h"
 
@@ -419,11 +420,20 @@ namespace
                                                   ImVec2(top.x + BAR_OFFSET + BAR_WIDTH, bottom), BAR_COLOR);
     }
 
-    void SetupColumns()
+    void SetupColumns(const std::string& t_white = "White", const std::string& t_black = "Black")
     {
         ImGui::TableSetupColumn("##number", ImGuiTableColumnFlags_WidthFixed, NUMBER_COLUMN_WIDTH);
-        ImGui::TableSetupColumn("White", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Black", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn(t_white.c_str(), ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn(t_black.c_str(), ImGuiTableColumnFlags_WidthStretch);
+    }
+
+    // The name of a player with the rating if it is known, for the tooltip of the header. The header itself shows
+    // the name only: the column is narrow, and the rating is shown next to the board.
+    std::string FullName(const sg::chess::core::PgnHeaders& t_headers, const sg::chess::core::Color t_color)
+    {
+        const std::string rating{ t_headers.PlayerRating(t_color) };
+
+        return t_headers.PlayerName(t_color) + (rating.empty() ? "" : " (" + rating + ")");
     }
 
     // The header of the main line, with the bubble of the comment on the game.
@@ -610,15 +620,39 @@ bool sg::chess::ui::NotationPanel::DrawCommentToggle(const core::GameState& t_ga
     return true;
 }
 
-bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game)
+bool sg::chess::ui::NotationPanel::TakeDetailsRequest() noexcept
+{
+    return std::exchange(m_detailsRequested, false);
+}
+
+bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game, const core::PgnHeaders& t_headers)
 {
     // The header stays where it is while the list scrolls. It is a table of its own, as wide as the list below,
     // which always has a scroll bar.
     const float width{ ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ScrollbarSize };
     if (ImGui::BeginTable("##header", 3, TABLE_FLAGS, ImVec2(width, 0.0f)))
     {
-        SetupColumns();
-        ImGui::TableHeadersRow();
+        const std::string white{ t_headers.PlayerName(core::Color::WHITE) };
+        const std::string black{ t_headers.PlayerName(core::Color::BLACK) };
+        SetupColumns(white, black);
+
+        // The headers are the names of the players. The pencil sits in the column of the move numbers.
+        ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+
+        ImGui::TableSetColumnIndex(0);
+        if (pencil_button(ImGui::GetFrameHeight(), "Edit the details of the game"))
+        {
+            m_detailsRequested = true;
+        }
+
+        ImGui::TableSetColumnIndex(1);
+        ImGui::TableHeader(white.c_str());
+        ImGui::SetItemTooltip("%s", FullName(t_headers, core::Color::WHITE).c_str());
+
+        ImGui::TableSetColumnIndex(2);
+        ImGui::TableHeader(black.c_str());
+        ImGui::SetItemTooltip("%s", FullName(t_headers, core::Color::BLACK).c_str());
+
         ImGui::EndTable();
     }
 

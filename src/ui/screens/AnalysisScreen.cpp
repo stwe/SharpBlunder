@@ -214,7 +214,15 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
             m_notationPanel.Reset();
         }
 
-        changed = m_notationPanel.DrawMoveList(m_game) || changed;
+        changed = m_notationPanel.DrawMoveList(m_game, m_headers) || changed;
+
+        // The pencil in the header of the list opens the window for the details of the game.
+        if (m_notationPanel.TakeDetailsRequest())
+        {
+            m_details.Open(m_headers);
+        }
+
+        static_cast<void>(m_details.Draw(m_headers));
 
         ImGui::Separator();
         changed = m_notationPanel.DrawNavigation(m_game) || changed;

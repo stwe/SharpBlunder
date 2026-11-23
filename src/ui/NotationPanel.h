@@ -22,6 +22,7 @@
 #include <optional>
 #include <unordered_set>
 #include "core/GameState.h"
+#include "core/Pgn.h"
 
 namespace sg::chess::ui
 {
@@ -134,11 +135,21 @@ namespace sg::chess::ui
          * Call it while a GUI frame is being built. The list fills the rest of the window, but leaves room for
          * the navigation buttons below it.
          *
+         * The header of the table shows the names of the players, and a pencil to edit the details of the game.
+         *
          * @param t_game The game. A click changes its current position, the menu its moves.
+         * @param t_headers The details of the game, for the names of the players.
          *
          * @return True if the current position has changed.
          */
-        [[nodiscard]] bool DrawMoveList(core::GameState& t_game);
+        [[nodiscard]] bool DrawMoveList(core::GameState& t_game, const core::PgnHeaders& t_headers);
+
+        /**
+         * @brief Tells whether the pencil in the header was clicked since the last call.
+         *
+         * @return True once per click.
+         */
+        [[nodiscard]] bool TakeDetailsRequest() noexcept;
 
     private:
         //-------------------------------------------------
@@ -167,6 +178,7 @@ namespace sg::chess::ui
         // The longest comment that can be written. The text of a comment that is longer is cut off.
         static constexpr std::size_t EDIT_BUFFER_SIZE{ 4096 };
 
+        bool m_detailsRequested{ false };                    ///< The pencil in the header was clicked
         bool m_scrollToCurrent{ true };                      ///< The list scrolls to the current move in the next frame
         bool m_showAllComments{ false };                     ///< All comments are shown in full
         std::unordered_set<std::uint64_t> m_openComments;    ///< The comments opened with a click on their bubble
