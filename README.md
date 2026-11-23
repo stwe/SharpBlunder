@@ -24,6 +24,11 @@ Working today:
 - Games are read and written as PGN, with variations, comments, the lichess clock and evaluation commands
   (`[%clk ...]`, `[%eval ...]` are kept as they are) and the glyphs (`$1`, `!`, `?`). The PGN button copies the game to
   the clipboard, pastes a game from it, and saves or opens a file. Files go to `~/.chess/games` by default
+- FEN: copy the FEN of the position on the board, and start a game from a FEN. A FEN that cannot be played (no king,
+  a pawn on the last rank, the side that is not to move in check) is refused with the reason
+- Details of the game as in chess.com (a pencil above the move list): names and ratings of White and Black, result,
+  event, place, round, date, time control and how the game ended. They are PGN tags and are saved with the game
+- The players are shown above and below the board with a picture, name, rating and the pieces they have captured
 - Step through the game, flip the board (the labels a-h and 1-8 outside the board turn with it), start a new game
 - Live analysis with a second Stockfish process: evaluation bar next to the board and an arrow for the best move.
   The three best moves are listed as rows: a colored dot (how much weaker than the best move), the score and the
