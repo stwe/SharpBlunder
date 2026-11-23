@@ -50,6 +50,13 @@ namespace
     constexpr float TAIL_TIP{ 0.9f };
     constexpr float DOT_SIZE{ 0.055f };
 
+    // The picture of a player, as parts of its size.
+    constexpr float AVATAR_ROUNDING{ 0.12f };
+    constexpr float AVATAR_HEAD_Y{ 0.36f };
+    constexpr float AVATAR_HEAD_RADIUS{ 0.18f };
+    constexpr float AVATAR_BODY_Y{ 1.02f };
+    constexpr float AVATAR_BODY_RADIUS{ 0.36f };
+
     // Color of a quality.
     ImU32 ColorOf(const sg::chess::core::MoveQuality t_quality)
     {
@@ -225,4 +232,35 @@ bool sg::chess::ui::pencil_button(const float t_size, const char* t_tooltip)
     ImGui::SetItemTooltip("%s", t_tooltip);
 
     return clicked;
+}
+
+void sg::chess::ui::draw_piece_image(ImDrawList* t_draw, const sf::Texture& t_texture, const float t_x,
+                                     const float t_y, const float t_size)
+{
+    const unsigned int handle{ t_texture.getNativeHandle() };
+    ImTextureID id{};
+    std::memcpy(&id, &handle, sizeof handle);
+
+    t_draw->AddImage(id, ImVec2(t_x, t_y), ImVec2(t_x + t_size, t_y + t_size));
+}
+
+void sg::chess::ui::draw_avatar(ImDrawList* t_draw, const float t_x, const float t_y, const float t_size,
+                                const core::Color t_color)
+{
+    const bool white{ t_color == core::Color::WHITE };
+    const ImU32 background{ white ? IM_COL32(232, 230, 224, 255) : IM_COL32(64, 62, 58, 255) };
+    const ImU32 figure{ white ? IM_COL32(98, 96, 92, 255) : IM_COL32(196, 194, 188, 255) };
+
+    const ImVec2 min{ t_x, t_y };
+    const ImVec2 max{ t_x + t_size, t_y + t_size };
+
+    t_draw->AddRectFilled(min, max, background, t_size * AVATAR_ROUNDING);
+
+    // The head is a circle, the shoulders are a big circle below it. Everything outside of the square is cut off.
+    t_draw->PushClipRect(min, max, true);
+    t_draw->AddCircleFilled(ImVec2(t_x + t_size * 0.5f, t_y + t_size * AVATAR_HEAD_Y), t_size * AVATAR_HEAD_RADIUS,
+                            figure, CIRCLE_SEGMENTS);
+    t_draw->AddCircleFilled(ImVec2(t_x + t_size * 0.5f, t_y + t_size * AVATAR_BODY_Y), t_size * AVATAR_BODY_RADIUS,
+                            figure, CIRCLE_SEGMENTS);
+    t_draw->PopClipRect();
 }

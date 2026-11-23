@@ -17,15 +17,21 @@
 
 #include <algorithm>
 #include <imgui.h>
+#include "core/Material.h"
 #include "core/Util.h"
 #include "ui/Layout.h"
 #include "ui/screens/AnalysisScreen.h"
 
 namespace
 {
-    constexpr float SQUARE_SIZE{ 80.0f };
+    // The board is a little smaller than it could be: a strip with a player fits above and below it.
+    constexpr float SQUARE_SIZE{ 72.0f };
     constexpr float MARGIN{ 30.0f };
-    constexpr float BOARD_TOP{ 40.0f };
+    constexpr float TOP_MARGIN{ 14.0f };
+    constexpr float STRIP_HEIGHT{ 46.0f };
+    constexpr float STRIP_GAP{ 4.0f };
+    constexpr float COORDINATE_ROW{ 22.0f };  // the files are written between the board and the lower strip
+    constexpr float BOARD_TOP{ TOP_MARGIN + STRIP_HEIGHT + STRIP_GAP };
 
     constexpr float BOARD_PIXELS{ static_cast<float>(sg::chess::core::BOARD_SIZE) * SQUARE_SIZE };
 
@@ -39,10 +45,15 @@ namespace
     // The board starts to the right of the evaluation bar.
     constexpr sf::Vector2f BOARD_ORIGIN{ EVAL_BAR_ORIGIN.x + EVAL_BAR_WIDTH + EVAL_BAR_GAP, BOARD_TOP };
 
-    // The side panel starts to the right of the board and is as tall as the board.
+    // The strip with the lower player is below the files.
+    constexpr float LOWER_STRIP_TOP{ BOARD_TOP + BOARD_PIXELS + COORDINATE_ROW };
+
+    // The side panel starts to the right of the board and is as tall as the board with the two strips.
     // The gap to the board is smaller than the margin, so the panel stays wide enough for its buttons.
     constexpr float PANEL_GAP{ 18.0f };
     constexpr float PANEL_LEFT{ BOARD_ORIGIN.x + BOARD_PIXELS + PANEL_GAP };
+    constexpr float PANEL_TOP{ TOP_MARGIN };
+    constexpr float PANEL_HEIGHT{ LOWER_STRIP_TOP + STRIP_HEIGHT - PANEL_TOP };
 
     constexpr ImGuiWindowFlags PANEL_FLAGS{ ImGuiWindowFlags_NoTitleBar |
                                             ImGuiWindowFlags_NoResize |
@@ -66,6 +77,7 @@ sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::Ru
     , m_openings(t_openings)
     , m_evalBar(EVAL_BAR_ORIGIN, EVAL_BAR_SIZE)
     , m_enginePanel(t_pieces, t_rules, t_analyzer)
+    , m_playerStrip(t_pieces)
     , m_pgnMenu(t_rules)
     , m_headers(core::PgnHeaders::MakeDefault(core::format_local_time("%Y.%m.%d")))
 {
@@ -175,8 +187,10 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
 {
     const ImVec2 displaySize{ ImGui::GetIO().DisplaySize };
 
-    ImGui::SetNextWindowPos({ PANEL_LEFT, BOARD_TOP });
-    ImGui::SetNextWindowSize({ displaySize.x - PANEL_LEFT - MARGIN, BOARD_PIXELS });
+    DrawPlayers();
+
+    ImGui::SetNextWindowPos({ PANEL_LEFT, PANEL_TOP });
+    ImGui::SetNextWindowSize({ displaySize.x - PANEL_LEFT - MARGIN, PANEL_HEIGHT });
 
     if (ImGui::Begin("##analysis", nullptr, PANEL_FLAGS))
     {
@@ -334,6 +348,25 @@ void sg::chess::ui::AnalysisScreen::OnPositionChanged()
     m_notationPanel.ScrollToCurrent();
     m_enginePanel.PositionChanged(m_game.Current().info);
     UpdateOpening();
+}
+
+void sg::chess::ui::AnalysisScreen::DrawPlayers()
+{
+    const core::Material material{ core::captured_material(m_game) };
+
+    // The side that is at the bottom of the board has the lower strip.
+    const auto strip = [this, &material](const core::Color t_color, const float t_y)
+    {
+        const bool white{ t_color == core::Color::WHITE };
+
+        m_playerStrip.Draw(ImVec2(BOARD_ORIGIN.x, t_y), STRIP_HEIGHT, t_color, m_headers.PlayerName(t_color),
+                           m_headers.PlayerRating(t_color), white ? material.byWhite : material.byBlack,
+                           white ? material.Balance() : -material.Balance());
+    };
+
+    const bool flipped{ m_boardView.IsFlipped() };
+    strip(flipped ? core::Color::WHITE : core::Color::BLACK, TOP_MARGIN);
+    strip(flipped ? core::Color::BLACK : core::Color::WHITE, LOWER_STRIP_TOP);
 }
 
 void sg::chess::ui::AnalysisScreen::DrawHeader()

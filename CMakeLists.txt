@@ -62,6 +62,7 @@ add_executable(SharpBlunder
         src/ui/MoveInput.cpp
         src/ui/NotationPanel.cpp
         src/ui/PgnMenu.cpp
+        src/ui/PlayerStrip.cpp
         src/ui/NavigationBar.cpp
         src/ui/PieceSet.cpp
         src/ui/ScreenManager.cpp

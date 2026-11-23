@@ -32,6 +32,7 @@
 #include "ui/MoveInput.h"
 #include "ui/NotationPanel.h"
 #include "ui/PgnMenu.h"
+#include "ui/PlayerStrip.h"
 #include "ui/PieceSet.h"
 #include "ui/Screen.h"
 
@@ -161,6 +162,12 @@ namespace sg::chess::ui
         void OnPositionChanged();
 
         /**
+         * @brief Draws the players above and below the board: picture, name, rating and the captured pieces.
+         * The side at the bottom of the board is shown below it.
+         */
+        void DrawPlayers();
+
+        /**
          * @brief Builds the top of the side panel: the name of the opening, the status of the game, and the buttons
          * that flip the board and start a new game. A new game asks first if moves have been played.
          */
@@ -179,6 +186,7 @@ namespace sg::chess::ui
         EvalBar m_evalBar;               ///< The evaluation bar left of the board
         EnginePanel m_enginePanel;       ///< The recommended moves in the side panel
         NotationPanel m_notationPanel;   ///< The list of moves and the navigation buttons
+        PlayerStrip m_playerStrip;       ///< The players above and below the board
         PgnMenu m_pgnMenu;               ///< Copy, paste, save and open a game as PGN
         GameDetails m_details;           ///< The window for the details of the game: players, result, event, ...
         core::PgnHeaders m_headers;      ///< The tags of the game, for PGN

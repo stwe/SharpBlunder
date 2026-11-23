@@ -19,6 +19,9 @@
 
 #include <SFML/Graphics/Texture.hpp>
 #include "core/MoveQuality.h"
+#include "core/Piece.h"
+
+struct ImDrawList;
 
 namespace sg::chess::ui
 {
@@ -101,4 +104,27 @@ namespace sg::chess::ui
      * @return True in the frame in which the button was clicked.
      */
     [[nodiscard]] bool pencil_button(float t_size, const char* t_tooltip);
+
+    /**
+     * @brief Draws a chess piece as it is, without a background, on a draw list of Dear ImGui.
+     *
+     * @param t_draw The draw list to draw on.
+     * @param t_texture The image of the piece.
+     * @param t_x The window position of the left edge.
+     * @param t_y The window position of the top edge.
+     * @param t_size The edge length in pixels.
+     */
+    void draw_piece_image(ImDrawList* t_draw, const sf::Texture& t_texture, float t_x, float t_y, float t_size);
+
+    /**
+     * @brief Draws the picture of a player: a rounded square with the silhouette of a head and shoulders.
+     * White is drawn dark on light, Black light on dark.
+     *
+     * @param t_draw The draw list to draw on.
+     * @param t_x The window position of the left edge.
+     * @param t_y The window position of the top edge.
+     * @param t_size The edge length in pixels.
+     * @param t_color The side of the player.
+     */
+    void draw_avatar(ImDrawList* t_draw, float t_x, float t_y, float t_size, core::Color t_color);
 } // namespace sg::chess::ui
