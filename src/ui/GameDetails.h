@@ -33,6 +33,10 @@ namespace sg::chess::ui
      * The details are the tags of the PGN format (White, WhiteElo, Black, BlackElo, Result, Event, Site, Round, Date,
      * TimeControl, Termination), so they are saved with the game and read back from it. Tags that the window does
      * not know stay as they are.
+     *
+     * The date and the time control are typed the way people write them ("24.11.2026", "15+10") and are saved the
+     * way PGN wants them ("2026.11.24", "900+10"). The opening (ECO, Opening, Variation) is shown but not edited: it
+     * follows from the moves.
      */
     class GameDetails
     {
@@ -92,8 +96,8 @@ namespace sg::chess::ui
         std::array<char, TEXT_SIZE> m_event{};         ///< The event, e.g. a tournament
         std::array<char, TEXT_SIZE> m_site{};          ///< The place
         std::array<char, RATING_SIZE> m_round{};       ///< The round
-        std::array<char, RATING_SIZE * 2> m_date{};    ///< The date as YYYY.MM.DD
-        std::array<char, TEXT_SIZE> m_timeControl{};   ///< The time control, e.g. "600+5"
+        std::array<char, RATING_SIZE * 2> m_date{};    ///< The date as the user types it, e.g. 2026.11.24 or 24.11.2026
+        std::array<char, TEXT_SIZE> m_timeControl{};   ///< The time control as the user types it, e.g. "15+10"
         std::array<char, TEXT_SIZE> m_termination{};   ///< How the game ended, e.g. "White won by resignation"
         int m_result{ 0 };                             ///< The chosen result, an index into the list of results
     };

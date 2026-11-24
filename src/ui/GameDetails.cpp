@@ -18,8 +18,11 @@
 #include <imgui.h>
 #include <algorithm>
 #include <cstring>
+#include <optional>
 #include <string>
 #include <string_view>
+#include "core/PgnTags.h"
+#include "core/TimeControl.h"
 #include "ui/GameDetails.h"
 
 namespace
@@ -28,6 +31,26 @@ namespace
     constexpr float LABEL_WIDTH{ 110.0f };
     constexpr float FIELD_WIDTH{ 380.0f };
     constexpr float RATING_FIELD_WIDTH{ 80.0f };
+    constexpr float PRESET_WIDTH{ 100.0f };
+    constexpr ImVec4 ERROR_COLOR{ 1.0f, 0.4f, 0.4f, 1.0f };
+
+    // The time controls that people use, for the list next to the field. The text is what the field takes.
+    struct TimeControlPreset
+    {
+        const char* text;
+        const char* label;
+    };
+
+    constexpr std::array<TimeControlPreset, 10> PRESETS{ { { "1+0", "1 min  (Bullet)" },
+                                                           { "2+1", "2 min + 1 s  (Bullet)" },
+                                                           { "3+0", "3 min  (Blitz)" },
+                                                           { "3+2", "3 min + 2 s  (Blitz)" },
+                                                           { "5+0", "5 min  (Blitz)" },
+                                                           { "5+3", "5 min + 3 s  (Blitz)" },
+                                                           { "10+0", "10 min  (Rapid)" },
+                                                           { "15+10", "15 min + 10 s  (Rapid)" },
+                                                           { "30+0", "30 min  (Classical)" },
+                                                           { "90+30", "90 min + 30 s  (Classical)" } } };
 
     // What a result looks like in the PGN file, and what the list in the window says.
     struct ResultOption
@@ -118,7 +141,7 @@ void sg::chess::ui::GameDetails::Open(const core::PgnHeaders& t_headers)
     Fill(m_site, Shown(t_headers.Get("Site")));
     Fill(m_round, Shown(t_headers.Get("Round")));
     Fill(m_date, Shown(t_headers.Get("Date")));
-    Fill(m_timeControl, Shown(t_headers.Get("TimeControl")));
+    Fill(m_timeControl, core::time_control_for_input(Shown(t_headers.Get("TimeControl"))));
     Fill(m_termination, Shown(t_headers.Get("Termination")));
 
     const std::string result{ t_headers.Get("Result") };
@@ -224,14 +247,70 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
         Row("Date", [&]
         {
             ImGui::SetNextItemWidth(FIELD_WIDTH);
-            ImGui::InputTextWithHint("##date", "YYYY.MM.DD", m_date.data(), m_date.size());
+            ImGui::InputTextWithHint("##date", "YYYY.MM.DD, e.g. 2026.11.24", m_date.data(), m_date.size(),
+                                     ImGuiInputTextFlags_AutoSelectAll);
+
+            const std::string date{ Text(m_date) };
+            if (!date.empty() && !core::normalize_date(date))
+            {
+                ImGui::TextColored(ERROR_COLOR, "Not a date. Use year.month.day, e.g. 2026.11.24");
+            }
         });
 
         Row("Time control", [&]
         {
-            ImGui::SetNextItemWidth(FIELD_WIDTH);
-            ImGui::InputTextWithHint("##time", "seconds, or seconds+increment, e.g. 600+5", m_timeControl.data(),
-                                     m_timeControl.size());
+            ImGui::SetNextItemWidth(FIELD_WIDTH - PRESET_WIDTH - ImGui::GetStyle().ItemSpacing.x);
+            ImGui::InputTextWithHint("##time", "e.g. 15+10 or 5 min + 3 s", m_timeControl.data(),
+                                     m_timeControl.size(), ImGuiInputTextFlags_AutoSelectAll);
+
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(PRESET_WIDTH);
+            if (ImGui::BeginCombo("##presets", "Presets"))
+            {
+                for (const TimeControlPreset& preset : PRESETS)
+                {
+                    if (ImGui::Selectable(preset.label))
+                    {
+                        Fill(m_timeControl, core::time_control_for_input(*core::time_control_from_input(preset.text)));
+                    }
+                }
+
+                ImGui::EndCombo();
+            }
+
+            // One line below the field says how the text is understood, so that no time is a surprise.
+            const std::string text{ Text(m_timeControl) };
+            if (text.empty())
+            {
+                ImGui::TextDisabled("15+10 means 15 minutes plus 10 seconds per move");
+            }
+            else if (const auto value{ core::time_control_from_input(text) })
+            {
+                const auto control{ core::time_control_from_pgn(*value) };
+                ImGui::TextDisabled("Saved as %s%s%s%s", value->c_str(), control ? " (" : "",
+                                    control ? core::describe_time_control(*control).c_str() : "", control ? ")" : "");
+            }
+            else
+            {
+                ImGui::TextColored(ERROR_COLOR, "Not understood. Try 15+10, 5 min + 3 s or 90 s");
+            }
+        });
+
+        Row("Opening", [&]
+        {
+            // The opening is set from the moves. It is shown here so that it is clear what the file will say.
+            const std::string eco{ t_headers.Get("ECO") };
+            std::string opening{ t_headers.Get("Opening") };
+            for (const char* name : { "Variation", "SubVariation" })
+            {
+                if (const std::string part{ t_headers.Get(name) }; !part.empty())
+                {
+                    opening += (opening.empty() ? "" : ": ") + part;
+                }
+            }
+
+            const std::string text{ (eco.empty() ? "" : eco + " ") + opening };
+            ImGui::TextDisabled("%s", text.empty() ? "not known" : text.c_str());
         });
 
         Row("Termination", [&]
@@ -246,6 +325,15 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
 
     ImGui::Spacing();
 
+    const std::string dateText{ Text(m_date) };
+    const std::string timeText{ Text(m_timeControl) };
+    const std::optional<std::string> date{ dateText.empty() ? std::optional<std::string>{ "????.??.??" }
+                                                           : core::normalize_date(dateText) };
+    const std::optional<std::string> timeControl{ timeText.empty() ? std::optional<std::string>{ "" }
+                                                                   : core::time_control_from_input(timeText) };
+
+    // A date or a time that is not understood is not written to the file.
+    ImGui::BeginDisabled(!date || !timeControl);
     if (ImGui::Button("Save"))
     {
         SetRoster(t_headers, "White", Text(m_white), "?");
@@ -253,17 +341,18 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
         SetRoster(t_headers, "Event", Text(m_event), "?");
         SetRoster(t_headers, "Site", Text(m_site), "?");
         SetRoster(t_headers, "Round", Text(m_round), "?");
-        SetRoster(t_headers, "Date", Text(m_date), "????.??.??");
+        t_headers.Set("Date", *date);
         t_headers.Set("Result", RESULTS[static_cast<std::size_t>(m_result)].value);
 
         SetOptional(t_headers, "WhiteElo", Text(m_whiteRating));
         SetOptional(t_headers, "BlackElo", Text(m_blackRating));
-        SetOptional(t_headers, "TimeControl", Text(m_timeControl));
+        SetOptional(t_headers, "TimeControl", *timeControl);
         SetOptional(t_headers, "Termination", Text(m_termination));
 
         saved = true;
         ImGui::CloseCurrentPopup();
     }
+    ImGui::EndDisabled();
 
     ImGui::SameLine();
 

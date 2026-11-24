@@ -27,7 +27,12 @@ Working today:
 - FEN: copy the FEN of the position on the board, and start a game from a FEN. A FEN that cannot be played (no king,
   a pawn on the last rank, the side that is not to move in check) is refused with the reason
 - Details of the game as in chess.com (a pencil above the move list): names and ratings of White and Black, result,
-  event, place, round, date, time control and how the game ended. They are PGN tags and are saved with the game
+  event, place, round, date, time control and how the game ended. They are PGN tags and are saved with the game.
+  The date and the time are typed the way people write them and are saved the way the
+  [PGN standard](https://en.wikipedia.org/wiki/Portable_Game_Notation) wants them: `24.11.2026` becomes `2026.11.24`,
+  and a time control like `15+10` (15 minutes, 10 seconds per move) becomes `900+10` (seconds). Without a unit the
+  first number is minutes and the second is seconds, `90 s` and `1h 30min` work too, and a list offers the usual
+  controls (Bullet, Blitz, Rapid, Classical)
 - The players are shown above and below the board with a picture, name, rating and the pieces they have captured
 - Step through the game, flip the board (the labels a-h and 1-8 outside the board turn with it), start a new game
 - Live analysis with a second Stockfish process: evaluation bar next to the board and an arrow for the best move.
@@ -35,7 +40,8 @@ Working today:
   move with the icon of the piece. A click on a row plays the move, a magnifying glass opens the whole line. One line
   says in words who is better ("Equal", "White is slightly better", ...). A check box switches the analysis off
 - Name and ECO code of the opening (for example `B90 Sicilian Defense: Najdorf Variation`), found by position, so
-  transpositions work too. After the game leaves the book, the last known name stays
+  transpositions work too. After the game leaves the book, the last known name stays. The opening is also written
+  to the PGN tags `ECO`, `Opening`, `Variation` and `SubVariation`
 - Sidebar navigation between the pages
 
 Planned, not implemented yet:
