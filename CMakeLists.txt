@@ -45,6 +45,7 @@ add_executable(SharpBlunder
         src/core/San.cpp
         src/core/Score.cpp
         src/core/Square.cpp
+        src/core/TimeControl.cpp
         src/core/Util.cpp
 
         src/engine/Analyzer.cpp
@@ -206,3 +207,14 @@ target_include_directories(MaterialTests PRIVATE src tests)
 target_compile_options(MaterialTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME MaterialTests COMMAND MaterialTests)
+
+add_executable(TimeControlTests
+        tests/TimeControlTests.cpp
+
+        src/core/TimeControl.cpp
+)
+
+target_include_directories(TimeControlTests PRIVATE src tests)
+target_compile_options(TimeControlTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME TimeControlTests COMMAND TimeControlTests)
