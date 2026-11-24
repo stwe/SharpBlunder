@@ -322,6 +322,41 @@ namespace
         CHECK(sg::chess::core::PgnHeaders::MakeDefault(date).Get("Date") == date);
     }
 
+    void TestStandardTags()
+    {
+        FakeRules rules;
+        GameState game{ rules };
+        CHECK(game.Play(Uci("e2e4")));
+
+        // The tags of the standard that are not in the seven tag roster, with a time control in seconds.
+        PgnHeaders headers{ PgnHeaders::MakeDefault("2026.11.24") };
+        headers.Set("TimeControl", "900+10");
+        headers.Set("ECO", "B90");
+        headers.Set("Opening", "Sicilian Defense");
+        headers.Set("Variation", "Najdorf Variation");
+        headers.Set("White", "Carlsen, Magnus");
+        headers.Set("WhiteElo", "2882");
+
+        const std::string text{ sg::chess::core::pgn_write(game, headers) };
+
+        // The seven tags come first and in their order, the others follow.
+        CHECK(text.starts_with("[Event \"Analysis\"]\n[Site \"?\"]\n[Date \"2026.11.24\"]\n[Round \"?\"]\n"
+                               "[White \"Carlsen, Magnus\"]\n[Black \"?\"]\n[Result \"*\"]\n"));
+        CHECK(text.find("[TimeControl \"900+10\"]\n") != std::string::npos);
+        CHECK(text.find("[ECO \"B90\"]\n") != std::string::npos);
+        CHECK(text.find("[Variation \"Najdorf Variation\"]\n") != std::string::npos);
+        CHECK(text.find("[Result") < text.find("[TimeControl"));
+
+        // They come back from the file.
+        FakeRules readRules;
+        const auto read{ sg::chess::core::pgn_read(text, readRules) };
+        CHECK(read.headers.Get("TimeControl") == "900+10");
+        CHECK(read.headers.Get("ECO") == "B90");
+        CHECK(read.headers.Get("Opening") == "Sicilian Defense");
+        CHECK(read.headers.Get("Variation") == "Najdorf Variation");
+        CHECK(read.headers.Get("Date") == "2026.11.24");
+    }
+
     void TestErrors()
     {
         // The messages tell what is wrong and where.
@@ -354,6 +389,7 @@ int main()
     TestOddFiles();
     TestPlayers();
     TestDate();
+    TestStandardTags();
     TestErrors();
 
     if (sg::chess::tests::failures() != 0)
