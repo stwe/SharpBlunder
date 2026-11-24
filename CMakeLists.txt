@@ -40,6 +40,7 @@ add_executable(SharpBlunder
         src/core/MoveQuality.cpp
         src/core/OpeningBook.cpp
         src/core/Pgn.cpp
+        src/core/PgnTags.cpp
         src/core/Position.cpp
         src/core/PositionCheck.cpp
         src/core/San.cpp
@@ -218,3 +219,23 @@ target_include_directories(TimeControlTests PRIVATE src tests)
 target_compile_options(TimeControlTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME TimeControlTests COMMAND TimeControlTests)
+
+add_executable(PgnTagsTests
+        tests/PgnTagsTests.cpp
+
+        src/core/GameState.cpp
+        src/core/Move.cpp
+        src/core/OpeningBook.cpp
+        src/core/Pgn.cpp
+        src/core/PgnTags.cpp
+        src/core/Position.cpp
+        src/core/PositionCheck.cpp
+        src/core/San.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(PgnTagsTests PRIVATE src tests)
+target_compile_options(PgnTagsTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME PgnTagsTests COMMAND PgnTagsTests)
