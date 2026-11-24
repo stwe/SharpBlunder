@@ -157,6 +157,15 @@ namespace sg::chess::ui
         void UpdateOpening();
 
         /**
+         * @brief Writes the opening of the game into its tags (ECO, Opening, Variation, SubVariation).
+         *
+         * The opening of the game is the last named position of the main line. It does not depend on the position
+         * that is shown on the board. Tags that were read from a file are only replaced if the book has a name for the
+         * game, and tags that this method wrote are removed again if the game no longer has one.
+         */
+        void UpdateOpeningTags();
+
+        /**
          * @brief Called after the position on the board has changed by navigation or by a move.
          */
         void OnPositionChanged();
@@ -192,5 +201,6 @@ namespace sg::chess::ui
         core::PgnHeaders m_headers;      ///< The tags of the game, for PGN
 
         std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name
+        std::optional<core::Opening> m_taggedOpening;  ///< The opening that UpdateOpeningTags() wrote into the tags
     };
 }

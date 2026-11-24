@@ -16,14 +16,29 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <algorithm>
+#include <array>
+#include <string_view>
 #include <imgui.h>
 #include "core/Material.h"
+#include "core/PgnTags.h"
 #include "core/Util.h"
 #include "ui/Layout.h"
 #include "ui/screens/AnalysisScreen.h"
 
 namespace
 {
+    constexpr std::array<std::string_view, 4> OPENING_TAGS{ "ECO", "Opening", "Variation", "SubVariation" };
+
+    // True if the tags say what set_opening_tags() would write for this opening.
+    bool OpeningTagsMatch(const sg::chess::core::PgnHeaders& t_headers, const sg::chess::core::Opening& t_opening)
+    {
+        sg::chess::core::PgnHeaders expected;
+        sg::chess::core::set_opening_tags(expected, t_opening);
+
+        return std::ranges::all_of(OPENING_TAGS, [&](const std::string_view t_name)
+                                   { return expected.Get(t_name) == t_headers.Get(t_name); });
+    }
+
     // The board is a little smaller than it could be: a strip with a player fits above and below it.
     constexpr float SQUARE_SIZE{ 72.0f };
     constexpr float MARGIN{ 30.0f };
@@ -221,6 +236,9 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
             ImGui::SetCursorPosX(pgnX);
         }
 
+        // The tags are up to date before the game is copied or saved.
+        UpdateOpeningTags();
+
         bool changed{ m_pgnMenu.Draw(m_game, m_headers) };
         if (changed)
         {
@@ -339,6 +357,45 @@ void sg::chess::ui::AnalysisScreen::UpdateOpening()
         }
 
         id = node.parent;
+    }
+}
+
+void sg::chess::ui::AnalysisScreen::UpdateOpeningTags()
+{
+    // Along the main line from the start: the last position with a name.
+    std::optional<core::Opening> found;
+    core::GameState::NodeId id{ m_game.At(0).children.empty() ? 0 : m_game.At(0).children.front() };
+
+    while (id != 0)
+    {
+        const core::GameState::Node& node{ m_game.At(id) };
+
+        if (const auto opening{ m_openings.Find(node.info.position) })
+        {
+            found = opening;
+        }
+
+        id = node.children.empty() ? 0 : node.children.front();
+    }
+
+    if (found)
+    {
+        if (!OpeningTagsMatch(m_headers, *found))
+        {
+            core::set_opening_tags(m_headers, *found);
+        }
+
+        m_taggedOpening = found;
+    }
+    else
+    {
+        // Only tags that we wrote ourselves go away. Tags from a file stay.
+        if (m_taggedOpening && OpeningTagsMatch(m_headers, *m_taggedOpening))
+        {
+            core::clear_opening_tags(m_headers);
+        }
+
+        m_taggedOpening.reset();
     }
 }
 
