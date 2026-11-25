@@ -23,7 +23,7 @@ Working today:
   click), on a variation (in its header) and on the whole game. A check box shows all of them at once
 - Games are read and written as PGN, with variations, comments, the lichess clock and evaluation commands
   (`[%clk ...]`, `[%eval ...]` are kept as they are) and the glyphs (`$1`, `!`, `?`). The PGN button copies the game to
-  the clipboard, pastes a game from it, and saves or opens a file. Files go to `~/.chess/games` by default
+  the clipboard, pastes a game from it, and saves or opens a file. Files go to `~/SharpBlunder/games` by default
 - FEN: copy the FEN of the position on the board, and start a game from a FEN. A FEN that cannot be played (no king,
   a pawn on the last rank, the side that is not to move in check) is refused with the reason
 - Details of the game as in chess.com (a pencil above the move list): names and ratings of White and Black, result,

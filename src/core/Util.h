@@ -58,11 +58,24 @@ namespace sg::chess::core
     /**
      * @brief Retrieves and ensures the existence of the application's data directory.
      *
-     * Creates a directory named '.chess' in the user's home folder (or working directory if HOME is unset).
+     * The directory is named 'SharpBlunder' and lies in the user's home folder (or in the working directory if HOME is
+     * unset). It is not hidden: it holds the games of the user, too, and not only settings. See data_dir_in().
      *
      * @return std::filesystem::path Path to the application data directory.
      */
     std::filesystem::path data_dir();
+
+    /**
+     * @brief Retrieves and ensures the existence of the data directory 'SharpBlunder' in a given folder.
+     *
+     * Earlier versions kept their files in the hidden directory '.chess'. If that directory exists and 'SharpBlunder'
+     * does not, the old directory is renamed, so the games are still there. If both exist, nothing is moved.
+     *
+     * @param t_home The folder in which the data directory lies, usually the home folder of the user.
+     *
+     * @return std::filesystem::path Path to the data directory.
+     */
+    std::filesystem::path data_dir_in(const std::filesystem::path& t_home);
 
     /**
      * @brief Writes the current local time as text.

@@ -257,3 +257,14 @@ target_include_directories(DrawRulesTests PRIVATE src tests)
 target_compile_options(DrawRulesTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME DrawRulesTests COMMAND DrawRulesTests)
+
+add_executable(DataDirTests
+        tests/DataDirTests.cpp
+
+        src/core/Util.cpp
+)
+
+target_include_directories(DataDirTests PRIVATE src tests)
+target_compile_options(DataDirTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME DataDirTests COMMAND DataDirTests)

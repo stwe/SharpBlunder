@@ -20,6 +20,15 @@
 #include <ranges>
 #include "core/Util.h"
 
+namespace
+{
+    // The folder for the games and the settings of the user. It is not hidden, because the user works with the files.
+    constexpr const char* DATA_DIR_NAME{ "SharpBlunder" };
+
+    // The hidden folder that earlier versions used.
+    constexpr const char* OLD_DATA_DIR_NAME{ ".chess" };
+} // namespace
+
 //-------------------------------------------------
 // Utils
 //-------------------------------------------------
@@ -42,10 +51,23 @@ std::string sg::chess::core::stockfish_path(const int t_argc, char** t_argv)
 std::filesystem::path sg::chess::core::data_dir()
 {
     const char* home{ std::getenv("HOME") };
-    const std::filesystem::path baseDir{ home ? home : "." };
-    std::filesystem::path dir{ baseDir / ".chess" };
+
+    return data_dir_in(home ? home : ".");
+}
+
+std::filesystem::path sg::chess::core::data_dir_in(const std::filesystem::path& t_home)
+{
+    const std::filesystem::path dir{ t_home / DATA_DIR_NAME };
+    const std::filesystem::path oldDir{ t_home / OLD_DATA_DIR_NAME };
 
     std::error_code ec;
+
+    // A failed rename is not an error: the old files stay where they are, and a new directory is made.
+    if (!std::filesystem::exists(dir, ec) && std::filesystem::is_directory(oldDir, ec))
+    {
+        std::filesystem::rename(oldDir, dir, ec);
+    }
+
     std::filesystem::create_directories(dir, ec);
 
     return dir;
