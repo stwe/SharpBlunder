@@ -17,6 +17,7 @@
 
 #include <imgui-SFML.h>
 #include <imgui.h>
+#include <array>
 #include <stdexcept>
 #include <string>
 #include "ui/GuiLayer.h"
@@ -53,8 +54,11 @@ sg::chess::ui::GuiLayer::GuiLayer(Window& t_window, const std::filesystem::path&
 
     io.Fonts->Clear();
 
-    // The default glyph range covers Basic Latin and Latin-1 Supplement, which includes umlauts.
-    if (io.Fonts->AddFontFromFileTTF(t_fontFile.string().c_str(), t_fontSize, nullptr, io.Fonts->GetGlyphRangesDefault()) == nullptr)
+    // Basic Latin and Latin-1 Supplement include the umlauts. General Punctuation has the dashes, the ellipsis and the
+    // quotation marks of the translations. The list ends with 0 and must stay in memory until the font is built.
+    static constexpr std::array<ImWchar, 5> GLYPH_RANGES{ 0x0020, 0x00FF, 0x2010, 0x205E, 0 };
+
+    if (io.Fonts->AddFontFromFileTTF(t_fontFile.string().c_str(), t_fontSize, nullptr, GLYPH_RANGES.data()) == nullptr)
     {
         fail("Cannot load font: " + t_fontFile.string());
     }

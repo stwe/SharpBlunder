@@ -227,13 +227,14 @@ sg::chess::core::Catalog sg::chess::core::Catalog::FromPo(std::string_view t_tex
     // An entry is finished by an empty line or by the start of the next one.
     const auto flush = [&]()
     {
-        if (entry.hasId && entry.hasString && !entry.plural && !entry.fuzzy && !entry.string.empty())
+        if (entry.hasId && entry.hasString && !entry.plural && !entry.string.empty())
         {
             if (entry.id.empty())
             {
+                // The header is read even if it is marked fuzzy, as xgettext does for a new file.
                 catalog.m_nativeName = HeaderValue(entry.string, NATIVE_NAME_HEADER);
             }
-            else
+            else if (!entry.fuzzy)
             {
                 catalog.m_entries[MakeKey(entry.id, entry.context)] = entry.string;
             }

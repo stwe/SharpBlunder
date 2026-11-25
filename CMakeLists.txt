@@ -112,6 +112,7 @@ enable_testing()
 add_executable(SharpBlunderTests
         tests/UciInfoTests.cpp
 
+        src/core/I18n.cpp
         src/core/Move.cpp
         src/core/MoveQuality.cpp
         src/core/Score.cpp
@@ -177,6 +178,7 @@ add_executable(PgnTests
         tests/PgnTests.cpp
 
         src/core/GameState.cpp
+        src/core/I18n.cpp
         src/core/Move.cpp
         src/core/Pgn.cpp
         src/core/Position.cpp
@@ -238,6 +240,7 @@ add_executable(PgnTagsTests
         tests/PgnTagsTests.cpp
 
         src/core/GameState.cpp
+        src/core/I18n.cpp
         src/core/Move.cpp
         src/core/OpeningBook.cpp
         src/core/Pgn.cpp
@@ -259,6 +262,7 @@ add_executable(DrawRulesTests
 
         src/core/DrawRules.cpp
         src/core/GameState.cpp
+        src/core/I18n.cpp
         src/core/Move.cpp
         src/core/Position.cpp
         src/core/San.cpp

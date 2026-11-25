@@ -1,0 +1,531 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the SharpBlunder package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SharpBlunder\n"
+"Report-Msgid-Bugs-To: https://github.com/stwe/SharpBlunder/issues\n"
+"POT-Creation-Date: 2026-11-25 21:33+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid " (check)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "* (unknown, or the game is not finished)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "0-1 (Black won)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "1 min  (Bullet)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "1-0 (White won)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "1/2-1/2 (draw)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "10 min  (Rapid)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "15 min + 10 s  (Rapid)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "15+10 means 15 minutes plus 10 seconds per move"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "2 min + 1 s  (Bullet)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "3 min  (Blitz)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "3 min + 2 s  (Blitz)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "30 min  (Classical)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "5 min  (Blitz)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "5 min + 3 s  (Blitz)"
+msgstr ""
+
+#: src/core/DrawRules.cpp
+msgid "50-move rule"
+msgstr ""
+
+#: src/core/DrawRules.cpp
+msgid "75-move rule"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "90 min + 30 s  (Classical)"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "A draw can be claimed: {}"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Add a comment"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Add a comment on this line"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Add comment on variation..."
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Add comment..."
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Alternative to {}"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Analysis"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Analysis board"
+msgstr ""
+
+#: src/core/Score.cpp src/ui/GameDetails.cpp src/ui/NotationPanel.cpp
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Black"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Black to move"
+msgstr ""
+
+#: src/ui/GameDetails.cpp src/ui/NotationPanel.cpp src/ui/PgnMenu.cpp
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Cancel"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Checkmate - {} wins"
+msgstr ""
+
+#: src/ui/EnginePanel.cpp
+msgid "Click to play this move"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Comment"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Comment on the main line and the whole game"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Comment on the variation that starts with {}"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Comment on {}"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Copied"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Copy"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Copy FEN of this position"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Copy PGN to clipboard"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Date"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Delete from here"
+msgstr ""
+
+#: src/ui/EnginePanel.cpp
+msgid "Depth {}"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Draw - {}"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Edit comment on variation..."
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Edit comment..."
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Edit the details of the game"
+msgstr ""
+
+#: src/ui/EnginePanel.cpp
+msgid "Engine"
+msgstr ""
+
+#: src/ui/App.cpp
+msgid "Engine, accounts and appearance."
+msgstr ""
+
+#: src/core/Score.cpp
+msgid "Equal"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Error"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Event"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Flip"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Game details"
+msgstr ""
+
+#: src/ui/Icons.cpp
+msgid "Good move: the best one or almost as good."
+msgstr ""
+
+#: src/ui/EnginePanel.cpp
+msgid "Hide the line"
+msgstr ""
+
+#: src/ui/App.cpp
+msgid "Import and analyze your games from lichess.org and chess.com."
+msgstr ""
+
+#: src/ui/App.cpp
+msgid "Learn and repeat your opening repertoire."
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Main line"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Make main line"
+msgstr ""
+
+#: src/ui/App.cpp
+msgid "My Games"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Name"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "New"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "New game"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "No moves yet. Move a piece on the board."
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Not a date. Use year.month.day, e.g. 2026.11.24"
+msgstr ""
+
+#: src/ui/screens/PlaceholderScreen.cpp
+msgid "Not implemented yet."
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Not understood. Try 15+10, 5 min + 3 s or 90 s"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "OK"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Open"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Open PGN file"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Open a PGN file:"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Open file..."
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Opening"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Paste"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Paste PGN from clipboard"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Place"
+msgstr ""
+
+#: src/ui/Icons.cpp
+msgid "Playable, but clearly weaker than the best move."
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Position (FEN)"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Presets"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Rating"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Replace"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Replace the game?"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Result"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Round"
+msgstr ""
+
+#: src/ui/GameDetails.cpp src/ui/NotationPanel.cpp src/ui/PgnMenu.cpp
+msgid "Save"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Save PGN file"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Save the game, with its variations and comments, as a PGN file:"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Save to file..."
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Saved"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Saved as {}"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Saved as {} ({})"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Saved games"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Set up"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "Set up from FEN..."
+msgstr ""
+
+#: src/ui/App.cpp
+msgid "Settings"
+msgstr ""
+
+#: src/ui/NotationPanel.cpp
+msgid "Show all comments"
+msgstr ""
+
+#: src/ui/EnginePanel.cpp
+msgid "Show the whole line"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Stalemate - draw"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Start new game"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Termination"
+msgstr ""
+
+#: src/ui/EnginePanel.cpp
+msgid "The analysis engine is not available."
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "The file cannot be read: {}"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "The file cannot be written: {}"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "The file could not be written completely: {}"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid "The game on the board has moves. Replace it with the opened game?"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp
+msgid ""
+"The position on the board as FEN. Write or paste another one to start a game "
+"from it:"
+msgstr ""
+
+#: src/ui/EnginePanel.cpp
+msgid "Thinking..."
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Throw away the moves and start a new game?"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "Time control"
+msgstr ""
+
+#: src/ui/App.cpp
+msgid "Training"
+msgstr ""
+
+#: src/ui/Icons.cpp
+msgid "Weak move: much worse than the best one."
+msgstr ""
+
+#: src/core/Score.cpp src/ui/GameDetails.cpp src/ui/NotationPanel.cpp
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "White"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "White to move"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "YYYY.MM.DD, e.g. 2026.11.24"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "e.g. 15+10 or 5 min + 3 s"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "e.g. a city, or a website"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "e.g. a tournament"
+msgstr ""
+
+#: src/core/DrawRules.cpp
+msgid "fivefold repetition"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "how it ended, e.g. White won by resignation"
+msgstr ""
+
+#: src/core/DrawRules.cpp
+msgid "insufficient material"
+msgstr ""
+
+#: src/ui/GameDetails.cpp
+msgid "not known"
+msgstr ""
+
+#: src/core/DrawRules.cpp
+msgid "threefold repetition"
+msgstr ""
+
+#: src/core/Score.cpp
+msgid "{0} mates in {1}"
+msgstr ""
+
+#: src/core/Score.cpp
+msgid "{} is better"
+msgstr ""
+
+#: src/core/Score.cpp
+msgid "{} is much better"
+msgstr ""
+
+#: src/core/Score.cpp
+msgid "{} is slightly better"
+msgstr ""
+
+#: src/core/Score.cpp
+msgid "{} is winning"
+msgstr ""

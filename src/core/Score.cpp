@@ -18,6 +18,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include "core/I18n.h"
 #include "core/Score.h"
 
 namespace
@@ -72,29 +73,29 @@ std::string sg::chess::core::Score::Describe() const
 {
     if (kind == Kind::MATE)
     {
-        return std::string(value < 0 ? "Black" : "White") + " mates in " + std::to_string(std::abs(value));
+        return tr_format("{0} mates in {1}", value < 0 ? tr("Black") : tr("White"), std::abs(value));
     }
 
     const int advantage{ std::abs(value) };
 
     if (advantage <= EQUAL_LIMIT)
     {
-        return "Equal";
+        return tr("Equal");
     }
 
-    const std::string who{ value < 0 ? "Black" : "White" };
+    const char* who{ value < 0 ? tr("Black") : tr("White") };
 
     if (advantage <= SLIGHT_LIMIT)
     {
-        return who + " is slightly better";
+        return tr_format("{} is slightly better", who);
     }
 
     if (advantage <= BETTER_LIMIT)
     {
-        return who + " is better";
+        return tr_format("{} is better", who);
     }
 
-    return who + (advantage <= MUCH_BETTER_LIMIT ? " is much better" : " is winning");
+    return advantage <= MUCH_BETTER_LIMIT ? tr_format("{} is much better", who) : tr_format("{} is winning", who);
 }
 
 std::string sg::chess::core::Score::ToString() const

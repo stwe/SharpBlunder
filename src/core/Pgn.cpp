@@ -20,6 +20,7 @@
 #include <charconv>
 #include <stdexcept>
 #include <utility>
+#include "core/I18n.h"
 #include "core/Pgn.h"
 #include "core/PositionCheck.h"
 #include "core/San.h"
@@ -672,7 +673,7 @@ std::string sg::chess::core::PgnHeaders::PlayerName(const Color t_color) const
 
     if (name.empty() || name == "?")
     {
-        return t_color == Color::WHITE ? "White" : "Black";
+        return t_color == Color::WHITE ? tr("White") : tr("Black");
     }
 
     return name;

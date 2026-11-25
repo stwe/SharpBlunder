@@ -212,6 +212,38 @@ namespace sg::chess::core
     [[nodiscard]] const char* tr_c(const char* t_context, const char* t_text);
 
     /**
+     * @brief Marks a text that is translated later, where it is shown, and gives it back as it is.
+     *
+     * For texts that are stored in a table or a constant. The tool tools/update_translations.sh finds them by this
+     * name, and the program calls tr() with the stored text where it is shown, so a change of the language is seen.
+     *
+     * @param t_text The English text.
+     *
+     * @return The text.
+     */
+    [[nodiscard]] constexpr const char* tr_noop(const char* t_text) noexcept
+    {
+        return t_text;
+    }
+
+    /**
+     * @brief Translates a text and gives it an identity that does not change with the language.
+     *
+     * ImGui takes the name of a window or a button as its identity. If the name is translated, the identity would
+     * change with the language. The part after "###" is the identity: "Save###save" is the button "save" and shows the
+     * text "Save", or "Speichern". Use it for the names of popups, where the same identity is needed to open them.
+     *
+     * @param t_text The English text.
+     * @param t_id The identity, starting with "###", e.g. "###save".
+     *
+     * @return The translation followed by the identity.
+     */
+    [[nodiscard]] inline std::string tr_id(const char* t_text, const char* t_id)
+    {
+        return std::string{ tr(t_text) } + t_id;
+    }
+
+    /**
      * @brief Translates a text with places for values, and puts the values in.
      *
      * The places are written as in std::format: "{} mates in {}", or with numbers "{1} mates in {0}" if the order is

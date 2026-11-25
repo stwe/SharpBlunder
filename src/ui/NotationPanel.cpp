@@ -22,11 +22,14 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include "core/I18n.h"
 #include "ui/Icons.h"
 #include "ui/NotationPanel.h"
 
 namespace
 {
+    namespace core = sg::chess::core;
+
     using GameState = sg::chess::core::GameState;
     using CommentKind = sg::chess::ui::NotationPanel::CommentKind;
     using CommentRef = sg::chess::ui::NotationPanel::CommentRef;
@@ -49,7 +52,7 @@ namespace
     constexpr float COMMENT_INDENT{ 8.0f };
     constexpr float TOOLTIP_WIDTH_IN_CHARACTERS{ 24.0f };
 
-    constexpr const char* EDIT_POPUP{ "Comment" };
+    constexpr const char* EDIT_POPUP{ "###comment" };
     constexpr float EDIT_WIDTH{ 420.0f };
     constexpr float EDIT_HEIGHT{ 130.0f };
 
@@ -184,15 +187,15 @@ namespace
 
         if (ImGui::BeginPopupContextItem("##move"))
         {
-            if (ImGui::MenuItem(node.note.comment.empty() ? "Add comment..." : "Edit comment..."))
+            if (ImGui::MenuItem(node.note.comment.empty() ? core::tr("Add comment...") : core::tr("Edit comment...")))
             {
                 t_ctx.requests.edit = CommentRef{ CommentKind::MOVE, t_id };
             }
 
             // The first move of a variation can have a comment on the whole variation.
             const bool startsVariation{ t_ctx.game.At(*node.parent).children.front() != t_id };
-            const char* lineLabel{ node.lineComment.empty() ? "Add comment on variation..."
-                                                            : "Edit comment on variation..." };
+            const char* lineLabel{ node.lineComment.empty() ? core::tr("Add comment on variation...")
+                                                            : core::tr("Edit comment on variation...") };
             if (startsVariation && ImGui::MenuItem(lineLabel))
             {
                 t_ctx.requests.edit = CommentRef{ CommentKind::LINE, t_id };
@@ -200,12 +203,12 @@ namespace
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Make main line", nullptr, false, !t_ctx.game.IsMainLine(t_id)))
+            if (ImGui::MenuItem(core::tr("Make main line"), nullptr, false, !t_ctx.game.IsMainLine(t_id)))
             {
                 t_ctx.requests.promote = t_id;
             }
 
-            if (ImGui::MenuItem("Delete from here"))
+            if (ImGui::MenuItem(core::tr("Delete from here")))
             {
                 t_ctx.requests.remove = t_id;
             }
@@ -246,8 +249,8 @@ namespace
         {
             if (text.empty())
             {
-                ImGui::TextUnformatted(t_ref.kind == CommentKind::MOVE ? "Add a comment"
-                                                                       : "Add a comment on this line");
+                ImGui::TextUnformatted(t_ref.kind == CommentKind::MOVE ? core::tr("Add a comment")
+                                                                       : core::tr("Add a comment on this line"));
             }
             else
             {
@@ -398,7 +401,7 @@ namespace
         const ImVec2 top{ ImGui::GetCursorScreenPos() };
         ImGui::Indent(VARIATION_INDENT);
 
-        ImGui::TextDisabled("Alternative to %s", MoveLabel(t_ctx.game, mainMove).c_str());
+        ImGui::TextDisabled("%s", core::tr_format("Alternative to {}", MoveLabel(t_ctx.game, mainMove)).c_str());
         ImGui::SameLine();
 
         const CommentRef line{ CommentKind::LINE, t_first };
@@ -420,7 +423,8 @@ namespace
                                                   ImVec2(top.x + BAR_OFFSET + BAR_WIDTH, bottom), BAR_COLOR);
     }
 
-    void SetupColumns(const std::string& t_white = "White", const std::string& t_black = "Black")
+    void SetupColumns(const std::string& t_white = core::tr("White"),
+                      const std::string& t_black = core::tr("Black"))
     {
         ImGui::TableSetupColumn("##number", ImGuiTableColumnFlags_WidthFixed, NUMBER_COLUMN_WIDTH);
         ImGui::TableSetupColumn(t_white.c_str(), ImGuiTableColumnFlags_WidthStretch);
@@ -439,7 +443,7 @@ namespace
     // The header of the main line, with the bubble of the comment on the game.
     void DrawMainLineHeader(Context& t_ctx)
     {
-        ImGui::TextDisabled("Main line");
+        ImGui::TextDisabled("%s", core::tr("Main line"));
         ImGui::SameLine();
 
         const CommentRef game{ CommentKind::GAME, 0 };
@@ -460,7 +464,7 @@ namespace
         const GameState::Node& start{ t_ctx.game.At(0) };
         if (start.children.empty())
         {
-            ImGui::TextDisabled("No moves yet. Move a piece on the board.");
+            ImGui::TextDisabled("%s", core::tr("No moves yet. Move a piece on the board."));
             return;
         }
 
@@ -615,7 +619,7 @@ bool sg::chess::ui::NotationPanel::DrawCommentToggle(const core::GameState& t_ga
         return false;
     }
 
-    ImGui::Checkbox("Show all comments", &m_showAllComments);
+    ImGui::Checkbox(core::tr("Show all comments"), &m_showAllComments);
 
     return true;
 }
@@ -640,7 +644,7 @@ bool sg::chess::ui::NotationPanel::DrawMoveList(core::GameState& t_game, const c
         ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 
         ImGui::TableSetColumnIndex(0);
-        if (pencil_button(ImGui::GetFrameHeight(), "Edit the details of the game"))
+        if (pencil_button(ImGui::GetFrameHeight(), core::tr("Edit the details of the game")))
         {
             m_detailsRequested = true;
         }
@@ -733,7 +737,8 @@ void sg::chess::ui::NotationPanel::DrawEditor(core::GameState& t_game)
     ImGui::SetNextWindowPos(ImVec2(displaySize.x / 2.0f, displaySize.y / 2.0f), ImGuiCond_Appearing,
                             ImVec2(0.5f, 0.5f));
 
-    if (!ImGui::BeginPopupModal(EDIT_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (!ImGui::BeginPopupModal(core::tr_id("Comment", EDIT_POPUP).c_str(), nullptr,
+                                ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
         return;
     }
@@ -741,13 +746,15 @@ void sg::chess::ui::NotationPanel::DrawEditor(core::GameState& t_game)
     switch (m_editTarget.kind)
     {
     case CommentKind::MOVE:
-        ImGui::Text("Comment on %s", MoveLabel(t_game, m_editTarget.id).c_str());
+        ImGui::TextUnformatted(core::tr_format("Comment on {}", MoveLabel(t_game, m_editTarget.id)).c_str());
         break;
     case CommentKind::LINE:
-        ImGui::Text("Comment on the variation that starts with %s", MoveLabel(t_game, m_editTarget.id).c_str());
+        ImGui::TextUnformatted(
+            core::tr_format("Comment on the variation that starts with {}", MoveLabel(t_game, m_editTarget.id))
+                .c_str());
         break;
     case CommentKind::GAME:
-        ImGui::TextUnformatted("Comment on the main line and the whole game");
+        ImGui::TextUnformatted(core::tr("Comment on the main line and the whole game"));
         break;
     }
 
@@ -759,7 +766,7 @@ void sg::chess::ui::NotationPanel::DrawEditor(core::GameState& t_game)
     ImGui::InputTextMultiline("##comment", m_editBuffer.data(), m_editBuffer.size(), ImVec2(EDIT_WIDTH, EDIT_HEIGHT));
     ImGui::Spacing();
 
-    if (ImGui::Button("Save"))
+    if (ImGui::Button(core::tr("Save")))
     {
         // An empty comment removes it.
         std::string text{ m_editBuffer.data() };
@@ -789,7 +796,7 @@ void sg::chess::ui::NotationPanel::DrawEditor(core::GameState& t_game)
     ImGui::SameLine();
 
     // The Escape key cancels, like the button.
-    if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+    if (ImGui::Button(core::tr("Cancel")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
     {
         ImGui::CloseCurrentPopup();
     }

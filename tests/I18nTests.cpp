@@ -153,6 +153,12 @@ msgstr "Behalten"
         CHECK(Catalog::FromPo("msgid \"A\"\nmsgstr \"unfinished\n").Size() == 0);
         CHECK(Catalog::FromPo("msgstr \"no id\"\n").Size() == 0);
 
+        // A header that is marked fuzzy (as in a new file) is read, the entries that are marked fuzzy are not.
+        const Catalog fuzzyHeader{ Catalog::FromPo(
+            "#, fuzzy\nmsgid \"\"\nmsgstr \"X-Native-Name: Deutsch\\n\"\n\n#, fuzzy\nmsgid \"A\"\nmsgstr \"a\"\n") };
+        CHECK(fuzzyHeader.NativeName() == "Deutsch");
+        CHECK(fuzzyHeader.Size() == 0);
+
         // A header without the name of the language.
         CHECK(Catalog::FromPo("msgid \"\"\nmsgstr \"Language: de\\n\"\n").NativeName().empty());
     }
@@ -258,6 +264,29 @@ msgstr "Behalten"
         fs::remove_all(folder);
     }
 
+    void TestMarks()
+    {
+        using sg::chess::core::set_language;
+
+        const fs::path folder{ fs::temp_directory_path() / "sharpblunder-i18n-marks" };
+        fs::remove_all(folder);
+        WriteFile(folder / "de.po", GERMAN);
+
+        // tr_noop gives the text back as it is, and tr translates it where it is shown.
+        const char* stored{ sg::chess::core::tr_noop("Save") };
+        CHECK(std::string{ stored } == "Save");
+
+        CHECK(!set_language("de", folder));
+        CHECK(std::string{ sg::chess::core::tr(stored) } == "Speichern");
+
+        // tr_id keeps the identity for ImGui: the text changes with the language, the part after ### does not.
+        CHECK(sg::chess::core::tr_id("Save", "###save") == "Speichern###save");
+        CHECK(!set_language("en", folder));
+        CHECK(sg::chess::core::tr_id("Save", "###save") == "Save###save");
+
+        fs::remove_all(folder);
+    }
+
     void TestFormat()
     {
         using sg::chess::core::set_language;
@@ -300,6 +329,7 @@ int main()
     TestLocale();
     TestResolve();
     TestFilesAndTr();
+    TestMarks();
     TestFormat();
 
     if (sg::chess::tests::failures() != 0)

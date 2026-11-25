@@ -17,6 +17,7 @@
 
 #include <string>
 #include "core/DrawRules.h"
+#include "core/I18n.h"
 #include "core/Square.h"
 
 namespace
@@ -177,15 +178,15 @@ std::string_view sg::chess::core::describe_draw(const DrawReason t_reason) noexc
     switch (t_reason)
     {
     case DrawReason::INSUFFICIENT_MATERIAL:
-        return "insufficient material";
+        return tr("insufficient material");
     case DrawReason::FIVEFOLD_REPETITION:
-        return "fivefold repetition";
+        return tr("fivefold repetition");
     case DrawReason::SEVENTY_FIVE_MOVES:
-        return "75-move rule";
+        return tr("75-move rule");
     case DrawReason::THREEFOLD_REPETITION:
-        return "threefold repetition";
+        return tr("threefold repetition");
     case DrawReason::FIFTY_MOVES:
-        return "50-move rule";
+        return tr("50-move rule");
     }
 
     return "";

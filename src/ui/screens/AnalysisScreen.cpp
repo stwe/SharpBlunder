@@ -20,6 +20,7 @@
 #include <string_view>
 #include <imgui.h>
 #include "core/DrawRules.h"
+#include "core/I18n.h"
 #include "core/Material.h"
 #include "core/PgnTags.h"
 #include "core/Util.h"
@@ -77,8 +78,8 @@ namespace
                                             ImGuiWindowFlags_NoCollapse |
                                             ImGuiWindowFlags_NoSavedSettings };
 
-    constexpr float HEADER_BUTTON_WIDTH{ 52.0f };
-    constexpr const char* NEW_GAME_POPUP{ "New game" };
+    constexpr float HEADER_BUTTON_WIDTH{ 60.0f };
+    constexpr const char* NEW_GAME_POPUP{ "###new_game" };
 }
 
 //-------------------------------------------------
@@ -107,7 +108,7 @@ sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::Ru
 
 std::string_view sg::chess::ui::AnalysisScreen::Title() const noexcept
 {
-    return "Analysis";
+    return core::tr("Analysis");
 }
 
 void sg::chess::ui::AnalysisScreen::OnEnter()
@@ -321,25 +322,25 @@ std::string sg::chess::ui::AnalysisScreen::StatusText(const std::optional<core::
 
     if (info.IsCheckmate())
     {
-        return std::string("Checkmate - ") + (whiteToMove ? "Black" : "White") + " wins";
+        return core::tr_format("Checkmate - {} wins", whiteToMove ? core::tr("Black") : core::tr("White"));
     }
 
     if (info.IsStalemate())
     {
-        return "Stalemate - draw";
+        return core::tr("Stalemate - draw");
     }
 
     // A draw that a player has to claim does not end the game: it is a hint, written below.
     if (t_draw && core::is_automatic_draw(*t_draw))
     {
-        return "Draw - " + std::string{ core::describe_draw(*t_draw) };
+        return core::tr_format("Draw - {}", core::describe_draw(*t_draw));
     }
 
-    std::string text{ whiteToMove ? "White to move" : "Black to move" };
+    std::string text{ whiteToMove ? core::tr("White to move") : core::tr("Black to move") };
 
     if (info.inCheck)
     {
-        text += " (check)";
+        text += core::tr(" (check)");
     }
 
     return text;
@@ -444,7 +445,7 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
     }
     else
     {
-        ImGui::TextUnformatted("Analysis board");
+        ImGui::TextUnformatted(core::tr("Analysis board"));
     }
 
     // The status on the left, the buttons at the right end of the same line.
@@ -459,7 +460,7 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
     const float spacing{ ImGui::GetStyle().ItemSpacing.x };
     ImGui::SameLine(ImGui::GetContentRegionMax().x - 2.0f * HEADER_BUTTON_WIDTH - spacing);
 
-    if (ImGui::Button("Flip", ImVec2(HEADER_BUTTON_WIDTH, 0.0f)))
+    if (ImGui::Button(core::tr("Flip"), ImVec2(HEADER_BUTTON_WIDTH, 0.0f)))
     {
         m_boardView.Flip();
     }
@@ -467,7 +468,7 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
     ImGui::SameLine();
 
     // A game with moves is not thrown away by one click.
-    if (ImGui::Button("New", ImVec2(HEADER_BUTTON_WIDTH, 0.0f)))
+    if (ImGui::Button(core::tr("New"), ImVec2(HEADER_BUTTON_WIDTH, 0.0f)))
     {
         if (!m_game.HasMoves())
         {
@@ -485,12 +486,13 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
     ImGui::SetNextWindowPos(ImVec2(displaySize.x / 2.0f, displaySize.y / 2.0f), ImGuiCond_Appearing,
                             ImVec2(0.5f, 0.5f));
 
-    if (ImGui::BeginPopupModal(NEW_GAME_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (ImGui::BeginPopupModal(core::tr_id("New game", NEW_GAME_POPUP).c_str(), nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
-        ImGui::TextUnformatted("Throw away the moves and start a new game?");
+        ImGui::TextUnformatted(core::tr("Throw away the moves and start a new game?"));
         ImGui::Spacing();
 
-        if (ImGui::Button("Start new game"))
+        if (ImGui::Button(core::tr("Start new game")))
         {
             m_game.Reset();
             m_headers = core::PgnHeaders::MakeDefault(core::format_local_time("%Y.%m.%d"));
@@ -502,7 +504,7 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
         ImGui::SameLine();
 
         // The Escape key cancels, like the button.
-        if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        if (ImGui::Button(core::tr("Cancel")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
             ImGui::CloseCurrentPopup();
         }
@@ -513,6 +515,6 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
     // Threefold repetition and the 50-move rule: a player may claim a draw.
     if (draw && !core::is_automatic_draw(*draw))
     {
-        ImGui::TextDisabled("A draw can be claimed: %s", std::string{ core::describe_draw(*draw) }.c_str());
+        ImGui::TextDisabled("%s", core::tr_format("A draw can be claimed: {}", core::describe_draw(*draw)).c_str());
     }
 }

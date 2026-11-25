@@ -45,6 +45,9 @@ Working today:
 - Name and ECO code of the opening (for example `B90 Sicilian Defense: Najdorf Variation`), found by position, so
   transpositions work too. After the game leaves the book, the last known name stays. The opening is also written
   to the PGN tags `ECO`, `Opening`, `Variation` and `SubVariation`
+- English and German. The language comes from the settings file (`language`: `auto`, `en` or `de`, `auto` follows the
+  system). The chess notation is not translated: moves stay `Nc6` and PGN files always use English tags and values,
+  so they work everywhere. Terms such as Remis, Matt and Patt are used in German
 - Sidebar navigation between the pages
 
 Planned, not implemented yet:
@@ -62,7 +65,7 @@ Planned, not implemented yet:
 - SFML **3.x** (Graphics, Window, System)
 - OpenGL
 - Stockfish
-- An internet connection for the first CMake run, which downloads Dear ImGui 1.91.8 and ImGui-SFML 3.0
+- An internet connection for the first CMake run, which downloads Dear ImGui 1.91.8, ImGui-SFML 3.0 and nlohmann/json 3.11.3
 
 ## Building
 
@@ -128,9 +131,10 @@ of that directory in the executable, so run CMake again if you move the source d
 ## Project layout
 
 ```
-assets/        piece images (pieces/cburnett), GUI font (fonts), opening names (openings), each with its license
+assets/        piece images (pieces/cburnett), GUI font (fonts), opening names (openings), translations (i18n),
+               each with its license
 src/core/      chess model without any graphics: Position, Move, Piece, SAN notation, GameState, RulesProvider,
-               Score, OpeningBook, DrawRules
+               Score, OpeningBook, DrawRules, TimeControl, PgnTags, Settings, I18n
 src/engine/    Stockfish as a child process (Engine), the rules from Stockfish (StockfishRules), the live
                analysis (Analyzer) and the parser for its UCI lines
 src/ui/        window, Dear ImGui layer, navigation, board view, evaluation bar, mouse input, pages (screens/).
@@ -138,11 +142,27 @@ src/ui/        window, Dear ImGui layer, navigation, board view, evaluation bar,
                the engine (EnginePanel) and the moves with the navigation (NotationPanel)
 tests/         test programs, run them with ctest in the build directory
 tools/         render_pieces.sh turns the SVG pieces into the PNG files the program loads,
-               update_openings.sh builds assets/openings/openings.tsv again from the Lichess data
+               update_openings.sh builds assets/openings/openings.tsv again from the Lichess data,
+               update_translations.sh collects the texts of the program and updates the .po files
 ```
 
 `core` does not depend on anything else. The rest of the program only knows the `RulesProvider` interface,
 so the source of the rules (today Stockfish) can be replaced.
+
+## Translations
+
+Every text that the user sees is written in English in the source code, as `tr("Save")`. The translations are
+`assets/i18n/<code>.po` files in the format of GNU gettext (the program reads them itself and does not use the gettext
+library, so the language can be changed while it runs). To translate or to add a language:
+
+1. `tools/update_translations.sh` collects the texts into `assets/i18n/sharpblunder.pot` and updates every `.po` file
+   (needs GNU gettext)
+2. A new language: `msginit --no-translator -i assets/i18n/sharpblunder.pot -l <code> -o assets/i18n/<code>.po`, and
+   set the header `X-Native-Name` to the name of the language in that language
+3. Translate the entries with an editor such as Poedit. Entries that are marked `fuzzy` or are empty are not used
+
+Not translated on purpose: chess notation (`Nc6`), PGN tags and values, and the names of openings. A text with
+values uses places like `{}` or `{0}`, as in `tr_format("Depth {}", depth)`; a translation may change their order.
 
 ## Code style
 
@@ -168,4 +188,5 @@ It uses these third-party works, which keep their own licenses:
 | [SFML](https://www.sfml-dev.org/)                          | zlib/libpng        | linked, installed on your system    |
 | [Dear ImGui](https://github.com/ocornut/imgui)             | MIT                | downloaded by CMake                 |
 | [ImGui-SFML](https://github.com/SFML/imgui-sfml)           | MIT                | downloaded by CMake                 |
+| [nlohmann/json](https://github.com/nlohmann/json)          | MIT                | downloaded by CMake                 |
 | [Stockfish](https://stockfishchess.org/)                   | GPL 3              | separate program, not included      |

@@ -21,6 +21,7 @@
 #include <SFML/System/Time.hpp>
 #include <string>
 #include "core/OpeningBook.h"
+#include "core/Settings.h"
 #include "engine/Analyzer.h"
 #include "engine/Engine.h"
 #include "engine/StockfishRules.h"
@@ -77,6 +78,17 @@ namespace sg::chess::ui
 
     private:
         //-------------------------------------------------
+        // Language
+        //-------------------------------------------------
+
+        /**
+         * @brief Chooses the language of the texts as the settings say.
+         *
+         * "auto" is the language of the system. If there is no translation for the language, the texts are English.
+         */
+        void ApplyLanguage();
+
+        //-------------------------------------------------
         // Frame steps
         //-------------------------------------------------
 
@@ -113,6 +125,7 @@ namespace sg::chess::ui
         GuiLayer m_gui;                  ///< Dear ImGui, connected to m_window
         PieceSet m_pieces;               ///< The piece images, shared by all screens with a board
         core::OpeningBook m_openings;    ///< The names of the openings
+        core::Settings m_settings;       ///< What the user has set, from the file settings.json
         ScreenManager m_screens;         ///< All pages of the application
         NavigationBar m_navigation;      ///< The menu on the left
         sf::Clock m_clock;               ///< Measures the time of a frame

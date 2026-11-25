@@ -19,6 +19,7 @@
 #include <imgui.h>
 #include <string_view>
 #include <utility>
+#include "core/I18n.h"
 #include "core/San.h"
 #include "core/Util.h"
 #include "ui/EnginePanel.h"
@@ -130,7 +131,7 @@ std::optional<sg::chess::core::Move> sg::chess::ui::EnginePanel::DrawContent(con
     // Set again below if the mouse rests on a row.
     m_hoveredMove.reset();
 
-    if (ImGui::Checkbox("Engine", &m_analysisOn))
+    if (ImGui::Checkbox(core::tr("Engine"), &m_analysisOn))
     {
         m_analyzer.SetRunning(m_analysisOn);
 
@@ -149,7 +150,7 @@ std::optional<sg::chess::core::Move> sg::chess::ui::EnginePanel::DrawContent(con
 
     if (!m_analyzer.IsAlive())
     {
-        ImGui::TextWrapped("The analysis engine is not available.");
+        ImGui::TextWrapped("%s", core::tr("The analysis engine is not available."));
         return std::nullopt;
     }
 
@@ -158,14 +159,14 @@ std::optional<sg::chess::core::Move> sg::chess::ui::EnginePanel::DrawContent(con
         // No lines yet, or the game is over and there is nothing to analyze.
         if (!t_info.legalMoves.empty())
         {
-            ImGui::TextDisabled("Thinking...");
+            ImGui::TextDisabled("%s", core::tr("Thinking..."));
         }
 
         return std::nullopt;
     }
 
     // The depth sits at the right end of the line with the check box.
-    const std::string depth{ "Depth " + std::to_string(m_display.front().depth) };
+    const std::string depth{ core::tr_format("Depth {}", m_display.front().depth) };
     ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(depth.c_str()).x);
     ImGui::TextDisabled("%s", depth.c_str());
 
@@ -230,7 +231,7 @@ std::optional<sg::chess::core::Move> sg::chess::ui::EnginePanel::DrawContent(con
             else
             {
                 ImGui::TextUnformatted(line.description.c_str());
-                ImGui::TextDisabled("Click to play this move");
+                ImGui::TextDisabled("%s", core::tr("Click to play this move"));
             }
 
             ImGui::EndTooltip();
@@ -238,7 +239,7 @@ std::optional<sg::chess::core::Move> sg::chess::ui::EnginePanel::DrawContent(con
 
         ImGui::SameLine();
         const bool open{ m_openLines.contains(line.move.ToUci()) };
-        if (magnifier_button(open, rowHeight, open ? "Hide the line" : "Show the whole line"))
+        if (magnifier_button(open, rowHeight, open ? core::tr("Hide the line") : core::tr("Show the whole line")))
         {
             // The state belongs to the move, not to the row: when two lines swap places, the open one stays open.
             if (open)

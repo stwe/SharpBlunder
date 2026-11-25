@@ -16,8 +16,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <filesystem>
+#include <iostream>
 #include <memory>
 #include <string_view>
+#include "core/I18n.h"
+#include "core/Settings.h"
 #include "ui/App.h"
 #include "ui/screens/AnalysisScreen.h"
 #include "ui/screens/PlaceholderScreen.h"
@@ -36,6 +39,20 @@ namespace
     constexpr std::string_view GUI_FONT{ "Roboto-Medium.ttf" };
     constexpr std::string_view PIECE_SET{ "cburnett" };
     constexpr std::string_view OPENING_FILE{ "openings.tsv" };
+    constexpr std::string_view TRANSLATIONS_DIR{ "i18n" };
+
+    // Reads the settings. Whatever is wrong with the file, the program starts: the user is told on the console.
+    sg::chess::core::Settings LoadSettings()
+    {
+        auto loaded{ sg::chess::core::load_settings(sg::chess::core::settings_path()) };
+
+        if (!loaded.problem.empty())
+        {
+            std::cerr << "Warning: " << loaded.problem << '\n';
+        }
+
+        return std::move(loaded.settings);
+    }
 }
 
 //-------------------------------------------------
@@ -50,16 +67,37 @@ sg::chess::ui::App::App(const std::string& t_stockfish)
     , m_gui(m_window, std::filesystem::path{ ASSET_DIR } / "fonts" / GUI_FONT, GUI_FONT_SIZE)
     , m_pieces(std::filesystem::path{ ASSET_DIR } / "pieces" / PIECE_SET)
     , m_openings(core::OpeningBook::FromFile(std::filesystem::path{ ASSET_DIR } / "openings" / OPENING_FILE))
+    , m_settings(LoadSettings())
 {
+    // The language is set before a screen is made: the texts are translated when they are shown.
+    ApplyLanguage();
+
     m_screens.Add(ScreenId::ANALYSIS, std::make_unique<AnalysisScreen>(m_pieces, m_rules, m_analyzer, m_openings));
     m_screens.Add(ScreenId::GAMES, std::make_unique<PlaceholderScreen>(
-        "My Games", "Import and analyze your games from lichess.org and chess.com."));
+        core::tr_noop("My Games"), core::tr_noop("Import and analyze your games from lichess.org and chess.com.")));
     m_screens.Add(ScreenId::TRAINING, std::make_unique<PlaceholderScreen>(
-        "Training", "Learn and repeat your opening repertoire."));
+        core::tr_noop("Training"), core::tr_noop("Learn and repeat your opening repertoire.")));
     m_screens.Add(ScreenId::SETTINGS, std::make_unique<PlaceholderScreen>(
-        "Settings", "Engine, accounts and appearance."));
+        core::tr_noop("Settings"), core::tr_noop("Engine, accounts and appearance.")));
 
     m_screens.SwitchTo(ScreenId::ANALYSIS);
+}
+
+//-------------------------------------------------
+// Language
+//-------------------------------------------------
+
+void sg::chess::ui::App::ApplyLanguage()
+{
+    const std::filesystem::path directory{ std::filesystem::path{ ASSET_DIR } / TRANSLATIONS_DIR };
+
+    const std::string code{ core::resolve_language(m_settings.language, core::system_language(),
+                                                   core::available_languages(directory)) };
+
+    if (const auto problem{ core::set_language(code, directory) })
+    {
+        std::cerr << "Warning: " << *problem << '\n';
+    }
 }
 
 //-------------------------------------------------

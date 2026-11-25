@@ -21,13 +21,14 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include "core/I18n.h"
 #include "core/PgnTags.h"
 #include "core/TimeControl.h"
 #include "ui/GameDetails.h"
 
 namespace
 {
-    constexpr const char* POPUP{ "Game details" };
+    constexpr const char* POPUP{ "###game_details" };
     constexpr float LABEL_WIDTH{ 110.0f };
     constexpr float FIELD_WIDTH{ 380.0f };
     constexpr float RATING_FIELD_WIDTH{ 80.0f };
@@ -41,16 +42,21 @@ namespace
         const char* label;
     };
 
-    constexpr std::array<TimeControlPreset, 10> PRESETS{ { { "1+0", "1 min  (Bullet)" },
-                                                           { "2+1", "2 min + 1 s  (Bullet)" },
-                                                           { "3+0", "3 min  (Blitz)" },
-                                                           { "3+2", "3 min + 2 s  (Blitz)" },
-                                                           { "5+0", "5 min  (Blitz)" },
-                                                           { "5+3", "5 min + 3 s  (Blitz)" },
-                                                           { "10+0", "10 min  (Rapid)" },
-                                                           { "15+10", "15 min + 10 s  (Rapid)" },
-                                                           { "30+0", "30 min  (Classical)" },
-                                                           { "90+30", "90 min + 30 s  (Classical)" } } };
+    // The words are marked for translation with tr_noop and translated where they are shown.
+    using sg::chess::core::tr_noop;
+
+    constexpr std::array<TimeControlPreset, 10> PRESETS{ {
+        { "1+0", tr_noop("1 min  (Bullet)") },
+        { "2+1", tr_noop("2 min + 1 s  (Bullet)") },
+        { "3+0", tr_noop("3 min  (Blitz)") },
+        { "3+2", tr_noop("3 min + 2 s  (Blitz)") },
+        { "5+0", tr_noop("5 min  (Blitz)") },
+        { "5+3", tr_noop("5 min + 3 s  (Blitz)") },
+        { "10+0", tr_noop("10 min  (Rapid)") },
+        { "15+10", tr_noop("15 min + 10 s  (Rapid)") },
+        { "30+0", tr_noop("30 min  (Classical)") },
+        { "90+30", tr_noop("90 min + 30 s  (Classical)") },
+    } };
 
     // What a result looks like in the PGN file, and what the list in the window says.
     struct ResultOption
@@ -59,10 +65,12 @@ namespace
         const char* label;
     };
 
-    constexpr std::array<ResultOption, 4> RESULTS{ { { "*", "* (unknown, or the game is not finished)" },
-                                                     { "1-0", "1-0 (White won)" },
-                                                     { "0-1", "0-1 (Black won)" },
-                                                     { "1/2-1/2", "1/2-1/2 (draw)" } } };
+    constexpr std::array<ResultOption, 4> RESULTS{ {
+        { "*", tr_noop("* (unknown, or the game is not finished)") },
+        { "1-0", tr_noop("1-0 (White won)") },
+        { "0-1", tr_noop("0-1 (Black won)") },
+        { "1/2-1/2", tr_noop("1/2-1/2 (draw)") },
+    } };
 
     // PGN writes "?" and "????.??.??" for what is not known. The window shows an empty field instead.
     std::string Shown(const std::string& t_value)
@@ -177,7 +185,8 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
     ImGui::SetNextWindowPos(ImVec2(displaySize.x / 2.0f, displaySize.y / 2.0f), ImGuiCond_Appearing,
                             ImVec2(0.5f, 0.5f));
 
-    if (!ImGui::BeginPopupModal(POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (!ImGui::BeginPopupModal(core::tr_id("Game details", POPUP).c_str(), nullptr,
+                                ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
         return false;
     }
@@ -189,34 +198,34 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
 
         const float nameWidth{ FIELD_WIDTH - RATING_FIELD_WIDTH - ImGui::GetStyle().ItemSpacing.x };
 
-        Row("White", [&]
+        Row(core::tr("White"), [&]
         {
             ImGui::SetNextItemWidth(nameWidth);
-            ImGui::InputTextWithHint("##white", "Name", m_white.data(), m_white.size());
+            ImGui::InputTextWithHint("##white", core::tr("Name"), m_white.data(), m_white.size());
             ImGui::SameLine();
             ImGui::SetNextItemWidth(RATING_FIELD_WIDTH);
-            ImGui::InputTextWithHint("##whiteElo", "Rating", m_whiteRating.data(), m_whiteRating.size(),
+            ImGui::InputTextWithHint("##whiteElo", core::tr("Rating"), m_whiteRating.data(), m_whiteRating.size(),
                                      ImGuiInputTextFlags_CharsDecimal);
         });
 
-        Row("Black", [&]
+        Row(core::tr("Black"), [&]
         {
             ImGui::SetNextItemWidth(nameWidth);
-            ImGui::InputTextWithHint("##black", "Name", m_black.data(), m_black.size());
+            ImGui::InputTextWithHint("##black", core::tr("Name"), m_black.data(), m_black.size());
             ImGui::SameLine();
             ImGui::SetNextItemWidth(RATING_FIELD_WIDTH);
-            ImGui::InputTextWithHint("##blackElo", "Rating", m_blackRating.data(), m_blackRating.size(),
+            ImGui::InputTextWithHint("##blackElo", core::tr("Rating"), m_blackRating.data(), m_blackRating.size(),
                                      ImGuiInputTextFlags_CharsDecimal);
         });
 
-        Row("Result", [&]
+        Row(core::tr("Result"), [&]
         {
             ImGui::SetNextItemWidth(FIELD_WIDTH);
-            if (ImGui::BeginCombo("##result", RESULTS[static_cast<std::size_t>(m_result)].label))
+            if (ImGui::BeginCombo("##result", core::tr(RESULTS[static_cast<std::size_t>(m_result)].label)))
             {
                 for (std::size_t i{ 0 }; i < RESULTS.size(); ++i)
                 {
-                    if (ImGui::Selectable(RESULTS[i].label, static_cast<int>(i) == m_result))
+                    if (ImGui::Selectable(core::tr(RESULTS[i].label), static_cast<int>(i) == m_result))
                     {
                         m_result = static_cast<int>(i);
                     }
@@ -226,50 +235,50 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
             }
         });
 
-        Row("Event", [&]
+        Row(core::tr("Event"), [&]
         {
             ImGui::SetNextItemWidth(FIELD_WIDTH);
-            ImGui::InputTextWithHint("##event", "e.g. a tournament", m_event.data(), m_event.size());
+            ImGui::InputTextWithHint("##event", core::tr("e.g. a tournament"), m_event.data(), m_event.size());
         });
 
-        Row("Place", [&]
+        Row(core::tr("Place"), [&]
         {
             ImGui::SetNextItemWidth(FIELD_WIDTH);
-            ImGui::InputTextWithHint("##site", "e.g. a city, or a website", m_site.data(), m_site.size());
+            ImGui::InputTextWithHint("##site", core::tr("e.g. a city, or a website"), m_site.data(), m_site.size());
         });
 
-        Row("Round", [&]
+        Row(core::tr("Round"), [&]
         {
             ImGui::SetNextItemWidth(RATING_FIELD_WIDTH);
             ImGui::InputText("##round", m_round.data(), m_round.size());
         });
 
-        Row("Date", [&]
+        Row(core::tr("Date"), [&]
         {
             ImGui::SetNextItemWidth(FIELD_WIDTH);
-            ImGui::InputTextWithHint("##date", "YYYY.MM.DD, e.g. 2026.11.24", m_date.data(), m_date.size(),
+            ImGui::InputTextWithHint("##date", core::tr("YYYY.MM.DD, e.g. 2026.11.24"), m_date.data(), m_date.size(),
                                      ImGuiInputTextFlags_AutoSelectAll);
 
             const std::string date{ Text(m_date) };
             if (!date.empty() && !core::normalize_date(date))
             {
-                ImGui::TextColored(ERROR_COLOR, "Not a date. Use year.month.day, e.g. 2026.11.24");
+                ImGui::TextColored(ERROR_COLOR, "%s", core::tr("Not a date. Use year.month.day, e.g. 2026.11.24"));
             }
         });
 
-        Row("Time control", [&]
+        Row(core::tr("Time control"), [&]
         {
             ImGui::SetNextItemWidth(FIELD_WIDTH - PRESET_WIDTH - ImGui::GetStyle().ItemSpacing.x);
-            ImGui::InputTextWithHint("##time", "e.g. 15+10 or 5 min + 3 s", m_timeControl.data(),
+            ImGui::InputTextWithHint("##time", core::tr("e.g. 15+10 or 5 min + 3 s"), m_timeControl.data(),
                                      m_timeControl.size(), ImGuiInputTextFlags_AutoSelectAll);
 
             ImGui::SameLine();
             ImGui::SetNextItemWidth(PRESET_WIDTH);
-            if (ImGui::BeginCombo("##presets", "Presets"))
+            if (ImGui::BeginCombo("##presets", core::tr("Presets")))
             {
                 for (const TimeControlPreset& preset : PRESETS)
                 {
-                    if (ImGui::Selectable(preset.label))
+                    if (ImGui::Selectable(core::tr(preset.label)))
                     {
                         Fill(m_timeControl, core::time_control_for_input(*core::time_control_from_input(preset.text)));
                     }
@@ -282,21 +291,23 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
             const std::string text{ Text(m_timeControl) };
             if (text.empty())
             {
-                ImGui::TextDisabled("15+10 means 15 minutes plus 10 seconds per move");
+                ImGui::TextDisabled("%s", core::tr("15+10 means 15 minutes plus 10 seconds per move"));
             }
             else if (const auto value{ core::time_control_from_input(text) })
             {
                 const auto control{ core::time_control_from_pgn(*value) };
-                ImGui::TextDisabled("Saved as %s%s%s%s", value->c_str(), control ? " (" : "",
-                                    control ? core::describe_time_control(*control).c_str() : "", control ? ")" : "");
+                const std::string hint{ control ? core::tr_format("Saved as {} ({})", *value,
+                                                                  core::describe_time_control(*control))
+                                                : core::tr_format("Saved as {}", *value) };
+                ImGui::TextDisabled("%s", hint.c_str());
             }
             else
             {
-                ImGui::TextColored(ERROR_COLOR, "Not understood. Try 15+10, 5 min + 3 s or 90 s");
+                ImGui::TextColored(ERROR_COLOR, "%s", core::tr("Not understood. Try 15+10, 5 min + 3 s or 90 s"));
             }
         });
 
-        Row("Opening", [&]
+        Row(core::tr("Opening"), [&]
         {
             // The opening is set from the moves. It is shown here so that it is clear what the file will say.
             const std::string eco{ t_headers.Get("ECO") };
@@ -310,13 +321,13 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
             }
 
             const std::string text{ (eco.empty() ? "" : eco + " ") + opening };
-            ImGui::TextDisabled("%s", text.empty() ? "not known" : text.c_str());
+            ImGui::TextDisabled("%s", text.empty() ? core::tr("not known") : text.c_str());
         });
 
-        Row("Termination", [&]
+        Row(core::tr("Termination"), [&]
         {
             ImGui::SetNextItemWidth(FIELD_WIDTH);
-            ImGui::InputTextWithHint("##termination", "how it ended, e.g. White won by resignation",
+            ImGui::InputTextWithHint("##termination", core::tr("how it ended, e.g. White won by resignation"),
                                      m_termination.data(), m_termination.size());
         });
 
@@ -334,7 +345,7 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
 
     // A date or a time that is not understood is not written to the file.
     ImGui::BeginDisabled(!date || !timeControl);
-    if (ImGui::Button("Save"))
+    if (ImGui::Button(core::tr("Save")))
     {
         SetRoster(t_headers, "White", Text(m_white), "?");
         SetRoster(t_headers, "Black", Text(m_black), "?");
@@ -356,7 +367,7 @@ bool sg::chess::ui::GameDetails::Draw(core::PgnHeaders& t_headers)
 
     ImGui::SameLine();
 
-    if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+    if (ImGui::Button(core::tr("Cancel")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
     {
         ImGui::CloseCurrentPopup();
     }

@@ -17,6 +17,7 @@
 
 #include <imgui.h>
 #include <utility>
+#include "core/I18n.h"
 #include "ui/Layout.h"
 #include "ui/screens/PlaceholderScreen.h"
 
@@ -45,7 +46,7 @@ sg::chess::ui::PlaceholderScreen::PlaceholderScreen(std::string t_title, std::st
 
 std::string_view sg::chess::ui::PlaceholderScreen::Title() const noexcept
 {
-    return m_title;
+    return core::tr(m_title.c_str());
 }
 
 void sg::chess::ui::PlaceholderScreen::DrawGui()
@@ -58,10 +59,10 @@ void sg::chess::ui::PlaceholderScreen::DrawGui()
 
     if (ImGui::Begin("##content", nullptr, WINDOW_FLAGS))
     {
-        ImGui::SeparatorText(m_title.c_str());
-        ImGui::TextWrapped("%s", m_description.c_str());
+        ImGui::SeparatorText(core::tr(m_title.c_str()));
+        ImGui::TextWrapped("%s", core::tr(m_description.c_str()));
         ImGui::Spacing();
-        ImGui::TextDisabled("Not implemented yet.");
+        ImGui::TextDisabled("%s", core::tr("Not implemented yet."));
     }
     ImGui::End();
 }

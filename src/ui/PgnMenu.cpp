@@ -23,6 +23,7 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
+#include "core/I18n.h"
 #include "core/PositionCheck.h"
 #include "core/Util.h"
 #include "ui/PgnMenu.h"
@@ -33,11 +34,11 @@ namespace
     constexpr double NOTICE_SECONDS{ 2.5 };
 
     constexpr const char* MENU_POPUP{ "##pgn_menu" };
-    constexpr const char* SAVE_POPUP{ "Save PGN file" };
-    constexpr const char* OPEN_POPUP{ "Open PGN file" };
-    constexpr const char* FEN_POPUP{ "Position (FEN)" };
-    constexpr const char* REPLACE_POPUP{ "Replace the game?" };
-    constexpr const char* ERROR_POPUP{ "Error" };
+    constexpr const char* SAVE_POPUP{ "###save_pgn" };
+    constexpr const char* OPEN_POPUP{ "###open_pgn" };
+    constexpr const char* FEN_POPUP{ "###fen" };
+    constexpr const char* REPLACE_POPUP{ "###replace_game" };
+    constexpr const char* ERROR_POPUP{ "###error" };
 
     constexpr float PATH_WIDTH{ 460.0f };
     constexpr std::size_t MAX_LISTED_FILES{ 10 };
@@ -115,36 +116,36 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
     if (ImGui::BeginPopup(MENU_POPUP))
     {
-        if (ImGui::MenuItem("Copy PGN to clipboard"))
+        if (ImGui::MenuItem(core::tr("Copy PGN to clipboard")))
         {
             action = Action::COPY;
         }
 
-        if (ImGui::MenuItem("Paste PGN from clipboard"))
+        if (ImGui::MenuItem(core::tr("Paste PGN from clipboard")))
         {
             action = Action::PASTE;
         }
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Save to file..."))
+        if (ImGui::MenuItem(core::tr("Save to file...")))
         {
             action = Action::SAVE;
         }
 
-        if (ImGui::MenuItem("Open file..."))
+        if (ImGui::MenuItem(core::tr("Open file...")))
         {
             action = Action::OPEN;
         }
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Copy FEN of this position"))
+        if (ImGui::MenuItem(core::tr("Copy FEN of this position")))
         {
             action = Action::COPY_FEN;
         }
 
-        if (ImGui::MenuItem("Set up from FEN..."))
+        if (ImGui::MenuItem(core::tr("Set up from FEN...")))
         {
             action = Action::SETUP_FEN;
         }
@@ -156,7 +157,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
     {
     case Action::COPY:
         ImGui::SetClipboardText(core::pgn_write(t_game, t_headers).c_str());
-        m_notice = "Copied";
+        m_notice = core::tr("Copied");
         m_noticeUntil = ImGui::GetTime() + NOTICE_SECONDS;
         break;
     case Action::PASTE:
@@ -175,7 +176,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
         break;
     case Action::COPY_FEN:
         ImGui::SetClipboardText(t_game.Current().info.position.ToFen().c_str());
-        m_notice = "Copied";
+        m_notice = core::tr("Copied");
         m_noticeUntil = ImGui::GetTime() + NOTICE_SECONDS;
         break;
     case Action::SETUP_FEN:
@@ -201,18 +202,19 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
     // The window for saving.
     CenterNextWindow();
-    if (ImGui::BeginPopupModal(SAVE_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (ImGui::BeginPopupModal(core::tr_id("Save PGN file", SAVE_POPUP).c_str(), nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
-        ImGui::TextUnformatted("Save the game, with its variations and comments, as a PGN file:");
+        ImGui::TextUnformatted(core::tr("Save the game, with its variations and comments, as a PGN file:"));
         ImGui::SetNextItemWidth(PATH_WIDTH);
         ImGui::InputText("##path", m_path.data(), m_path.size());
         ImGui::Spacing();
 
-        if (ImGui::Button("Save"))
+        if (ImGui::Button(core::tr("Save")))
         {
             if (SaveFile(t_game, t_headers))
             {
-                m_notice = "Saved";
+                m_notice = core::tr("Saved");
                 m_noticeUntil = ImGui::GetTime() + NOTICE_SECONDS;
             }
 
@@ -221,7 +223,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        if (ImGui::Button(core::tr("Cancel")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
             ImGui::CloseCurrentPopup();
         }
@@ -231,9 +233,10 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
     // The window for opening: the path, and the newest files of the games directory to pick from.
     CenterNextWindow();
-    if (ImGui::BeginPopupModal(OPEN_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (ImGui::BeginPopupModal(core::tr_id("Open PGN file", OPEN_POPUP).c_str(), nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
-        ImGui::TextUnformatted("Open a PGN file:");
+        ImGui::TextUnformatted(core::tr("Open a PGN file:"));
         ImGui::SetNextItemWidth(PATH_WIDTH);
         ImGui::InputText("##path", m_path.data(), m_path.size());
 
@@ -241,7 +244,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
         if (!files.empty())
         {
             ImGui::Spacing();
-            ImGui::TextDisabled("Saved games");
+            ImGui::TextDisabled("%s", core::tr("Saved games"));
 
             for (std::size_t i{ 0 }; i < std::min(files.size(), MAX_LISTED_FILES); ++i)
             {
@@ -256,7 +259,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
         ImGui::Spacing();
 
-        if (ImGui::Button("Open"))
+        if (ImGui::Button(core::tr("Open")))
         {
             opened = OpenFile(t_game, t_headers);
             ImGui::CloseCurrentPopup();
@@ -264,7 +267,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        if (ImGui::Button(core::tr("Cancel")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
             ImGui::CloseCurrentPopup();
         }
@@ -274,23 +277,25 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
     // The window for the position: the FEN of the position on the board, which can be changed or replaced by another.
     CenterNextWindow();
-    if (ImGui::BeginPopupModal(FEN_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (ImGui::BeginPopupModal(core::tr_id("Position (FEN)", FEN_POPUP).c_str(), nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
-        ImGui::TextUnformatted("The position on the board as FEN. Write or paste another one to start a game from it:");
+        ImGui::TextUnformatted(
+            core::tr("The position on the board as FEN. Write or paste another one to start a game from it:"));
         ImGui::SetNextItemWidth(PATH_WIDTH);
 
         // A click into the field selects all of it, so a pasted or typed FEN replaces the old one.
         ImGui::InputText("##fen", m_fen.data(), m_fen.size(), ImGuiInputTextFlags_AutoSelectAll);
         ImGui::Spacing();
 
-        if (ImGui::Button("Copy"))
+        if (ImGui::Button(core::tr("Copy")))
         {
             ImGui::SetClipboardText(m_fen.data());
         }
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Paste"))
+        if (ImGui::Button(core::tr("Paste")))
         {
             const char* text{ ImGui::GetClipboardText() };
             SetFen(text != nullptr ? text : "");
@@ -298,7 +303,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Set up"))
+        if (ImGui::Button(core::tr("Set up")))
         {
             opened = LoadFen(m_fen.data(), t_game, t_headers);
             ImGui::CloseCurrentPopup();
@@ -306,7 +311,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        if (ImGui::Button(core::tr("Cancel")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
             ImGui::CloseCurrentPopup();
         }
@@ -316,12 +321,13 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
     // The question before a game with moves is replaced.
     CenterNextWindow();
-    if (ImGui::BeginPopupModal(REPLACE_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (ImGui::BeginPopupModal(core::tr_id("Replace the game?", REPLACE_POPUP).c_str(), nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
-        ImGui::TextUnformatted("The game on the board has moves. Replace it with the opened game?");
+        ImGui::TextUnformatted(core::tr("The game on the board has moves. Replace it with the opened game?"));
         ImGui::Spacing();
 
-        if (ImGui::Button("Replace"))
+        if (ImGui::Button(core::tr("Replace")))
         {
             opened = m_pendingIsFen ? ReplaceWithFen(m_pending, t_game, t_headers)
                                     : Replace(m_pending, t_game, t_headers);
@@ -331,7 +337,7 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Cancel") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        if (ImGui::Button(core::tr("Cancel")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
             m_pending.clear();
             ImGui::CloseCurrentPopup();
@@ -342,14 +348,15 @@ bool sg::chess::ui::PgnMenu::Draw(core::GameState& t_game, core::PgnHeaders& t_h
 
     // What went wrong.
     CenterNextWindow();
-    if (ImGui::BeginPopupModal(ERROR_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (ImGui::BeginPopupModal(core::tr_id("Error", ERROR_POPUP).c_str(), nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
         ImGui::PushTextWrapPos(PATH_WIDTH);
         ImGui::TextUnformatted(m_error.c_str());
         ImGui::PopTextWrapPos();
         ImGui::Spacing();
 
-        if (ImGui::Button("OK") || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        if (ImGui::Button(core::tr("OK")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
             ImGui::CloseCurrentPopup();
         }
@@ -458,7 +465,7 @@ bool sg::chess::ui::PgnMenu::SaveFile(const core::GameState& t_game, const core:
     std::ofstream file{ path };
     if (!file)
     {
-        ShowError("The file cannot be written: " + path.string());
+        ShowError(core::tr_format("The file cannot be written: {}", path.string()));
         return false;
     }
 
@@ -467,7 +474,7 @@ bool sg::chess::ui::PgnMenu::SaveFile(const core::GameState& t_game, const core:
 
     if (!file)
     {
-        ShowError("The file could not be written completely: " + path.string());
+        ShowError(core::tr_format("The file could not be written completely: {}", path.string()));
         return false;
     }
 
@@ -481,7 +488,7 @@ bool sg::chess::ui::PgnMenu::OpenFile(core::GameState& t_game, core::PgnHeaders&
     std::ifstream file{ path };
     if (!file)
     {
-        ShowError("The file cannot be read: " + path.string());
+        ShowError(core::tr_format("The file cannot be read: {}", path.string()));
         return false;
     }
 

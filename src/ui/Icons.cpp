@@ -17,6 +17,7 @@
 
 #include <cstring>
 #include <imgui.h>
+#include "core/I18n.h"
 #include "ui/Icons.h"
 
 namespace
@@ -83,11 +84,11 @@ const char* sg::chess::ui::describe_quality(const core::MoveQuality t_quality)
     switch (t_quality)
     {
     case core::MoveQuality::GOOD:
-        return "Good move: the best one or almost as good.";
+        return core::tr("Good move: the best one or almost as good.");
     case core::MoveQuality::OKAY:
-        return "Playable, but clearly weaker than the best move.";
+        return core::tr("Playable, but clearly weaker than the best move.");
     case core::MoveQuality::WEAK:
-        return "Weak move: much worse than the best one.";
+        return core::tr("Weak move: much worse than the best one.");
     }
 
     return "";
