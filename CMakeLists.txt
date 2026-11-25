@@ -31,6 +31,16 @@ FetchContent_Declare(imgui-sfml
 )
 FetchContent_MakeAvailable(imgui-sfml)
 
+# JSON for the settings file (MIT). Its own tests and installation are not needed.
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_Install OFF CACHE INTERNAL "")
+FetchContent_Declare(json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.11.3
+        GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(json)
+
 add_executable(SharpBlunder
         src/main.cpp
 
@@ -46,6 +56,7 @@ add_executable(SharpBlunder
         src/core/PositionCheck.cpp
         src/core/San.cpp
         src/core/Score.cpp
+        src/core/Settings.cpp
         src/core/Square.cpp
         src/core/TimeControl.cpp
         src/core/Util.cpp
@@ -91,6 +102,7 @@ target_link_libraries(SharpBlunder PRIVATE
         SFML::Window
         SFML::System
         ImGui-SFML::ImGui-SFML
+        nlohmann_json::nlohmann_json
 )
 
 # Tests: they need neither a window nor Stockfish. Run them with "ctest" in the build directory.
@@ -268,3 +280,16 @@ target_include_directories(DataDirTests PRIVATE src tests)
 target_compile_options(DataDirTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME DataDirTests COMMAND DataDirTests)
+
+add_executable(SettingsTests
+        tests/SettingsTests.cpp
+
+        src/core/Settings.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(SettingsTests PRIVATE src tests)
+target_compile_options(SettingsTests PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(SettingsTests PRIVATE nlohmann_json::nlohmann_json)
+
+add_test(NAME SettingsTests COMMAND SettingsTests)
