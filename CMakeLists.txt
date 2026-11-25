@@ -34,6 +34,7 @@ FetchContent_MakeAvailable(imgui-sfml)
 add_executable(SharpBlunder
         src/main.cpp
 
+        src/core/DrawRules.cpp
         src/core/GameState.cpp
         src/core/Material.cpp
         src/core/Move.cpp
@@ -239,3 +240,20 @@ target_include_directories(PgnTagsTests PRIVATE src tests)
 target_compile_options(PgnTagsTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME PgnTagsTests COMMAND PgnTagsTests)
+
+add_executable(DrawRulesTests
+        tests/DrawRulesTests.cpp
+
+        src/core/DrawRules.cpp
+        src/core/GameState.cpp
+        src/core/Move.cpp
+        src/core/Position.cpp
+        src/core/San.cpp
+        src/core/Square.cpp
+        src/core/Util.cpp
+)
+
+target_include_directories(DrawRulesTests PRIVATE src tests)
+target_compile_options(DrawRulesTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME DrawRulesTests COMMAND DrawRulesTests)
