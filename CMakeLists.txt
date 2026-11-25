@@ -46,6 +46,7 @@ add_executable(SharpBlunder
 
         src/core/DrawRules.cpp
         src/core/GameState.cpp
+        src/core/I18n.cpp
         src/core/Material.cpp
         src/core/Move.cpp
         src/core/MoveQuality.cpp
@@ -293,3 +294,14 @@ target_compile_options(SettingsTests PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(SettingsTests PRIVATE nlohmann_json::nlohmann_json)
 
 add_test(NAME SettingsTests COMMAND SettingsTests)
+
+add_executable(I18nTests
+        tests/I18nTests.cpp
+
+        src/core/I18n.cpp
+)
+
+target_include_directories(I18nTests PRIVATE src tests)
+target_compile_options(I18nTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME I18nTests COMMAND I18nTests)
