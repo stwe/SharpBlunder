@@ -20,6 +20,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include "core/DrawRules.h"
 #include "core/GameState.h"
 #include "core/OpeningBook.h"
 #include "core/Pgn.h"
@@ -146,9 +147,11 @@ namespace sg::chess::ui
         /**
          * @brief Describes the situation on the board in one line, e.g. "White to move" or "Checkmate".
          *
-         * @return The text. It is short: the hint about the 50-move rule is not part of it.
+         * @param t_draw The reason why the position is a draw, if it is one (see core::find_draw()).
+         *
+         * @return The text. It is short: the hint that a player may claim a draw is not part of it.
          */
-        [[nodiscard]] std::string StatusText() const;
+        [[nodiscard]] std::string StatusText(const std::optional<core::DrawReason>& t_draw) const;
 
         /**
          * @brief Looks for the opening of the game: from the current position back to the start,

@@ -19,6 +19,7 @@
 #include <array>
 #include <string_view>
 #include <imgui.h>
+#include "core/DrawRules.h"
 #include "core/Material.h"
 #include "core/PgnTags.h"
 #include "core/Util.h"
@@ -313,7 +314,7 @@ sg::chess::ui::BoardOverlay sg::chess::ui::AnalysisScreen::BuildOverlay() const
     return overlay;
 }
 
-std::string sg::chess::ui::AnalysisScreen::StatusText() const
+std::string sg::chess::ui::AnalysisScreen::StatusText(const std::optional<core::DrawReason>& t_draw) const
 {
     const auto& info{ m_game.Current().info };
     const bool whiteToMove{ info.position.SideToMove() == core::Color::WHITE };
@@ -326,6 +327,12 @@ std::string sg::chess::ui::AnalysisScreen::StatusText() const
     if (info.IsStalemate())
     {
         return "Stalemate - draw";
+    }
+
+    // A draw that a player has to claim does not end the game: it is a hint, written below.
+    if (t_draw && core::is_automatic_draw(*t_draw))
+    {
+        return "Draw - " + std::string{ core::describe_draw(*t_draw) };
     }
 
     std::string text{ whiteToMove ? "White to move" : "Black to move" };
@@ -441,7 +448,11 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
     }
 
     // The status on the left, the buttons at the right end of the same line.
-    const std::string status{ StatusText() };
+    // The repetitions are counted along the moves that lead to the position, so the whole game is needed.
+    const int repetitions{ core::repetition_count(m_game, m_game.CurrentId()) };
+    const std::optional<core::DrawReason> draw{ core::find_draw(m_game.Current().info, repetitions) };
+
+    const std::string status{ StatusText(draw) };
     ImGui::AlignTextToFramePadding();
     ImGui::TextUnformatted(status.c_str());
 
@@ -499,9 +510,9 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
         ImGui::EndPopup();
     }
 
-    // 100 halfmoves without a capture or a pawn move: a player may claim a draw.
-    if (m_game.Current().info.position.HalfmoveClock() >= 100)
+    // Threefold repetition and the 50-move rule: a player may claim a draw.
+    if (draw && !core::is_automatic_draw(*draw))
     {
-        ImGui::TextDisabled("50-move rule: a draw can be claimed");
+        ImGui::TextDisabled("A draw can be claimed: %s", std::string{ core::describe_draw(*draw) }.c_str());
     }
 }

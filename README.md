@@ -13,6 +13,9 @@ Working today:
 - Analysis board with the Lichess `cburnett` pieces
 - Move pieces by drag and drop or by clicking the piece and then the target square
 - Legal moves, check, checkmate and stalemate come from Stockfish
+- Draws by the FIDE laws, worked out by the program: insufficient material, fivefold repetition and the 75-move rule
+  are shown as the end of the game ("Draw - insufficient material"). Threefold repetition and the 50-move rule are
+  shown as a hint that a player can claim the draw. The game can still be played on
 - Highlights for the last move, the king in check and the target squares of the selected piece
 - Pawn promotion with a choice of the new piece
 - Move list in Standard Algebraic Notation (`Nbd7`, `exd6`, `O-O-O`, `Rd8#`), click a move to jump to it
@@ -127,7 +130,7 @@ of that directory in the executable, so run CMake again if you move the source d
 ```
 assets/        piece images (pieces/cburnett), GUI font (fonts), opening names (openings), each with its license
 src/core/      chess model without any graphics: Position, Move, Piece, SAN notation, GameState, RulesProvider,
-               Score, OpeningBook
+               Score, OpeningBook, DrawRules
 src/engine/    Stockfish as a child process (Engine), the rules from Stockfish (StockfishRules), the live
                analysis (Analyzer) and the parser for its UCI lines
 src/ui/        window, Dear ImGui layer, navigation, board view, evaluation bar, mouse input, pages (screens/).

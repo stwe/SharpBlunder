@@ -42,7 +42,7 @@ namespace sg::chess::core
         FIVEFOLD_REPETITION,    ///< The same position has occurred five times
         SEVENTY_FIVE_MOVES,     ///< 75 moves (150 halfmoves) without a capture or a pawn move
         THREEFOLD_REPETITION,   ///< The same position has occurred three times: a player may claim a draw
-        FIFTY_MOVES             ///< 50 moves (100 halfmoves) without a capture or a pawn move: a player may claim a draw
+        FIFTY_MOVES             ///< 50 moves (100 halfmoves) without a capture or a pawn move: a draw can be claimed
     };
 
     //-------------------------------------------------

@@ -144,8 +144,10 @@ namespace
             const int halfmoves{ irreversible ? 0 : t_position.HalfmoveClock() + 1 };
             const int fullmoves{ t_position.FullmoveNumber() + (white ? 0 : 1) };
 
-            return Describe(Position::FromFen(placement + (white ? " b " : " w ") + "KQkq - " + std::to_string(halfmoves)
-                                              + " " + std::to_string(fullmoves)));
+            const std::string side{ white ? " b " : " w " };
+
+            return Describe(Position::FromFen(placement + side + "KQkq - " + std::to_string(halfmoves) + " "
+                                              + std::to_string(fullmoves)));
         }
     };
 
@@ -263,7 +265,8 @@ namespace
 
         // Rooks, so that there is enough material.
         constexpr const char* ROOKS{ "r3k3/8/8/8/8/8/8/R3K3 w - - " };
-        const auto rooks = [&](const int t_halfmoves) { return Info((std::string{ ROOKS } + std::to_string(t_halfmoves) + " 80").c_str()); };
+        const auto rooks = [&](const int t_halfmoves)
+        { return Info((std::string{ ROOKS } + std::to_string(t_halfmoves) + " 80").c_str()); };
 
         CHECK(!find_draw(rooks(0), 1));
         CHECK(!find_draw(rooks(99), 2));
