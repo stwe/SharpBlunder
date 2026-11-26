@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <array>
 #include <functional>
 #include <optional>
 #include <string>
@@ -80,6 +81,11 @@ namespace sg::chess::ui
         [[nodiscard]] std::string_view Title() const noexcept override;
 
         /**
+         * @brief Copies the user name from the settings into the text field: it may have been changed on another page.
+         */
+        void OnEnter() override;
+
+        /**
          * @brief Shows the settings on a page that fills the area to the right of the navigation bar.
          */
         void DrawGui() override;
@@ -88,6 +94,11 @@ namespace sg::chess::ui
         //-------------------------------------------------
         // Helper
         //-------------------------------------------------
+
+        /**
+         * @brief Draws the section "Accounts": the user name on chess.com.
+         */
+        void DrawAccounts();
 
         /**
          * @brief Draws the list for the language.
@@ -103,9 +114,10 @@ namespace sg::chess::ui
         // Member
         //-------------------------------------------------
 
-        core::Settings& m_settings;               ///< What the page changes
-        std::vector<core::Language> m_languages;  ///< The languages that there are, English first
-        ApplyFunction m_apply;                    ///< Applies and saves the settings
-        std::string m_error;                      ///< What went wrong when the settings were saved, or empty
+        core::Settings& m_settings; ///< What the page changes
+        std::vector<core::Language> m_languages; ///< The languages that there are, English first
+        ApplyFunction m_apply; ///< Applies and saves the settings
+        std::array<char, core::Settings::MAX_USERNAME_LENGTH + 1> m_chesscomUsername{}; ///< The text field
+        std::string m_error; ///< What went wrong when the settings were saved, or empty
     };
 }

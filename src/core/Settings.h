@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -52,12 +53,48 @@ namespace sg::chess::core
         };
 
         /**
+         * @brief The accounts of the user on the websites that the games come from.
+         */
+        struct Accounts
+        {
+            /**
+             * @brief The account on chess.com.
+             */
+            struct ChessCom
+            {
+                std::string username; ///< The name on chess.com. Empty if the user has not set one
+
+                /**
+                 * @brief Compares the account.
+                 *
+                 * @return True if everything is the same.
+                 */
+                [[nodiscard]] bool operator==(const ChessCom&) const = default;
+            };
+
+            ChessCom chesscom; ///< chess.com
+
+            /**
+             * @brief Compares the accounts.
+             *
+             * @return True if everything is the same.
+             */
+            [[nodiscard]] bool operator==(const Accounts&) const = default;
+        };
+
+        /**
+         * @brief The longest user name that is kept. Names on chess.com are shorter. A longer text is a mistake.
+         */
+        static constexpr std::size_t MAX_USERNAME_LENGTH{ 50 };
+
+        /**
          * @brief The value of language that means: use the language of the system.
          */
         static constexpr const char* AUTO_LANGUAGE{ "auto" };
 
         std::string language{ AUTO_LANGUAGE };  ///< "auto" or the code of a language, e.g. "en" or "de"
         Analysis analysis;                      ///< The analysis page
+        Accounts accounts;                      ///< The accounts on websites
 
         std::string extra;  ///< Entries of the file that this version does not know, as JSON text. Kept, not used
 

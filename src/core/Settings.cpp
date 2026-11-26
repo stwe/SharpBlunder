@@ -87,40 +87,67 @@ namespace
         }
     }
 
-    // The entries of the file that are not settings of this version, as an object (or null if there are none).
-    Json UnknownEntries(const Json& t_document)
+    // The entries that this version knows. An object stands for a group of entries, null for a single entry.
+    Json KnownEntries()
     {
-        static const std::array<std::string_view, 2> KNOWN_TOP{ "version", "language" };
-        static const std::array<std::string_view, 1> KNOWN_ANALYSIS{ "engineOnAtStart" };
+        Json known = Json::object();
+        known["version"] = nullptr;
+        known["language"] = nullptr;
+        known["analysis"]["engineOnAtStart"] = nullptr;
+        known["accounts"]["chesscom"]["username"] = nullptr;
 
+        return known;
+    }
+
+    // The entries of a group that t_known does not have, as an object (empty if there are none). In a group that
+    // this version knows, only the entries that it does not know are taken. A known entry with a wrong type is not
+    // kept: it is replaced by its default.
+    Json UnknownEntries(const Json& t_document, const Json& t_known)
+    {
         Json extra = Json::object();
 
         for (const auto& [key, value] : t_document.items())
         {
-            if (key == "analysis" && value.is_object())
-            {
-                Json unknown = Json::object();
+            const auto known{ t_known.find(key) };
 
-                for (const auto& [name, entry] : value.items())
-                {
-                    if (std::ranges::find(KNOWN_ANALYSIS, name) == KNOWN_ANALYSIS.end())
-                    {
-                        unknown[name] = entry;
-                    }
-                }
-
-                if (!unknown.empty())
-                {
-                    extra[key] = unknown;
-                }
-            }
-            else if (key != "analysis" && std::ranges::find(KNOWN_TOP, key) == KNOWN_TOP.end())
+            if (known == t_known.end())
             {
                 extra[key] = value;
+            }
+            else if (known->is_object() && value.is_object())
+            {
+                if (const Json inner = UnknownEntries(value, *known); !inner.empty())
+                {
+                    extra[key] = inner;
+                }
             }
         }
 
         return extra;
+    }
+
+    // The name of an account: not longer than MAX_USERNAME_LENGTH and without control characters. White space at the
+    // start and at the end is not part of it.
+    std::string CleanUsername(const std::string& t_text)
+    {
+        std::size_t first{ 0 };
+        std::size_t last{ t_text.size() };
+
+        while (first < last && std::isspace(static_cast<unsigned char>(t_text[first])) != 0)
+        {
+            ++first;
+        }
+
+        while (last > first && std::isspace(static_cast<unsigned char>(t_text[last - 1])) != 0)
+        {
+            --last;
+        }
+
+        const std::string name{ t_text.substr(first, last - first) };
+        const bool hasControl{ std::ranges::any_of(
+            name, [](const char t_c) { return std::iscntrl(static_cast<unsigned char>(t_c)) != 0; }) };
+
+        return hasControl || name.size() > sg::chess::core::Settings::MAX_USERNAME_LENGTH ? std::string{} : name;
     }
 } // namespace
 
@@ -235,7 +262,17 @@ std::optional<sg::chess::core::Settings> sg::chess::core::settings_from_json(con
         Read(*it, "engineOnAtStart", settings.analysis.engineOnAtStart);
     }
 
-    if (const Json extra = UnknownEntries(document); !extra.empty())
+    if (const auto accounts{ document.find("accounts") }; accounts != document.end() && accounts->is_object())
+    {
+        if (const auto chesscom{ accounts->find("chesscom") }; chesscom != accounts->end() && chesscom->is_object())
+        {
+            std::string username;
+            Read(*chesscom, "username", username);
+            settings.accounts.chesscom.username = CleanUsername(username);
+        }
+    }
+
+    if (const Json extra = UnknownEntries(document, KnownEntries()); !extra.empty())
     {
         // With sorted keys, the same entries are always the same text, whatever the order in the file was.
         settings.extra = nlohmann::json::parse(extra.dump()).dump();
@@ -251,6 +288,7 @@ std::string sg::chess::core::settings_to_json(const Settings& t_settings)
     document["version"] = FORMAT_VERSION;
     document["language"] = IsLanguageCode(t_settings.language) ? t_settings.language : Settings::AUTO_LANGUAGE;
     document["analysis"]["engineOnAtStart"] = t_settings.analysis.engineOnAtStart;
+    document["accounts"]["chesscom"]["username"] = CleanUsername(t_settings.accounts.chesscom.username);
 
     if (!t_settings.extra.empty())
     {

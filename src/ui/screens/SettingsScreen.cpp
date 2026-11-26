@@ -17,7 +17,9 @@
 
 #include <imgui.h>
 #include <algorithm>
+#include <cstring>
 #include <utility>
+#include "core/ChessComParser.h"
 #include "core/I18n.h"
 #include "ui/Layout.h"
 #include "ui/screens/SettingsScreen.h"
@@ -31,7 +33,7 @@ namespace
                                              ImGuiWindowFlags_NoCollapse |
                                              ImGuiWindowFlags_NoSavedSettings };
 
-    constexpr float LABEL_WIDTH{ 160.0f };
+    constexpr float LABEL_WIDTH{ 210.0f };
     constexpr float FIELD_WIDTH{ 280.0f };
     constexpr float MARGIN{ 24.0f };
 
@@ -67,6 +69,13 @@ std::string_view sg::chess::ui::SettingsScreen::Title() const noexcept
     return core::tr("Settings");
 }
 
+void sg::chess::ui::SettingsScreen::OnEnter()
+{
+    std::ranges::fill(m_chesscomUsername, '\0');
+    std::strncpy(m_chesscomUsername.data(), m_settings.accounts.chesscom.username.c_str(),
+                 m_chesscomUsername.size() - 1);
+}
+
 void sg::chess::ui::SettingsScreen::DrawGui()
 {
     const ImVec2 displaySize{ ImGui::GetIO().DisplaySize };
@@ -88,6 +97,9 @@ void sg::chess::ui::SettingsScreen::DrawGui()
         ImGui::SeparatorText(core::tr("General"));
         DrawLanguage();
 
+        ImGui::Spacing();
+        ImGui::SeparatorText(core::tr("Accounts"));
+        DrawAccounts();
         ImGui::Spacing();
         ImGui::SeparatorText(core::tr("Analysis"));
 
@@ -114,6 +126,32 @@ void sg::chess::ui::SettingsScreen::DrawGui()
 //-------------------------------------------------
 // Helper
 //-------------------------------------------------
+
+void sg::chess::ui::SettingsScreen::DrawAccounts()
+{
+    Label(core::tr("Chess.com username"));
+    ImGui::SetNextItemWidth(FIELD_WIDTH);
+    ImGui::InputText("##chesscomUsername", m_chesscomUsername.data(), m_chesscomUsername.size(),
+                     ImGuiInputTextFlags_AutoSelectAll);
+
+    // Saved when the field is left, not after every letter.
+    if (ImGui::IsItemDeactivatedAfterEdit())
+    {
+        m_settings.accounts.chesscom.username = m_chesscomUsername.data();
+        Changed();
+    }
+
+    ImGui::SetCursorPosX(LABEL_WIDTH + MARGIN);
+
+    if (const std::string name{ m_chesscomUsername.data() }; !name.empty() && !core::is_valid_chesscom_username(name))
+    {
+        ImGui::TextColored(ERROR_COLOR, "%s", core::tr("This is not a possible user name on chess.com."));
+    }
+    else
+    {
+        ImGui::TextDisabled("%s", core::tr("The page My Games starts with this name. You can change it there."));
+    }
+}
 
 void sg::chess::ui::SettingsScreen::DrawLanguage()
 {

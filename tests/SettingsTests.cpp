@@ -71,12 +71,14 @@ namespace
         Settings settings;
         settings.language = "de";
         settings.analysis.engineOnAtStart = false;
+        settings.accounts.chesscom.username = "SteffenGo";
 
         const std::string text{ sg::chess::core::settings_to_json(settings) };
 
         // The file is for people, too: indented, with the version first.
         CHECK(text == "{\n  \"version\": 1,\n  \"language\": \"de\",\n  \"analysis\": {\n"
-                      "    \"engineOnAtStart\": false\n  }\n}\n");
+                      "    \"engineOnAtStart\": false\n  },\n  \"accounts\": {\n    \"chesscom\": {\n"
+                      "      \"username\": \"SteffenGo\"\n    }\n  }\n}\n");
         CHECK(sg::chess::core::settings_from_json(text) == settings);
     }
 
@@ -150,6 +152,55 @@ namespace
 
         // The version of this program is written.
         CHECK(changedText.find("\"version\": 1") != std::string::npos);
+    }
+
+    void TestAccounts()
+    {
+        using sg::chess::core::settings_from_json;
+        using sg::chess::core::settings_to_json;
+
+        // The default: no name.
+        CHECK(Settings{}.accounts.chesscom.username.empty());
+        CHECK(settings_from_json("{}")->accounts.chesscom.username.empty());
+
+        // A name is read, and written again.
+        auto settings{ settings_from_json(R"({"accounts": {"chesscom": {"username": "SteffenGo"}}})") };
+        CHECK(settings.has_value());
+        CHECK(settings->accounts.chesscom.username == "SteffenGo");
+        CHECK(settings->extra.empty());
+        CHECK(settings_from_json(settings_to_json(*settings)) == settings);
+
+        // White space around the name is not part of it. A name that cannot be one is not kept.
+        CHECK(settings_from_json(R"({"accounts": {"chesscom": {"username": "  Me \t"}}})")
+                  ->accounts.chesscom.username == "Me");
+        CHECK(settings_from_json(R"({"accounts": {"chesscom": {"username": "a\nb"}}})")
+                  ->accounts.chesscom.username.empty());
+        CHECK(settings_from_json(R"({"accounts": {"chesscom": {"username": 42}}})")
+                  ->accounts.chesscom.username.empty());
+        CHECK(settings_from_json(R"({"accounts": {"chesscom": "SteffenGo"}})")
+                  ->accounts.chesscom.username.empty());
+        CHECK(settings_from_json(R"({"accounts": []})")->accounts.chesscom.username.empty());
+        CHECK(settings_from_json("{\"accounts\": {\"chesscom\": {\"username\": \"" + std::string(51, 'x') + "\"}}}")
+                  ->accounts.chesscom.username.empty());
+
+        // Accounts of other sites and other entries of this account belong to a later version: they are kept.
+        settings = settings_from_json(R"({"accounts": {"chesscom": {"username": "Me", "token": "t"},
+                                                       "lichess": {"username": "Other"}}})");
+        CHECK(settings->accounts.chesscom.username == "Me");
+        CHECK(!settings->extra.empty());
+
+        Settings changed{ *settings };
+        changed.accounts.chesscom.username = "You";
+        const std::string text{ settings_to_json(changed) };
+        CHECK(text.find("\"lichess\"") != std::string::npos);
+        CHECK(text.find("\"Other\"") != std::string::npos);
+        CHECK(text.find("\"token\": \"t\"") != std::string::npos);
+        CHECK(text.find("\"You\"") != std::string::npos);
+        CHECK(text.find("\"Me\"") == std::string::npos);
+        CHECK(settings_from_json(text) == changed);
+
+        // A file of an older version, without accounts, is fine.
+        CHECK(settings_from_json(R"({"version": 1, "language": "de"})")->accounts.chesscom.username.empty());
     }
 
     void TestFiles()
@@ -235,6 +286,7 @@ int main()
     TestWrongValues();
     TestNotJson();
     TestUnknownEntries();
+    TestAccounts();
     TestFiles();
     TestBrokenFile();
     TestUnwritable();
