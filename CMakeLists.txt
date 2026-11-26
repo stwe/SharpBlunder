@@ -44,8 +44,10 @@ FetchContent_MakeAvailable(json)
 add_executable(SharpBlunder
         src/main.cpp
 
+        src/core/ChessComParser.cpp
         src/core/DrawRules.cpp
         src/core/GameState.cpp
+        src/core/GameSummary.cpp
         src/core/I18n.cpp
         src/core/Material.cpp
         src/core/Move.cpp
@@ -310,3 +312,21 @@ target_include_directories(I18nTests PRIVATE src tests)
 target_compile_options(I18nTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME I18nTests COMMAND I18nTests)
+
+add_executable(ChessComParserTests
+        tests/ChessComParserTests.cpp
+
+        src/core/ChessComParser.cpp
+        src/core/GameSummary.cpp
+        src/core/I18n.cpp
+        src/core/TimeControl.cpp
+)
+
+target_include_directories(ChessComParserTests PRIVATE src tests)
+target_compile_definitions(ChessComParserTests PRIVATE
+        SHARPBLUNDER_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data"
+)
+target_compile_options(ChessComParserTests PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(ChessComParserTests PRIVATE nlohmann_json::nlohmann_json)
+
+add_test(NAME ChessComParserTests COMMAND ChessComParserTests)
