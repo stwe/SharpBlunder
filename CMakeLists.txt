@@ -43,6 +43,7 @@ FetchContent_MakeAvailable(json)
 
 # libcurl for HTTPS (SFML has no HTTPS). It has a license of its own, similar to MIT, and is linked dynamically.
 find_package(CURL REQUIRED)
+find_package(Threads REQUIRED)
 
 add_executable(SharpBlunder
         src/main.cpp
@@ -75,6 +76,7 @@ add_executable(SharpBlunder
 
         src/net/ChessComClient.cpp
         src/net/CurlHttpClient.cpp
+        src/net/GamesSyncer.cpp
 
         src/ui/App.cpp
         src/ui/BoardView.cpp
@@ -385,3 +387,22 @@ target_compile_options(CurlHttpClientTests PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(CurlHttpClientTests PRIVATE CURL::libcurl)
 
 add_test(NAME CurlHttpClientTests COMMAND CurlHttpClientTests)
+
+add_executable(GamesSyncerTests
+        tests/GamesSyncerTests.cpp
+
+        src/core/ChessComParser.cpp
+        src/core/GameList.cpp
+        src/core/GameSummary.cpp
+        src/core/I18n.cpp
+        src/core/TimeControl.cpp
+
+        src/net/ChessComClient.cpp
+        src/net/GamesSyncer.cpp
+)
+
+target_include_directories(GamesSyncerTests PRIVATE src tests)
+target_compile_options(GamesSyncerTests PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(GamesSyncerTests PRIVATE nlohmann_json::nlohmann_json Threads::Threads)
+
+add_test(NAME GamesSyncerTests COMMAND GamesSyncerTests)
