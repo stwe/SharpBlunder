@@ -345,3 +345,24 @@ target_include_directories(GameListTests PRIVATE src tests)
 target_compile_options(GameListTests PRIVATE -Wall -Wextra -Wpedantic)
 
 add_test(NAME GameListTests COMMAND GameListTests)
+
+add_executable(ChessComClientTests
+        tests/ChessComClientTests.cpp
+
+        src/core/ChessComParser.cpp
+        src/core/GameList.cpp
+        src/core/GameSummary.cpp
+        src/core/I18n.cpp
+        src/core/TimeControl.cpp
+
+        src/net/ChessComClient.cpp
+)
+
+target_include_directories(ChessComClientTests PRIVATE src tests)
+target_compile_definitions(ChessComClientTests PRIVATE
+        SHARPBLUNDER_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data"
+)
+target_compile_options(ChessComClientTests PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(ChessComClientTests PRIVATE nlohmann_json::nlohmann_json)
+
+add_test(NAME ChessComClientTests COMMAND ChessComClientTests)
