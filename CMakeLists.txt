@@ -41,6 +41,9 @@ FetchContent_Declare(json
 )
 FetchContent_MakeAvailable(json)
 
+# libcurl for HTTPS (SFML has no HTTPS). It has a license of its own, similar to MIT, and is linked dynamically.
+find_package(CURL REQUIRED)
+
 add_executable(SharpBlunder
         src/main.cpp
 
@@ -69,6 +72,9 @@ add_executable(SharpBlunder
         src/engine/Engine.cpp
         src/engine/StockfishRules.cpp
         src/engine/UciInfo.cpp
+
+        src/net/ChessComClient.cpp
+        src/net/CurlHttpClient.cpp
 
         src/ui/App.cpp
         src/ui/BoardView.cpp
@@ -108,6 +114,7 @@ target_link_libraries(SharpBlunder PRIVATE
         SFML::System
         ImGui-SFML::ImGui-SFML
         nlohmann_json::nlohmann_json
+        CURL::libcurl
 )
 
 # Tests: they need neither a window nor Stockfish. Run them with "ctest" in the build directory.
@@ -366,3 +373,15 @@ target_compile_options(ChessComClientTests PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(ChessComClientTests PRIVATE nlohmann_json::nlohmann_json)
 
 add_test(NAME ChessComClientTests COMMAND ChessComClientTests)
+
+add_executable(CurlHttpClientTests
+        tests/CurlHttpClientTests.cpp
+
+        src/net/CurlHttpClient.cpp
+)
+
+target_include_directories(CurlHttpClientTests PRIVATE src tests)
+target_compile_options(CurlHttpClientTests PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(CurlHttpClientTests PRIVATE CURL::libcurl)
+
+add_test(NAME CurlHttpClientTests COMMAND CurlHttpClientTests)
