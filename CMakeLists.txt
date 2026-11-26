@@ -46,6 +46,7 @@ add_executable(SharpBlunder
 
         src/core/ChessComParser.cpp
         src/core/DrawRules.cpp
+        src/core/GameList.cpp
         src/core/GameState.cpp
         src/core/GameSummary.cpp
         src/core/I18n.cpp
@@ -330,3 +331,17 @@ target_compile_options(ChessComParserTests PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(ChessComParserTests PRIVATE nlohmann_json::nlohmann_json)
 
 add_test(NAME ChessComParserTests COMMAND ChessComParserTests)
+
+add_executable(GameListTests
+        tests/GameListTests.cpp
+
+        src/core/GameList.cpp
+        src/core/GameSummary.cpp
+        src/core/I18n.cpp
+        src/core/TimeControl.cpp
+)
+
+target_include_directories(GameListTests PRIVATE src tests)
+target_compile_options(GameListTests PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(NAME GameListTests COMMAND GameListTests)
