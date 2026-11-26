@@ -85,6 +85,7 @@ add_executable(SharpBlunder
 
         src/ui/screens/AnalysisScreen.cpp
         src/ui/screens/PlaceholderScreen.cpp
+        src/ui/screens/SettingsScreen.cpp
 )
 
 # Includes are relative to src/, e.g. #include "ui/Window.h"

@@ -25,6 +25,7 @@
 #include "core/OpeningBook.h"
 #include "core/Pgn.h"
 #include "core/RulesProvider.h"
+#include "core/Settings.h"
 #include "engine/Analyzer.h"
 #include "ui/BoardView.h"
 #include "ui/EnginePanel.h"
@@ -69,11 +70,12 @@ namespace sg::chess::ui
          * @param t_rules The source of the rules. Not owned: it must outlive this screen.
          * @param t_analyzer The live analysis. Not owned: it must outlive this screen.
          * @param t_openings The names of the openings. Not owned: it must outlive this screen.
+         * @param t_settings The settings of the analysis, read once here.
          *
          * @throws std::runtime_error If the rules cannot be queried.
          */
         AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules, engine::Analyzer& t_analyzer,
-                       const core::OpeningBook& t_openings);
+                       const core::OpeningBook& t_openings, const core::Settings::Analysis& t_settings);
 
         AnalysisScreen(const AnalysisScreen& t_other) = delete;
         AnalysisScreen(AnalysisScreen&& t_other) noexcept = delete;

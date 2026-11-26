@@ -24,6 +24,7 @@
 #include "ui/App.h"
 #include "ui/screens/AnalysisScreen.h"
 #include "ui/screens/PlaceholderScreen.h"
+#include "ui/screens/SettingsScreen.h"
 
 namespace
 {
@@ -72,13 +73,15 @@ sg::chess::ui::App::App(const std::string& t_stockfish)
     // The language is set before a screen is made: the texts are translated when they are shown.
     ApplyLanguage();
 
-    m_screens.Add(ScreenId::ANALYSIS, std::make_unique<AnalysisScreen>(m_pieces, m_rules, m_analyzer, m_openings));
+    m_screens.Add(ScreenId::ANALYSIS, std::make_unique<AnalysisScreen>(m_pieces, m_rules, m_analyzer, m_openings,
+                                                                           m_settings.analysis));
     m_screens.Add(ScreenId::GAMES, std::make_unique<PlaceholderScreen>(
         core::tr_noop("My Games"), core::tr_noop("Import and analyze your games from lichess.org and chess.com.")));
     m_screens.Add(ScreenId::TRAINING, std::make_unique<PlaceholderScreen>(
         core::tr_noop("Training"), core::tr_noop("Learn and repeat your opening repertoire.")));
-    m_screens.Add(ScreenId::SETTINGS, std::make_unique<PlaceholderScreen>(
-        core::tr_noop("Settings"), core::tr_noop("Engine, accounts and appearance.")));
+    m_screens.Add(ScreenId::SETTINGS, std::make_unique<SettingsScreen>(
+        m_settings, core::available_languages(std::filesystem::path{ ASSET_DIR } / TRANSLATIONS_DIR),
+        [this]() { return ApplySettings(); }));
 
     m_screens.SwitchTo(ScreenId::ANALYSIS);
 }
@@ -98,6 +101,13 @@ void sg::chess::ui::App::ApplyLanguage()
     {
         std::cerr << "Warning: " << *problem << '\n';
     }
+}
+
+std::optional<std::string> sg::chess::ui::App::ApplySettings()
+{
+    ApplyLanguage();
+
+    return core::save_settings(core::settings_path(), m_settings);
 }
 
 //-------------------------------------------------

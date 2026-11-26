@@ -19,6 +19,7 @@
 
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
+#include <optional>
 #include <string>
 #include "core/OpeningBook.h"
 #include "core/Settings.h"
@@ -87,6 +88,13 @@ namespace sg::chess::ui
          * "auto" is the language of the system. If there is no translation for the language, the texts are English.
          */
         void ApplyLanguage();
+
+        /**
+         * @brief Puts the settings to work and saves them. The settings page calls it after every change.
+         *
+         * @return std::nullopt if the file was saved, or what went wrong.
+         */
+        [[nodiscard]] std::optional<std::string> ApplySettings();
 
         //-------------------------------------------------
         // Frame steps

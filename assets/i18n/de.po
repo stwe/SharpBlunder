@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SharpBlunder\n"
 "Report-Msgid-Bugs-To: https://github.com/stwe/SharpBlunder/issues\n"
-"POT-Creation-Date: 2026-11-25 21:32+0000\n"
+"POT-Creation-Date: 2026-11-26 11:51+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -107,7 +107,7 @@ msgstr "Kommentar hinzufügen..."
 msgid "Alternative to {}"
 msgstr "Alternative zu {}"
 
-#: src/ui/screens/AnalysisScreen.cpp
+#: src/ui/screens/AnalysisScreen.cpp src/ui/screens/SettingsScreen.cpp
 msgid "Analysis"
 msgstr "Analyse"
 
@@ -115,8 +115,12 @@ msgstr "Analyse"
 msgid "Analysis board"
 msgstr "Analysebrett"
 
-#: src/core/Score.cpp src/ui/GameDetails.cpp src/ui/NotationPanel.cpp
-#: src/ui/screens/AnalysisScreen.cpp
+#: src/ui/screens/SettingsScreen.cpp
+msgid "Automatic ({})"
+msgstr "Automatisch ({})"
+
+#: src/core/Pgn.cpp src/core/Score.cpp src/ui/GameDetails.cpp
+#: src/ui/NotationPanel.cpp src/ui/screens/AnalysisScreen.cpp
 msgid "Black"
 msgstr "Schwarz"
 
@@ -197,13 +201,9 @@ msgstr "Kommentar bearbeiten..."
 msgid "Edit the details of the game"
 msgstr "Details der Partie bearbeiten"
 
-#: src/ui/EnginePanel.cpp
+#: src/ui/EnginePanel.cpp src/ui/screens/SettingsScreen.cpp
 msgid "Engine"
 msgstr "Engine"
-
-#: src/ui/App.cpp
-msgid "Engine, accounts and appearance."
-msgstr "Engine, Konten und Aussehen."
 
 #: src/core/Score.cpp
 msgid "Equal"
@@ -225,6 +225,10 @@ msgstr "Drehen"
 msgid "Game details"
 msgstr "Partiedetails"
 
+#: src/ui/screens/SettingsScreen.cpp
+msgid "General"
+msgstr "Allgemein"
+
 #: src/ui/Icons.cpp
 msgid "Good move: the best one or almost as good."
 msgstr "Guter Zug: der beste oder fast so gut."
@@ -235,7 +239,12 @@ msgstr "Zugfolge ausblenden"
 
 #: src/ui/App.cpp
 msgid "Import and analyze your games from lichess.org and chess.com."
-msgstr "Importiere und analysiere deine Partien von lichess.org und chess.com."
+msgstr ""
+"Importiere und analysiere deine Partien von lichess.org und chess.com."
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "Language"
+msgstr "Sprache"
 
 #: src/ui/App.cpp
 msgid "Learn and repeat your opening repertoire."
@@ -389,7 +398,7 @@ msgstr "Aufstellen"
 msgid "Set up from FEN..."
 msgstr "Aus FEN aufstellen..."
 
-#: src/ui/App.cpp
+#: src/ui/screens/SettingsScreen.cpp
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -408,6 +417,10 @@ msgstr "Patt - Remis"
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Start new game"
 msgstr "Neue Partie beginnen"
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "Switch the engine on when the program starts"
+msgstr "Engine beim Start des Programms einschalten"
 
 #: src/ui/GameDetails.cpp
 msgid "Termination"
@@ -436,15 +449,23 @@ msgstr ""
 
 #: src/ui/PgnMenu.cpp
 msgid ""
-"The position on the board as FEN. Write or paste another one to start a game "
-"from it:"
+"The position on the board as FEN. Write or paste another one to start a game"
+" from it:"
 msgstr ""
 "Die Stellung auf dem Brett als FEN. Schreibe oder füge eine andere ein, um "
 "eine Partie daraus zu beginnen:"
 
+#: src/ui/screens/SettingsScreen.cpp
+msgid "The settings could not be saved: {}"
+msgstr "Die Einstellungen konnten nicht gespeichert werden: {}"
+
 #: src/ui/EnginePanel.cpp
 msgid "Thinking..."
 msgstr "Denkt nach..."
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "This takes effect the next time the program starts."
+msgstr "Das gilt ab dem nächsten Start des Programms."
 
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Throw away the moves and start a new game?"
@@ -462,8 +483,8 @@ msgstr "Training"
 msgid "Weak move: much worse than the best one."
 msgstr "Schwacher Zug: viel schlechter als der beste."
 
-#: src/core/Score.cpp src/ui/GameDetails.cpp src/ui/NotationPanel.cpp
-#: src/ui/screens/AnalysisScreen.cpp
+#: src/core/Pgn.cpp src/core/Score.cpp src/ui/GameDetails.cpp
+#: src/ui/NotationPanel.cpp src/ui/screens/AnalysisScreen.cpp
 msgid "White"
 msgstr "Weiß"
 

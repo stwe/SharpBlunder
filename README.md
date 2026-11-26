@@ -45,8 +45,10 @@ Working today:
 - Name and ECO code of the opening (for example `B90 Sicilian Defense: Najdorf Variation`), found by position, so
   transpositions work too. After the game leaves the book, the last known name stays. The opening is also written
   to the PGN tags `ECO`, `Opening`, `Variation` and `SubVariation`
-- English and German. The language comes from the settings file (`language`: `auto`, `en` or `de`, `auto` follows the
-  system). The chess notation is not translated: moves stay `Nc6` and PGN files always use English tags and values,
+- The settings page (Einstellungen) changes the language at once and says whether the engine starts switched on. The
+  settings are kept in `~/SharpBlunder/settings.json`, which can be edited by hand, too. A file that is broken is kept
+  as `settings.json.bak` and the defaults are used
+- English and German. The language is chosen on the settings page (`auto` follows the system). The chess notation is not translated: moves stay `Nc6` and PGN files always use English tags and values,
   so they work everywhere. Terms such as Remis, Matt and Patt are used in German
 - Sidebar navigation between the pages
 

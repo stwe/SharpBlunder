@@ -53,10 +53,11 @@ namespace
 //-------------------------------------------------
 
 sg::chess::ui::EnginePanel::EnginePanel(const PieceSet& t_pieces, core::RulesProvider& t_rules,
-                                        engine::Analyzer& t_analyzer)
+                                        engine::Analyzer& t_analyzer, const bool t_engineOn)
     : m_pieces(t_pieces)
     , m_rules(t_rules)
     , m_analyzer(t_analyzer)
+    , m_analysisOn(t_engineOn)
 {
 }
 

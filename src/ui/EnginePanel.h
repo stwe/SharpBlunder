@@ -57,13 +57,15 @@ namespace sg::chess::ui
         //-------------------------------------------------
 
         /**
-         * @brief Creates the panel. The analysis is on, but only runs while the page is shown, see OnEnter().
+         * @brief Creates the panel. The analysis only runs while the page is shown, see OnEnter().
          *
          * @param t_pieces The piece images for the icons. Not owned: they must outlive this panel.
          * @param t_rules The source of the rules, needed to write the lines in SAN. Not owned.
          * @param t_analyzer The live analysis. Not owned: it must outlive this panel.
+         * @param t_engineOn Whether the check box "Engine" is on at the start.
          */
-        EnginePanel(const PieceSet& t_pieces, core::RulesProvider& t_rules, engine::Analyzer& t_analyzer);
+        EnginePanel(const PieceSet& t_pieces, core::RulesProvider& t_rules, engine::Analyzer& t_analyzer,
+                    bool t_engineOn);
 
         EnginePanel(const EnginePanel& t_other) = delete;
         EnginePanel(EnginePanel&& t_other) noexcept = delete;
@@ -243,7 +245,7 @@ namespace sg::chess::ui
         core::RulesProvider& m_rules;  ///< The source of the rules (not owned)
         engine::Analyzer& m_analyzer;  ///< The live analysis (not owned)
 
-        bool m_analysisOn{ true };                              ///< The check box: analyze the position
+        bool m_analysisOn;                                      ///< The check box: analyze the position
         float m_sinceRefresh{ 0.0f };                           ///< Seconds since the lines were taken over
         std::vector<DisplayLine> m_display;                     ///< The lines shown in the panel, best first
         std::string m_assessment;                               ///< The best line in words, e.g. "Equal"

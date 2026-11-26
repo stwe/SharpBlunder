@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SharpBlunder\n"
 "Report-Msgid-Bugs-To: https://github.com/stwe/SharpBlunder/issues\n"
-"POT-Creation-Date: 2026-11-25 21:33+0000\n"
+"POT-Creation-Date: 2026-11-26 11:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -113,7 +113,7 @@ msgstr ""
 msgid "Alternative to {}"
 msgstr ""
 
-#: src/ui/screens/AnalysisScreen.cpp
+#: src/ui/screens/AnalysisScreen.cpp src/ui/screens/SettingsScreen.cpp
 msgid "Analysis"
 msgstr ""
 
@@ -121,8 +121,12 @@ msgstr ""
 msgid "Analysis board"
 msgstr ""
 
-#: src/core/Score.cpp src/ui/GameDetails.cpp src/ui/NotationPanel.cpp
-#: src/ui/screens/AnalysisScreen.cpp
+#: src/ui/screens/SettingsScreen.cpp
+msgid "Automatic ({})"
+msgstr ""
+
+#: src/core/Pgn.cpp src/core/Score.cpp src/ui/GameDetails.cpp
+#: src/ui/NotationPanel.cpp src/ui/screens/AnalysisScreen.cpp
 msgid "Black"
 msgstr ""
 
@@ -203,12 +207,8 @@ msgstr ""
 msgid "Edit the details of the game"
 msgstr ""
 
-#: src/ui/EnginePanel.cpp
+#: src/ui/EnginePanel.cpp src/ui/screens/SettingsScreen.cpp
 msgid "Engine"
-msgstr ""
-
-#: src/ui/App.cpp
-msgid "Engine, accounts and appearance."
 msgstr ""
 
 #: src/core/Score.cpp
@@ -231,6 +231,10 @@ msgstr ""
 msgid "Game details"
 msgstr ""
 
+#: src/ui/screens/SettingsScreen.cpp
+msgid "General"
+msgstr ""
+
 #: src/ui/Icons.cpp
 msgid "Good move: the best one or almost as good."
 msgstr ""
@@ -241,6 +245,10 @@ msgstr ""
 
 #: src/ui/App.cpp
 msgid "Import and analyze your games from lichess.org and chess.com."
+msgstr ""
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "Language"
 msgstr ""
 
 #: src/ui/App.cpp
@@ -395,7 +403,7 @@ msgstr ""
 msgid "Set up from FEN..."
 msgstr ""
 
-#: src/ui/App.cpp
+#: src/ui/screens/SettingsScreen.cpp
 msgid "Settings"
 msgstr ""
 
@@ -413,6 +421,10 @@ msgstr ""
 
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Start new game"
+msgstr ""
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "Switch the engine on when the program starts"
 msgstr ""
 
 #: src/ui/GameDetails.cpp
@@ -445,8 +457,16 @@ msgid ""
 "from it:"
 msgstr ""
 
+#: src/ui/screens/SettingsScreen.cpp
+msgid "The settings could not be saved: {}"
+msgstr ""
+
 #: src/ui/EnginePanel.cpp
 msgid "Thinking..."
+msgstr ""
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "This takes effect the next time the program starts."
 msgstr ""
 
 #: src/ui/screens/AnalysisScreen.cpp
@@ -465,8 +485,8 @@ msgstr ""
 msgid "Weak move: much worse than the best one."
 msgstr ""
 
-#: src/core/Score.cpp src/ui/GameDetails.cpp src/ui/NotationPanel.cpp
-#: src/ui/screens/AnalysisScreen.cpp
+#: src/core/Pgn.cpp src/core/Score.cpp src/ui/GameDetails.cpp
+#: src/ui/NotationPanel.cpp src/ui/screens/AnalysisScreen.cpp
 msgid "White"
 msgstr ""
 

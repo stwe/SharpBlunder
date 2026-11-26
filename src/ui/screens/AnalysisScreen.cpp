@@ -87,13 +87,14 @@ namespace
 //-------------------------------------------------
 
 sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules,
-                                              engine::Analyzer& t_analyzer, const core::OpeningBook& t_openings)
+                                              engine::Analyzer& t_analyzer, const core::OpeningBook& t_openings,
+                                              const core::Settings::Analysis& t_settings)
     : m_game(t_rules)
     , m_boardView(BOARD_ORIGIN, SQUARE_SIZE, t_pieces)
     , m_input(m_boardView)
     , m_openings(t_openings)
     , m_evalBar(EVAL_BAR_ORIGIN, EVAL_BAR_SIZE)
-    , m_enginePanel(t_pieces, t_rules, t_analyzer)
+    , m_enginePanel(t_pieces, t_rules, t_analyzer, t_settings.engineOnAtStart)
     , m_playerStrip(t_pieces)
     , m_pgnMenu(t_rules)
     , m_headers(core::PgnHeaders::MakeDefault(core::format_local_time("%Y.%m.%d")))
