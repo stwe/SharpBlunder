@@ -50,8 +50,8 @@ namespace sg::chess::core
      *
      * The text has the time at the start, and may have the time added per move after a "+" or a "|". Times are
      * written as a number with a unit: s, sec, second(s) for seconds, m, min, minute(s) for minutes, h, hour(s) for
-     * hours. A number may have a decimal point or comma ("1,5 min"). Several amounts are added ("1h 30min"), and all of them but the
-     * first must have a unit.
+     * hours. A number may have a decimal point or comma ("1,5 min"). Several amounts are added ("1h 30min"), and all
+     * of them but the first must have a unit.
      * Without a unit the time at the start is in minutes, and the time added per move is in seconds. That is how
      * chess players say it: "15+10" is 15 minutes and 10 seconds per move. Capital letters and spaces do not matter.
      *
@@ -91,9 +91,9 @@ namespace sg::chess::core
     /**
      * @brief Checks whether a text is a correct value of the PGN tag TimeControl.
      *
-     * Allowed are "?" and "-" (not known, no time control), and periods separated by ":": moves per seconds ("40/7200"),
-     * seconds ("300"), seconds plus an increment ("300+5", last period only) and an hourglass ("*60", last period
-     * only).
+     * Allowed are "?" and "-" (not known, no time control), and periods separated by ":": moves per seconds
+     * ("40/7200"), seconds ("300"), seconds plus an increment ("300+5", last period only) and an hourglass ("*60", last
+     * period only).
      *
      * @param t_value The text.
      *

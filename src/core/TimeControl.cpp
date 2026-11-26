@@ -345,7 +345,12 @@ std::optional<std::string> sg::chess::core::time_control_from_input(const std::s
     // different size than the person may think. Only what cannot be a simple time control is kept as it is.
     const bool special{ trimmed == "?" || trimmed == "-" || trimmed.find_first_of("/:*") != std::string_view::npos };
 
-    return special && is_pgn_time_control(trimmed) ? std::optional<std::string>{ std::string{ trimmed } } : std::nullopt;
+    if (special && is_pgn_time_control(trimmed))
+    {
+        return std::string{ trimmed };
+    }
+
+    return std::nullopt;
 }
 
 std::string sg::chess::core::time_control_for_input(const std::string_view t_value)

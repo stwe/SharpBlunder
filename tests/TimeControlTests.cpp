@@ -121,8 +121,8 @@ namespace
         CHECK(sg::chess::core::describe_time_control({ 0, 5 }) == "0 s + 5 s");
 
         // What the field shows reads back to the same tag value.
-        for (const char* value : { "900+10", "300", "60", "180+2", "5400+30", "3690", "90", "0+5", "86400", "40/7200:3600",
-                                   "*120", "?", "-" })
+        for (const char* value : { "900+10", "300", "60", "180+2", "5400+30", "3690", "90", "0+5", "86400",
+                                   "40/7200:3600", "*120", "?", "-" })
         {
             const std::string shown{ sg::chess::core::time_control_for_input(value) };
             CHECK(sg::chess::core::time_control_from_input(shown) == std::optional<std::string>{ value });

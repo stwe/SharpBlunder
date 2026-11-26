@@ -85,7 +85,8 @@ namespace
     {
         PgnHeaders headers{ PgnHeaders::MakeDefault("2026.11.24") };
 
-        sg::chess::core::set_opening_tags(headers, Opening{ "B90", "Sicilian Defense: Najdorf Variation, English Attack" });
+        sg::chess::core::set_opening_tags(headers,
+                                          Opening{ "B90", "Sicilian Defense: Najdorf Variation, English Attack" });
         CHECK(headers.Get("ECO") == "B90");
         CHECK(headers.Get("Opening") == "Sicilian Defense");
         CHECK(headers.Get("Variation") == "Najdorf Variation");

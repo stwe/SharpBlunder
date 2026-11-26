@@ -58,9 +58,9 @@ namespace sg::chess::core
     /**
      * @brief Writes the opening of a game into the tags ECO, Opening, Variation and SubVariation.
      *
-     * The name is split the way the lichess names are built: "Sicilian Defense: Najdorf Variation, English Attack" gives
-     * the opening "Sicilian Defense", the variation "Najdorf Variation" and the sub-variation "English Attack". Tags
-     * that the name has no part for are removed, so that no old value stays.
+     * The name is split the way the lichess names are built: "Sicilian Defense: Najdorf Variation, English Attack"
+     * gives the opening "Sicilian Defense", the variation "Najdorf Variation" and the sub-variation "English Attack".
+     * Tags that the name has no part for are removed, so that no old value stays.
      *
      * @param t_headers The tags of the game.
      * @param t_opening The opening.
