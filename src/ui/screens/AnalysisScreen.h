@@ -39,6 +39,7 @@
 #include "ui/PlayerStrip.h"
 #include "ui/PieceSet.h"
 #include "ui/Screen.h"
+#include "ui/TutorPanel.h"
 
 namespace sg::chess::ui
 {
@@ -240,29 +241,30 @@ namespace sg::chess::ui
 
         // m_input refers to m_boardView, so m_boardView must be declared first.
 
-        core::RulesProvider& m_rules;    ///< Checks the moves of games that are opened (not owned)
-        core::GameState m_game;          ///< The moves played on the board
-        BoardView m_boardView;           ///< Draws the board
-        MoveInput m_input;               ///< Turns mouse input into moves
-        const core::OpeningBook& m_openings;  ///< The names of the openings (not owned)
-        EvalBar m_evalBar;               ///< The evaluation bar left of the board
-        EnginePanel m_enginePanel;       ///< The recommended moves in the side panel
-        NotationPanel m_notationPanel;   ///< The list of moves and the navigation buttons
-        PlayerStrip m_playerStrip;       ///< The players above and below the board
-        PgnMenu m_pgnMenu;               ///< Copy, paste, save and open a game as PGN
-        GameDetails m_details;           ///< The window for the details of the game: players, result, event, ...
-        core::PgnHeaders m_headers;      ///< The tags of the game, for PGN
+        core::RulesProvider& m_rules; ///< Checks the moves of games that are opened (not owned)
+        core::GameState m_game; ///< The moves played on the board
+        BoardView m_boardView; ///< Draws the board
+        MoveInput m_input; ///< Turns mouse input into moves
+        const core::OpeningBook& m_openings; ///< The names of the openings (not owned)
+        EvalBar m_evalBar; ///< The evaluation bar left of the board
+        EnginePanel m_enginePanel; ///< The recommended moves in the side panel
+        NotationPanel m_notationPanel; ///< The list of moves and the navigation buttons
+        PlayerStrip m_playerStrip; ///< The players above and below the board
+        TutorPanel m_tutor; ///< The box for the comments of the tutor
+        PgnMenu m_pgnMenu; ///< Copy, paste, save and open a game as PGN
+        GameDetails m_details; ///< The window for the details of the game: players, result, event, ...
+        core::PgnHeaders m_headers; ///< The tags of the game, for PGN
 
-        std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name
-        std::optional<core::Opening> m_taggedOpening;  ///< The opening that UpdateOpeningTags() wrote into the tags
-        BackFunction m_back;                           ///< Goes back to the list of games
-        bool m_cameFromList{ false };                  ///< The game was opened from the list, so the way back is shown
-        bool m_wantBack{ false };                      ///< The button was pressed: go back when it is safe
-        std::optional<core::GameSummary> m_listed;     ///< The game of the list that is on the board
-        std::optional<core::GameSummary> m_pending;    ///< A game of the list that waits to be opened
-        bool m_asking{ false };                        ///< The question "replace the game?" is open
-        std::string m_cleanText;                       ///< The game as PGN when it was opened: to see changes
-        bool m_cleanPending{ false };                  ///< m_cleanText is taken in the next frame (tags are made then)
-        std::string m_openError;                       ///< Why the last game of the list could not be opened
+        std::optional<core::Opening> m_opening; ///< The opening of the game so far, if it has a name
+        std::optional<core::Opening> m_taggedOpening; ///< The opening that UpdateOpeningTags() wrote into the tags
+        BackFunction m_back; ///< Goes back to the list of games
+        bool m_cameFromList{ false }; ///< The game was opened from the list, so the way back is shown
+        bool m_wantBack{ false }; ///< The button was pressed: go back when it is safe
+        std::optional<core::GameSummary> m_listed; ///< The game of the list that is on the board
+        std::optional<core::GameSummary> m_pending; ///< A game of the list that waits to be opened
+        bool m_asking{ false }; ///< The question "replace the game?" is open
+        std::string m_cleanText; ///< The game as PGN when it was opened: to see changes
+        bool m_cleanPending{ false }; ///< m_cleanText is taken in the next frame (tags are made then)
+        std::string m_openError; ///< Why the last game of the list could not be opened
     };
 }

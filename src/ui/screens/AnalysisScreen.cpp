@@ -261,6 +261,8 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
         }
 
         ImGui::Separator();
+        m_tutor.Draw();
+        ImGui::Spacing();
 
         // Above the list: the check box for the comments at the left, the PGN button at the right end.
         const bool toggleDrawn{ m_notationPanel.DrawCommentToggle(m_game) };
