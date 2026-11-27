@@ -66,7 +66,10 @@ void sg::chess::ui::TutorPanel::Draw() const
 
         if (m_text.empty())
         {
-            ImGui::TextDisabled("%s", core::tr("There is no comment yet. The tutor will write here."));
+            // TextDisabled() does not wrap, and the German hint is longer than the box is wide.
+            ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+            ImGui::TextWrapped("%s", core::tr("There is no comment yet. The tutor will write here."));
+            ImGui::PopStyleColor();
         }
         else
         {
