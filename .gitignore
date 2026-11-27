@@ -6,3 +6,4 @@
 *.log
 *.bin
 *.json
+!tests/data/*.json
