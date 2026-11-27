@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SharpBlunder\n"
 "Report-Msgid-Bugs-To: https://github.com/stwe/SharpBlunder/issues\n"
-"POT-Creation-Date: 2026-11-26 11:51+0000\n"
+"POT-Creation-Date: 2026-11-27 11:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,10 @@ msgstr ""
 
 #: src/ui/screens/AnalysisScreen.cpp
 msgid " (check)"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "({} games of other variants, e.g. Chess960, are not shown)"
 msgstr ""
 
 #: src/ui/GameDetails.cpp
@@ -77,7 +81,7 @@ msgstr ""
 msgid "5 min + 3 s  (Blitz)"
 msgstr ""
 
-#: src/core/DrawRules.cpp
+#: src/core/DrawRules.cpp src/core/GameSummary.cpp
 msgid "50-move rule"
 msgstr ""
 
@@ -90,7 +94,27 @@ msgid "90 min + 30 s  (Classical)"
 msgstr ""
 
 #: src/ui/screens/AnalysisScreen.cpp
+msgid "< My Games"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
 msgid "A draw can be claimed: {}"
+msgstr ""
+
+#: src/core/GameSummary.cpp
+msgid "Abandoned"
+msgstr ""
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "Accounts"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Accuracy"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Accuracy (chess.com): {:.1f}% / {:.1f}%"
 msgstr ""
 
 #: src/ui/NotationPanel.cpp
@@ -109,6 +133,14 @@ msgstr ""
 msgid "Add comment..."
 msgstr ""
 
+#: src/core/GameSummary.cpp
+msgid "Agreement"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "All"
+msgstr ""
+
 #: src/ui/NotationPanel.cpp
 msgid "Alternative to {}"
 msgstr ""
@@ -119,6 +151,14 @@ msgstr ""
 
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Analysis board"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Analyze"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Asking chess.com ..."
 msgstr ""
 
 #: src/ui/screens/SettingsScreen.cpp
@@ -134,17 +174,37 @@ msgstr ""
 msgid "Black to move"
 msgstr ""
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Blitz"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Bullet"
+msgstr ""
+
 #: src/ui/GameDetails.cpp src/ui/NotationPanel.cpp src/ui/PgnMenu.cpp
-#: src/ui/screens/AnalysisScreen.cpp
+#: src/ui/screens/AnalysisScreen.cpp src/ui/screens/MyGamesScreen.cpp
 msgid "Cancel"
+msgstr ""
+
+#: src/core/GameSummary.cpp
+msgid "Checkmate"
 msgstr ""
 
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Checkmate - {} wins"
 msgstr ""
 
+#: src/ui/screens/MyGamesScreen.cpp src/ui/screens/SettingsScreen.cpp
+msgid "Chess.com username"
+msgstr ""
+
 #: src/ui/EnginePanel.cpp
 msgid "Click to play this move"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Color"
 msgstr ""
 
 #: src/ui/NotationPanel.cpp
@@ -179,7 +239,11 @@ msgstr ""
 msgid "Copy PGN to clipboard"
 msgstr ""
 
-#: src/ui/GameDetails.cpp
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Daily"
+msgstr ""
+
+#: src/ui/GameDetails.cpp src/ui/screens/MyGamesScreen.cpp
 msgid "Date"
 msgstr ""
 
@@ -189,6 +253,10 @@ msgstr ""
 
 #: src/ui/EnginePanel.cpp
 msgid "Depth {}"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Draw"
 msgstr ""
 
 #: src/ui/screens/AnalysisScreen.cpp
@@ -243,8 +311,8 @@ msgstr ""
 msgid "Hide the line"
 msgstr ""
 
-#: src/ui/App.cpp
-msgid "Import and analyze your games from lichess.org and chess.com."
+#: src/core/GameSummary.cpp
+msgid "Insufficient material"
 msgstr ""
 
 #: src/ui/screens/SettingsScreen.cpp
@@ -255,6 +323,14 @@ msgstr ""
 msgid "Learn and repeat your opening repertoire."
 msgstr ""
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Load older games"
+msgstr ""
+
+#: src/core/GameSummary.cpp src/ui/screens/MyGamesScreen.cpp
+msgid "Loss"
+msgstr ""
+
 #: src/ui/NotationPanel.cpp
 msgid "Main line"
 msgstr ""
@@ -263,7 +339,15 @@ msgstr ""
 msgid "Make main line"
 msgstr ""
 
-#: src/ui/App.cpp
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Month {} of {} ({})"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Moves"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
 msgid "My Games"
 msgstr ""
 
@@ -277,6 +361,10 @@ msgstr ""
 
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "New game"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "No games yet. Type your name and press \"Sync Games\"."
 msgstr ""
 
 #: src/ui/NotationPanel.cpp
@@ -315,8 +403,16 @@ msgstr ""
 msgid "Open file..."
 msgstr ""
 
-#: src/ui/GameDetails.cpp
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Open game"
+msgstr ""
+
+#: src/ui/GameDetails.cpp src/ui/screens/MyGamesScreen.cpp
 msgid "Opening"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Opponent"
 msgstr ""
 
 #: src/ui/PgnMenu.cpp
@@ -343,19 +439,35 @@ msgstr ""
 msgid "Presets"
 msgstr ""
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Rapid"
+msgstr ""
+
 #: src/ui/GameDetails.cpp
 msgid "Rating"
 msgstr ""
 
-#: src/ui/PgnMenu.cpp
+#: src/core/GameSummary.cpp
+msgid "Repetition"
+msgstr ""
+
+#: src/ui/PgnMenu.cpp src/ui/screens/AnalysisScreen.cpp
 msgid "Replace"
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Replace it with the game from the list?"
 msgstr ""
 
 #: src/ui/PgnMenu.cpp
 msgid "Replace the game?"
 msgstr ""
 
-#: src/ui/GameDetails.cpp
+#: src/core/GameSummary.cpp
+msgid "Resignation"
+msgstr ""
+
+#: src/ui/GameDetails.cpp src/ui/screens/MyGamesScreen.cpp
 msgid "Result"
 msgstr ""
 
@@ -395,6 +507,10 @@ msgstr ""
 msgid "Saved games"
 msgstr ""
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Search opponent or opening"
+msgstr ""
+
 #: src/ui/PgnMenu.cpp
 msgid "Set up"
 msgstr ""
@@ -415,6 +531,10 @@ msgstr ""
 msgid "Show the whole line"
 msgstr ""
 
+#: src/core/GameSummary.cpp
+msgid "Stalemate"
+msgstr ""
+
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Stalemate - draw"
 msgstr ""
@@ -423,8 +543,16 @@ msgstr ""
 msgid "Start new game"
 msgstr ""
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Stopped."
+msgstr ""
+
 #: src/ui/screens/SettingsScreen.cpp
 msgid "Switch the engine on when the program starts"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Sync Games"
 msgstr ""
 
 #: src/ui/GameDetails.cpp
@@ -433,6 +561,10 @@ msgstr ""
 
 #: src/ui/EnginePanel.cpp
 msgid "The analysis engine is not available."
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "The answer of chess.com could not be read."
 msgstr ""
 
 #: src/ui/PgnMenu.cpp
@@ -447,8 +579,16 @@ msgstr ""
 msgid "The file could not be written completely: {}"
 msgstr ""
 
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "The game on the board has changes (moves, variations or comments)."
+msgstr ""
+
 #: src/ui/PgnMenu.cpp
 msgid "The game on the board has moves. Replace it with the opened game?"
+msgstr ""
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "The page My Games starts with this name. You can change it there."
 msgstr ""
 
 #: src/ui/PgnMenu.cpp
@@ -457,12 +597,32 @@ msgid ""
 "from it:"
 msgstr ""
 
-#: src/ui/screens/SettingsScreen.cpp
+#: src/ui/screens/MyGamesScreen.cpp src/ui/screens/SettingsScreen.cpp
 msgid "The settings could not be saved: {}"
+msgstr ""
+
+#: src/ui/TutorPanel.cpp
+msgid "There is no comment yet. The tutor will write here."
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "There is no connection to chess.com."
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "There is no connection to chess.com. Games that were saved are shown."
 msgstr ""
 
 #: src/ui/EnginePanel.cpp
 msgid "Thinking..."
+msgstr ""
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "This game could not be opened:"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp src/ui/screens/SettingsScreen.cpp
+msgid "This is not a possible user name on chess.com."
 msgstr ""
 
 #: src/ui/screens/SettingsScreen.cpp
@@ -473,12 +633,32 @@ msgstr ""
 msgid "Throw away the moves and start a new game?"
 msgstr ""
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Time"
+msgstr ""
+
 #: src/ui/GameDetails.cpp
 msgid "Time control"
 msgstr ""
 
+#: src/core/GameSummary.cpp
+msgid "Time out"
+msgstr ""
+
+#: src/core/GameSummary.cpp
+msgid "Time out against insufficient material"
+msgstr ""
+
 #: src/ui/App.cpp
 msgid "Training"
+msgstr ""
+
+#: src/ui/TutorPanel.cpp
+msgid "Tutor"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Use as default"
 msgstr ""
 
 #: src/ui/Icons.cpp
@@ -494,8 +674,26 @@ msgstr ""
 msgid "White to move"
 msgstr ""
 
+#: src/core/GameSummary.cpp src/ui/screens/MyGamesScreen.cpp
+msgid "Win"
+msgstr ""
+
 #: src/ui/GameDetails.cpp
 msgid "YYYY.MM.DD, e.g. 2026.11.24"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "chess.com does not know a user with this name."
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "chess.com has answered with an error."
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid ""
+"chess.com says that there are too many requests. Please try again in a few "
+"minutes."
 msgstr ""
 
 #: src/ui/GameDetails.cpp
@@ -532,6 +730,10 @@ msgstr ""
 
 #: src/core/Score.cpp
 msgid "{0} mates in {1}"
+msgstr ""
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "{} games"
 msgstr ""
 
 #: src/core/Score.cpp

@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SharpBlunder\n"
 "Report-Msgid-Bugs-To: https://github.com/stwe/SharpBlunder/issues\n"
-"POT-Creation-Date: 2026-11-26 11:51+0000\n"
+"POT-Creation-Date: 2026-11-27 11:09+0000\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -14,6 +14,11 @@ msgstr ""
 #: src/ui/screens/AnalysisScreen.cpp
 msgid " (check)"
 msgstr " (Schach)"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "({} games of other variants, e.g. Chess960, are not shown)"
+msgstr ""
+"({} Partien anderer Spielvarianten, z. B. Chess960, werden nicht angezeigt)"
 
 #: src/ui/GameDetails.cpp
 msgid "* (unknown, or the game is not finished)"
@@ -71,7 +76,7 @@ msgstr "5 min  (Blitz)"
 msgid "5 min + 3 s  (Blitz)"
 msgstr "5 min + 3 s  (Blitz)"
 
-#: src/core/DrawRules.cpp
+#: src/core/DrawRules.cpp src/core/GameSummary.cpp
 msgid "50-move rule"
 msgstr "50-Züge-Regel"
 
@@ -84,8 +89,28 @@ msgid "90 min + 30 s  (Classical)"
 msgstr "90 min + 30 s  (Klassisch)"
 
 #: src/ui/screens/AnalysisScreen.cpp
+msgid "< My Games"
+msgstr "< Meine Partien"
+
+#: src/ui/screens/AnalysisScreen.cpp
 msgid "A draw can be claimed: {}"
 msgstr "Remis kann beansprucht werden: {}"
+
+#: src/core/GameSummary.cpp
+msgid "Abandoned"
+msgstr "Partie verlassen"
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "Accounts"
+msgstr "Konten"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Accuracy"
+msgstr "Genauigkeit"
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Accuracy (chess.com): {:.1f}% / {:.1f}%"
+msgstr "Genauigkeit (chess.com): {:.1f} % / {:.1f} %"
 
 #: src/ui/NotationPanel.cpp
 msgid "Add a comment"
@@ -103,6 +128,14 @@ msgstr "Kommentar zur Variante hinzufügen..."
 msgid "Add comment..."
 msgstr "Kommentar hinzufügen..."
 
+#: src/core/GameSummary.cpp
+msgid "Agreement"
+msgstr "Einigung"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "All"
+msgstr "Alle"
+
 #: src/ui/NotationPanel.cpp
 msgid "Alternative to {}"
 msgstr "Alternative zu {}"
@@ -114,6 +147,14 @@ msgstr "Analyse"
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Analysis board"
 msgstr "Analysebrett"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Analyze"
+msgstr "Analysieren"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Asking chess.com ..."
+msgstr "Frage chess.com ab ..."
 
 #: src/ui/screens/SettingsScreen.cpp
 msgid "Automatic ({})"
@@ -128,18 +169,38 @@ msgstr "Schwarz"
 msgid "Black to move"
 msgstr "Schwarz am Zug"
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Blitz"
+msgstr "Blitz"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Bullet"
+msgstr "Bullet"
+
 #: src/ui/GameDetails.cpp src/ui/NotationPanel.cpp src/ui/PgnMenu.cpp
-#: src/ui/screens/AnalysisScreen.cpp
+#: src/ui/screens/AnalysisScreen.cpp src/ui/screens/MyGamesScreen.cpp
 msgid "Cancel"
 msgstr "Abbrechen"
+
+#: src/core/GameSummary.cpp
+msgid "Checkmate"
+msgstr "Matt"
 
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Checkmate - {} wins"
 msgstr "Matt - {} gewinnt"
 
+#: src/ui/screens/MyGamesScreen.cpp src/ui/screens/SettingsScreen.cpp
+msgid "Chess.com username"
+msgstr "Name bei chess.com"
+
 #: src/ui/EnginePanel.cpp
 msgid "Click to play this move"
 msgstr "Klicken, um diesen Zug zu spielen"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Color"
+msgstr "Farbe"
 
 #: src/ui/NotationPanel.cpp
 msgid "Comment"
@@ -173,7 +234,11 @@ msgstr "FEN dieser Stellung kopieren"
 msgid "Copy PGN to clipboard"
 msgstr "PGN in die Zwischenablage kopieren"
 
-#: src/ui/GameDetails.cpp
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Daily"
+msgstr "Tagesschach"
+
+#: src/ui/GameDetails.cpp src/ui/screens/MyGamesScreen.cpp
 msgid "Date"
 msgstr "Datum"
 
@@ -184,6 +249,10 @@ msgstr "Ab hier löschen"
 #: src/ui/EnginePanel.cpp
 msgid "Depth {}"
 msgstr "Tiefe {}"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Draw"
+msgstr "Remis"
 
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Draw - {}"
@@ -237,10 +306,9 @@ msgstr "Guter Zug: der beste oder fast so gut."
 msgid "Hide the line"
 msgstr "Zugfolge ausblenden"
 
-#: src/ui/App.cpp
-msgid "Import and analyze your games from lichess.org and chess.com."
-msgstr ""
-"Importiere und analysiere deine Partien von lichess.org und chess.com."
+#: src/core/GameSummary.cpp
+msgid "Insufficient material"
+msgstr "Zu wenig Material"
 
 #: src/ui/screens/SettingsScreen.cpp
 msgid "Language"
@@ -250,6 +318,14 @@ msgstr "Sprache"
 msgid "Learn and repeat your opening repertoire."
 msgstr "Lerne und wiederhole dein Eröffnungsrepertoire."
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Load older games"
+msgstr "Ältere Partien laden"
+
+#: src/core/GameSummary.cpp src/ui/screens/MyGamesScreen.cpp
+msgid "Loss"
+msgstr "Niederlage"
+
 #: src/ui/NotationPanel.cpp
 msgid "Main line"
 msgstr "Hauptvariante"
@@ -258,7 +334,15 @@ msgstr "Hauptvariante"
 msgid "Make main line"
 msgstr "Zur Hauptvariante machen"
 
-#: src/ui/App.cpp
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Month {} of {} ({})"
+msgstr "Monat {} von {} ({})"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Moves"
+msgstr "Züge"
+
+#: src/ui/screens/MyGamesScreen.cpp
 msgid "My Games"
 msgstr "Meine Partien"
 
@@ -273,6 +357,10 @@ msgstr "Neu"
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "New game"
 msgstr "Neue Partie"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "No games yet. Type your name and press \"Sync Games\"."
+msgstr "Noch keine Partien. Namen eingeben und „Partien abrufen“ drücken."
 
 #: src/ui/NotationPanel.cpp
 msgid "No moves yet. Move a piece on the board."
@@ -310,9 +398,17 @@ msgstr "Eine PGN-Datei öffnen:"
 msgid "Open file..."
 msgstr "Datei öffnen..."
 
-#: src/ui/GameDetails.cpp
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Open game"
+msgstr "Partie öffnen"
+
+#: src/ui/GameDetails.cpp src/ui/screens/MyGamesScreen.cpp
 msgid "Opening"
 msgstr "Eröffnung"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Opponent"
+msgstr "Gegner"
 
 #: src/ui/PgnMenu.cpp
 msgid "Paste"
@@ -338,19 +434,35 @@ msgstr "Stellung (FEN)"
 msgid "Presets"
 msgstr "Vorlagen"
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Rapid"
+msgstr "Rapid"
+
 #: src/ui/GameDetails.cpp
 msgid "Rating"
 msgstr "Elo"
 
-#: src/ui/PgnMenu.cpp
+#: src/core/GameSummary.cpp
+msgid "Repetition"
+msgstr "Stellungswiederholung"
+
+#: src/ui/PgnMenu.cpp src/ui/screens/AnalysisScreen.cpp
 msgid "Replace"
 msgstr "Ersetzen"
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "Replace it with the game from the list?"
+msgstr "Durch die Partie aus der Liste ersetzen?"
 
 #: src/ui/PgnMenu.cpp
 msgid "Replace the game?"
 msgstr "Partie ersetzen?"
 
-#: src/ui/GameDetails.cpp
+#: src/core/GameSummary.cpp
+msgid "Resignation"
+msgstr "Aufgabe"
+
+#: src/ui/GameDetails.cpp src/ui/screens/MyGamesScreen.cpp
 msgid "Result"
 msgstr "Ergebnis"
 
@@ -390,6 +502,10 @@ msgstr "Gespeichert als {} ({})"
 msgid "Saved games"
 msgstr "Gespeicherte Partien"
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Search opponent or opening"
+msgstr "Gegner oder Eröffnung suchen"
+
 #: src/ui/PgnMenu.cpp
 msgid "Set up"
 msgstr "Aufstellen"
@@ -410,6 +526,10 @@ msgstr "Alle Kommentare anzeigen"
 msgid "Show the whole line"
 msgstr "Ganze Zugfolge anzeigen"
 
+#: src/core/GameSummary.cpp
+msgid "Stalemate"
+msgstr "Patt"
+
 #: src/ui/screens/AnalysisScreen.cpp
 msgid "Stalemate - draw"
 msgstr "Patt - Remis"
@@ -418,9 +538,17 @@ msgstr "Patt - Remis"
 msgid "Start new game"
 msgstr "Neue Partie beginnen"
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Stopped."
+msgstr "Abgebrochen."
+
 #: src/ui/screens/SettingsScreen.cpp
 msgid "Switch the engine on when the program starts"
 msgstr "Engine beim Start des Programms einschalten"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Sync Games"
+msgstr "Partien abrufen"
 
 #: src/ui/GameDetails.cpp
 msgid "Termination"
@@ -429,6 +557,10 @@ msgstr "Endgrund"
 #: src/ui/EnginePanel.cpp
 msgid "The analysis engine is not available."
 msgstr "Die Analyse-Engine ist nicht verfügbar."
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "The answer of chess.com could not be read."
+msgstr "Die Antwort von chess.com konnte nicht gelesen werden."
 
 #: src/ui/PgnMenu.cpp
 msgid "The file cannot be read: {}"
@@ -442,10 +574,21 @@ msgstr "Die Datei kann nicht geschrieben werden: {}"
 msgid "The file could not be written completely: {}"
 msgstr "Die Datei konnte nicht vollständig geschrieben werden: {}"
 
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "The game on the board has changes (moves, variations or comments)."
+msgstr ""
+"Die Partie auf dem Brett hat Änderungen (Züge, Varianten oder Kommentare)."
+
 #: src/ui/PgnMenu.cpp
 msgid "The game on the board has moves. Replace it with the opened game?"
 msgstr ""
 "Die Partie auf dem Brett hat Züge. Durch die geöffnete Partie ersetzen?"
+
+#: src/ui/screens/SettingsScreen.cpp
+msgid "The page My Games starts with this name. You can change it there."
+msgstr ""
+"Die Seite „Meine Partien“ beginnt mit diesem Namen. Dort kann er geändert "
+"werden."
 
 #: src/ui/PgnMenu.cpp
 msgid ""
@@ -455,13 +598,33 @@ msgstr ""
 "Die Stellung auf dem Brett als FEN. Schreibe oder füge eine andere ein, um "
 "eine Partie daraus zu beginnen:"
 
-#: src/ui/screens/SettingsScreen.cpp
+#: src/ui/screens/MyGamesScreen.cpp src/ui/screens/SettingsScreen.cpp
 msgid "The settings could not be saved: {}"
 msgstr "Die Einstellungen konnten nicht gespeichert werden: {}"
+
+#: src/ui/TutorPanel.cpp
+msgid "There is no comment yet. The tutor will write here."
+msgstr "Noch kein Kommentar. Hier schreibt später der Tutor."
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "There is no connection to chess.com."
+msgstr "Keine Verbindung zu chess.com."
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "There is no connection to chess.com. Games that were saved are shown."
+msgstr "Keine Verbindung zu chess.com. Gespeicherte Partien werden angezeigt."
 
 #: src/ui/EnginePanel.cpp
 msgid "Thinking..."
 msgstr "Denkt nach..."
+
+#: src/ui/screens/AnalysisScreen.cpp
+msgid "This game could not be opened:"
+msgstr "Diese Partie konnte nicht geöffnet werden:"
+
+#: src/ui/screens/MyGamesScreen.cpp src/ui/screens/SettingsScreen.cpp
+msgid "This is not a possible user name on chess.com."
+msgstr "Das ist kein möglicher Benutzername bei chess.com."
 
 #: src/ui/screens/SettingsScreen.cpp
 msgid "This takes effect the next time the program starts."
@@ -471,13 +634,33 @@ msgstr "Das gilt ab dem nächsten Start des Programms."
 msgid "Throw away the moves and start a new game?"
 msgstr "Die Züge verwerfen und eine neue Partie beginnen?"
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Time"
+msgstr "Zeit"
+
 #: src/ui/GameDetails.cpp
 msgid "Time control"
 msgstr "Bedenkzeit"
 
+#: src/core/GameSummary.cpp
+msgid "Time out"
+msgstr "Zeit abgelaufen"
+
+#: src/core/GameSummary.cpp
+msgid "Time out against insufficient material"
+msgstr "Zeit abgelaufen gegen zu wenig Material"
+
 #: src/ui/App.cpp
 msgid "Training"
 msgstr "Training"
+
+#: src/ui/TutorPanel.cpp
+msgid "Tutor"
+msgstr "Tutor"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "Use as default"
+msgstr "Als Standard übernehmen"
 
 #: src/ui/Icons.cpp
 msgid "Weak move: much worse than the best one."
@@ -492,9 +675,29 @@ msgstr "Weiß"
 msgid "White to move"
 msgstr "Weiß am Zug"
 
+#: src/core/GameSummary.cpp src/ui/screens/MyGamesScreen.cpp
+msgid "Win"
+msgstr "Sieg"
+
 #: src/ui/GameDetails.cpp
 msgid "YYYY.MM.DD, e.g. 2026.11.24"
 msgstr "TT.MM.JJJJ, z. B. 24.11.2026"
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "chess.com does not know a user with this name."
+msgstr "chess.com kennt keinen Benutzer mit diesem Namen."
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "chess.com has answered with an error."
+msgstr "chess.com hat mit einem Fehler geantwortet."
+
+#: src/ui/screens/MyGamesScreen.cpp
+msgid ""
+"chess.com says that there are too many requests. Please try again in a few "
+"minutes."
+msgstr ""
+"chess.com meldet zu viele Anfragen. Bitte in ein paar Minuten noch einmal "
+"versuchen."
 
 #: src/ui/GameDetails.cpp
 msgid "e.g. 15+10 or 5 min + 3 s"
@@ -532,6 +735,10 @@ msgstr "dreifache Stellungswiederholung"
 msgid "{0} mates in {1}"
 msgstr "Matt in {1} für {0}"
 
+#: src/ui/screens/MyGamesScreen.cpp
+msgid "{} games"
+msgstr "{} Partien"
+
 #: src/core/Score.cpp
 msgid "{} is better"
 msgstr "{} steht besser"
@@ -547,3 +754,7 @@ msgstr "{} steht etwas besser"
 #: src/core/Score.cpp
 msgid "{} is winning"
 msgstr "{} steht auf Gewinn"
+
+#~ msgid "Import and analyze your games from lichess.org and chess.com."
+#~ msgstr ""
+#~ "Importiere und analysiere deine Partien von lichess.org und chess.com."
