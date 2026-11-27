@@ -50,13 +50,19 @@ Working today:
   as `settings.json.bak` and the defaults are used
 - English and German. The language is chosen on the settings page (`auto` follows the system). The chess notation is not translated: moves stay `Nc6` and PGN files always use English tags and values,
   so they work everywhere. Terms such as Remis, Matt and Patt are used in German
+- The page My Games (Meine Partien) fetches your games from chess.com with its public API and lists them: result,
+  the color you played, opponent, time control, accuracy (as reported by chess.com, if the game was analyzed there),
+  number of moves, date and opening. Tabs filter by Bullet, Blitz, Rapid and Daily, a search field looks for opponent
+  or opening. The button Analyze opens the game on the analysis page, with your side at the bottom, and a button
+  leads back to the list. See [chess.com](#chesscom) below
+- The side panel of the analysis page has a box for a tutor. For now it only shows a text; comments written by a
+  language model are planned
 - Sidebar navigation between the pages
 
 Planned, not implemented yet:
 
-- Import and analysis of your games from lichess.org and chess.com
+- Import and analysis of your games from lichess.org
 - Training of your own opening repertoire with spaced repetition
-- Settings
 - Synchronization of the learning data with a server, and an Android app that uses it
 
 ## Requirements
@@ -66,6 +72,7 @@ Planned, not implemented yet:
 - CMake 3.22 or newer
 - SFML **3.x** (Graphics, Window, System)
 - OpenGL
+- libcurl with TLS support (for the connection to chess.com)
 - Stockfish
 - An internet connection for the first CMake run, which downloads Dear ImGui 1.91.8, ImGui-SFML 3.0 and nlohmann/json 3.11.3
 
@@ -74,7 +81,7 @@ Planned, not implemented yet:
 ### Arch Linux / CachyOS
 
 ```bash
-sudo pacman -S --needed base-devel cmake git sfml stockfish
+sudo pacman -S --needed base-devel cmake git sfml stockfish curl
 ```
 
 The `sfml` package must be version 3.x. Check it with `pacman -Qi sfml`.
@@ -85,7 +92,7 @@ The SFML packages of Debian and Ubuntu are version 2.x (Ubuntu 24.04 has 2.6.1),
 SFML 3. Build SFML 3 from source:
 
 ```bash
-sudo apt install build-essential cmake git g++-14 stockfish \
+sudo apt install build-essential cmake git g++-14 stockfish libcurl4-openssl-dev \
     libx11-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libgl1-mesa-dev libfreetype-dev
 
 git clone --branch 3.0.0 --depth 1 https://github.com/SFML/SFML.git
@@ -136,9 +143,11 @@ of that directory in the executable, so run CMake again if you move the source d
 assets/        piece images (pieces/cburnett), GUI font (fonts), opening names (openings), translations (i18n),
                each with its license
 src/core/      chess model without any graphics: Position, Move, Piece, SAN notation, GameState, RulesProvider,
-               Score, OpeningBook, DrawRules, TimeControl, PgnTags, Settings, I18n
+               Score, OpeningBook, DrawRules, TimeControl, PgnTags, Settings, I18n, GameSummary, ChessComParser, GameList
 src/engine/    Stockfish as a child process (Engine), the rules from Stockfish (StockfishRules), the live
                analysis (Analyzer) and the parser for its UCI lines
+src/net/       the connection to web servers: HttpClient (interface), CurlHttpClient (libcurl), ChessComClient (the
+               games of a user, with a cache), GamesSyncer (does the work in a thread)
 src/ui/        window, Dear ImGui layer, navigation, board view, evaluation bar, mouse input, pages (screens/).
                The side panel of the analysis page has three zones: the game (name, status, Flip, New),
                the engine (EnginePanel) and the moves with the navigation (NotationPanel)
@@ -148,8 +157,30 @@ tools/         render_pieces.sh turns the SVG pieces into the PNG files the prog
                update_translations.sh collects the texts of the program and updates the .po files
 ```
 
-`core` does not depend on anything else. The rest of the program only knows the `RulesProvider` interface,
+`core` does not depend on anything else (the parser of chess.com uses nlohmann/json). The rest of the program only knows the `RulesProvider` interface,
 so the source of the rules (today Stockfish) can be replaced.
+
+## chess.com
+
+The page My Games uses the [published-data API](https://www.chess.com/news/view/published-data-api) of chess.com.
+It needs no account and no token, and only the documented endpoints are used: the list of archives of a user and
+the games of a month.
+
+- The requests are made one after the other, never in parallel, and every request has a User-Agent that names the
+  program and this repository. When chess.com says that there are too many requests, the program waits and tries
+  again a few times.
+- The answers are kept in `~/SharpBlunder/chesscom/<user>/`. A month that is over is fetched only once. The
+  latest months are asked for again with the `ETag` of the last answer, so nothing is downloaded when nothing has
+  changed. Without a network the saved games are shown. You can delete the folder at any time.
+- The first fetch gets the latest three months. The button "Load older games" adds six more months each time.
+- Games of variants (for example Chess960) cannot be shown and are skipped. The page says how many.
+- The user name is set on the settings page. It is only the default of the text field on My Games: another
+  name can be typed there for one session.
+- The accuracy numbers are the ones that chess.com has calculated, and they are shown as such. They exist only for
+  games that were analyzed on chess.com.
+
+SharpBlunder is not affiliated with or endorsed by chess.com. It uses neither its name as a feature name nor its
+logos, pieces, avatars or other design.
 
 ## Translations
 
@@ -191,4 +222,5 @@ It uses these third-party works, which keep their own licenses:
 | [Dear ImGui](https://github.com/ocornut/imgui)             | MIT                | downloaded by CMake                 |
 | [ImGui-SFML](https://github.com/SFML/imgui-sfml)           | MIT                | downloaded by CMake                 |
 | [nlohmann/json](https://github.com/nlohmann/json)          | MIT                | downloaded by CMake                 |
+| [libcurl](https://curl.se/libcurl/)                        | curl (MIT-like)    | linked, installed on your system    |
 | [Stockfish](https://stockfishchess.org/)                   | GPL 3              | separate program, not included      |
