@@ -39,8 +39,10 @@ void sg::chess::ui::NavigationBar::DrawGui(ScreenManager& t_screens) const
 {
     const ImVec2 displaySize{ ImGui::GetIO().DisplaySize };
 
-    ImGui::SetNextWindowPos({ 0.0f, 0.0f });
-    ImGui::SetNextWindowSize({ NAVIGATION_WIDTH, displaySize.y });
+    // Like the side panel of the analysis page, the bar stands a little off the edges of the window.
+    ImGui::SetNextWindowPos({ NAVIGATION_MARGIN_LEFT, PAGE_MARGIN_TOP });
+    ImGui::SetNextWindowSize({ NAVIGATION_WIDTH - NAVIGATION_MARGIN_LEFT,
+                               displaySize.y - PAGE_MARGIN_TOP - PAGE_MARGIN_BOTTOM });
 
     if (ImGui::Begin("##navigation", nullptr, WINDOW_FLAGS))
     {
@@ -55,7 +57,8 @@ void sg::chess::ui::NavigationBar::DrawGui(ScreenManager& t_screens) const
         {
             const std::string label{ entry.screen->Title() };
 
-            if (ImGui::Selectable(label.c_str(), current == entry.id, ImGuiSelectableFlags_None, ImVec2(0.0f, ENTRY_HEIGHT)))
+            if (ImGui::Selectable(label.c_str(), current == entry.id, ImGuiSelectableFlags_None,
+                                  ImVec2(0.0f, ENTRY_HEIGHT)))
             {
                 t_screens.SwitchTo(entry.id);
             }
