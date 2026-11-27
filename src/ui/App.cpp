@@ -21,8 +21,10 @@
 #include <string_view>
 #include "core/I18n.h"
 #include "core/Settings.h"
+#include "core/Util.h"
 #include "ui/App.h"
 #include "ui/screens/AnalysisScreen.h"
+#include "ui/screens/MyGamesScreen.h"
 #include "ui/screens/PlaceholderScreen.h"
 #include "ui/screens/SettingsScreen.h"
 
@@ -41,6 +43,20 @@ namespace
     constexpr std::string_view PIECE_SET{ "cburnett" };
     constexpr std::string_view OPENING_FILE{ "openings.tsv" };
     constexpr std::string_view TRANSLATIONS_DIR{ "i18n" };
+
+    // chess.com asks every program to say who it is, with a way to get in touch with the author.
+    constexpr const char* USER_AGENT{ "SharpBlunder (+https://github.com/stwe/SharpBlunder)" };
+
+    // The folder for the answers of chess.com that are kept, so that old months are fetched only once.
+    constexpr std::string_view CHESSCOM_CACHE_DIR{ "chesscom" };
+
+    sg::chess::net::ClientOptions MakeClientOptions()
+    {
+        sg::chess::net::ClientOptions options;
+        options.userAgent = USER_AGENT;
+
+        return options;
+    }
 
     // Reads the settings. Whatever is wrong with the file, the program starts: the user is told on the console.
     sg::chess::core::Settings LoadSettings()
@@ -69,14 +85,26 @@ sg::chess::ui::App::App(const std::string& t_stockfish)
     , m_pieces(std::filesystem::path{ ASSET_DIR } / "pieces" / PIECE_SET)
     , m_openings(core::OpeningBook::FromFile(std::filesystem::path{ ASSET_DIR } / "openings" / OPENING_FILE))
     , m_settings(LoadSettings())
+    , m_chessCom(m_http, core::data_dir() / CHESSCOM_CACHE_DIR, MakeClientOptions())
+    , m_syncer(m_chessCom)
 {
     // The language is set before a screen is made: the texts are translated when they are shown.
     ApplyLanguage();
 
-    m_screens.Add(ScreenId::ANALYSIS, std::make_unique<AnalysisScreen>(m_pieces, m_rules, m_analyzer, m_openings,
-                                                                           m_settings.analysis));
-    m_screens.Add(ScreenId::GAMES, std::make_unique<PlaceholderScreen>(
-        core::tr_noop("My Games"), core::tr_noop("Import and analyze your games from lichess.org and chess.com.")));
+    auto analysis{ std::make_unique<AnalysisScreen>(m_pieces, m_rules, m_analyzer, m_openings, m_settings.analysis) };
+    AnalysisScreen* analysisScreen{ analysis.get() };
+    analysis->SetBackFunction([this]() { m_screens.SwitchTo(ScreenId::GAMES); });
+    m_screens.Add(ScreenId::ANALYSIS, std::move(analysis));
+
+    // A game of the list is shown on the analysis page. The page keeps it until the user opens another one.
+    m_screens.Add(ScreenId::GAMES, std::make_unique<MyGamesScreen>(
+        m_settings, m_syncer,
+        [this, analysisScreen](const core::GameSummary& t_game)
+        {
+            analysisScreen->OpenGame(t_game);
+            m_screens.SwitchTo(ScreenId::ANALYSIS);
+        },
+        [this]() { return ApplySettings(); }));
     m_screens.Add(ScreenId::TRAINING, std::make_unique<PlaceholderScreen>(
         core::tr_noop("Training"), core::tr_noop("Learn and repeat your opening repertoire.")));
     m_screens.Add(ScreenId::SETTINGS, std::make_unique<SettingsScreen>(

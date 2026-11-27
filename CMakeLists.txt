@@ -95,6 +95,7 @@ add_executable(SharpBlunder
         src/ui/Window.cpp
 
         src/ui/screens/AnalysisScreen.cpp
+        src/ui/screens/MyGamesScreen.cpp
         src/ui/screens/PlaceholderScreen.cpp
         src/ui/screens/SettingsScreen.cpp
 )

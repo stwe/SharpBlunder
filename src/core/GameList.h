@@ -35,6 +35,13 @@ namespace sg::chess::core
     {
         std::string timeClass; ///< "bullet", "blitz", "rapid" or "daily". Empty: all
         std::string text; ///< Part of a name, of the opening or of the ECO code. Upper and lower case do not matter
+
+        /**
+         * @brief Compares two filters.
+         *
+         * @return True if both show the same games.
+         */
+        [[nodiscard]] bool operator==(const GameFilter&) const = default;
     };
 
     //-------------------------------------------------

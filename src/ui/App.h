@@ -26,6 +26,9 @@
 #include "engine/Analyzer.h"
 #include "engine/Engine.h"
 #include "engine/StockfishRules.h"
+#include "net/ChessComClient.h"
+#include "net/CurlHttpClient.h"
+#include "net/GamesSyncer.h"
 #include "ui/GuiLayer.h"
 #include "ui/NavigationBar.h"
 #include "ui/PieceSet.h"
@@ -124,7 +127,8 @@ namespace sg::chess::ui
         // Members are initialized in the order of their declaration and destroyed in the reverse order.
         // - The engine comes first: if Stockfish is missing, the program stops before a window appears.
         // - m_rules uses m_engine, m_gui needs m_window, and the screens use m_pieces, m_rules, m_analyzer
-        //   and m_openings, so all of them come before m_screens.
+        //   and m_openings, so all of them come before m_screens. The page My Games uses m_syncer. Its destructor
+        //   stops the thread, so it is destroyed after the pages.
 
         engine::Engine m_engine;         ///< The Stockfish process for the rules
         engine::StockfishRules m_rules;  ///< Answers the questions about the rules by asking m_engine
@@ -134,6 +138,9 @@ namespace sg::chess::ui
         PieceSet m_pieces;               ///< The piece images, shared by all screens with a board
         core::OpeningBook m_openings;    ///< The names of the openings
         core::Settings m_settings;       ///< What the user has set, from the file settings.json
+        net::CurlHttpClient m_http;      ///< Asks web servers (HTTPS)
+        net::ChessComClient m_chessCom;  ///< Fetches the games of the user from chess.com
+        net::GamesSyncer m_syncer;       ///< Runs m_chessCom in a thread of its own
         ScreenManager m_screens;         ///< All pages of the application
         NavigationBar m_navigation;      ///< The menu on the left
         sf::Clock m_clock;               ///< Measures the time of a frame
