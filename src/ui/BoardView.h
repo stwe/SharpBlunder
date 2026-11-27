@@ -85,6 +85,13 @@ namespace sg::chess::ui
         void Flip() noexcept { m_flipped = !m_flipped; }
 
         /**
+         * @brief Chooses which side is at the bottom.
+         *
+         * @param t_flipped True: Black is at the bottom. False: White is.
+         */
+        void SetFlipped(const bool t_flipped) noexcept { m_flipped = t_flipped; }
+
+        /**
          * @brief Tells whether the board is turned around.
          *
          * @return True if Black is at the bottom.

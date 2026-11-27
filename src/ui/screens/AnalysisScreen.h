@@ -17,11 +17,13 @@
 
 #pragma once
 
+#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
 #include "core/DrawRules.h"
 #include "core/GameState.h"
+#include "core/GameSummary.h"
 #include "core/OpeningBook.h"
 #include "core/Pgn.h"
 #include "core/RulesProvider.h"
@@ -83,6 +85,29 @@ namespace sg::chess::ui
         AnalysisScreen& operator=(AnalysisScreen&& t_other) noexcept = delete;
 
         ~AnalysisScreen() noexcept override = default;
+
+        //-------------------------------------------------
+        // Games from the list
+        //-------------------------------------------------
+
+        using BackFunction = std::function<void()>; ///< Goes back to the page that the game was opened from
+
+        /**
+         * @brief Sets what the button "My Games" does. It is shown for a game that came from the list of games.
+         *
+         * @param t_back The function. It switches to the list.
+         */
+        void SetBackFunction(BackFunction t_back);
+
+        /**
+         * @brief Asks to show a game of the list. It is shown when the page is drawn the next time.
+         *
+         * If the game on the board has been changed by the user (own moves, comments), the user is asked before it is
+         * replaced. If the game cannot be read, the page says so and the board stays as it was.
+         *
+         * @param t_game The game. It carries the PGN text.
+         */
+        void OpenGame(core::GameSummary t_game);
 
         //-------------------------------------------------
         // Screen
@@ -187,12 +212,35 @@ namespace sg::chess::ui
          */
         void DrawHeader();
 
+        /**
+         * @brief Handles a game that waits to be opened: replaces the game at once, or asks first.
+         */
+        void DrawOpenQuestion();
+
+        /**
+         * @brief Replaces the game on the board with the game that waits to be opened.
+         */
+        void LoadListedGame();
+
+        /**
+         * @brief Tells whether the user has changed the game on the board since it was opened.
+         *
+         * @return True if the game has moves and is not the same as when it was opened.
+         */
+        [[nodiscard]] bool IsModified() const;
+
+        /**
+         * @brief Draws the line above the game: the way back to the list, and the accuracy.
+         */
+        void DrawBackBar();
+
         //-------------------------------------------------
         // Member
         //-------------------------------------------------
 
         // m_input refers to m_boardView, so m_boardView must be declared first.
 
+        core::RulesProvider& m_rules;    ///< Checks the moves of games that are opened (not owned)
         core::GameState m_game;          ///< The moves played on the board
         BoardView m_boardView;           ///< Draws the board
         MoveInput m_input;               ///< Turns mouse input into moves
@@ -207,5 +255,14 @@ namespace sg::chess::ui
 
         std::optional<core::Opening> m_opening;  ///< The opening of the game so far, if it has a name
         std::optional<core::Opening> m_taggedOpening;  ///< The opening that UpdateOpeningTags() wrote into the tags
+        BackFunction m_back;                           ///< Goes back to the list of games
+        bool m_cameFromList{ false };                  ///< The game was opened from the list, so the way back is shown
+        bool m_wantBack{ false };                      ///< The button was pressed: go back when it is safe
+        std::optional<core::GameSummary> m_listed;     ///< The game of the list that is on the board
+        std::optional<core::GameSummary> m_pending;    ///< A game of the list that waits to be opened
+        bool m_asking{ false };                        ///< The question "replace the game?" is open
+        std::string m_cleanText;                       ///< The game as PGN when it was opened: to see changes
+        bool m_cleanPending{ false };                  ///< m_cleanText is taken in the next frame (tags are made then)
+        std::string m_openError;                       ///< Why the last game of the list could not be opened
     };
 }

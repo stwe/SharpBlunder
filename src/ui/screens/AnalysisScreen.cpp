@@ -17,8 +17,10 @@
 
 #include <algorithm>
 #include <array>
+#include <exception>
 #include <string_view>
 #include <imgui.h>
+#include <utility>
 #include "core/DrawRules.h"
 #include "core/I18n.h"
 #include "core/Material.h"
@@ -80,6 +82,8 @@ namespace
 
     constexpr float HEADER_BUTTON_WIDTH{ 60.0f };
     constexpr const char* NEW_GAME_POPUP{ "###new_game" };
+    constexpr const char* OPEN_GAME_POPUP{ "###open_game" };
+    constexpr ImVec4 ERROR_COLOR{ 1.0f, 0.4f, 0.4f, 1.0f };
 }
 
 //-------------------------------------------------
@@ -89,7 +93,8 @@ namespace
 sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::RulesProvider& t_rules,
                                               engine::Analyzer& t_analyzer, const core::OpeningBook& t_openings,
                                               const core::Settings::Analysis& t_settings)
-    : m_game(t_rules)
+    : m_rules(t_rules)
+    , m_game(t_rules)
     , m_boardView(BOARD_ORIGIN, SQUARE_SIZE, t_pieces)
     , m_input(m_boardView)
     , m_openings(t_openings)
@@ -101,6 +106,21 @@ sg::chess::ui::AnalysisScreen::AnalysisScreen(const PieceSet& t_pieces, core::Ru
 {
     m_enginePanel.PositionChanged(m_game.Current().info);
     UpdateOpening();
+}
+
+//-------------------------------------------------
+// Games from the list
+//-------------------------------------------------
+
+void sg::chess::ui::AnalysisScreen::SetBackFunction(BackFunction t_back)
+{
+    m_back = std::move(t_back);
+}
+
+void sg::chess::ui::AnalysisScreen::OpenGame(core::GameSummary t_game)
+{
+    m_pending = std::move(t_game);
+    m_asking = false;
 }
 
 //-------------------------------------------------
@@ -193,6 +213,17 @@ void sg::chess::ui::AnalysisScreen::Update(const sf::Time t_dt)
     }
 
     m_evalBar.Update(t_dt);
+
+    // The way back is taken here and not in DrawGui(): switching pages while this page is being drawn is not safe.
+    if (m_wantBack)
+    {
+        m_wantBack = false;
+
+        if (m_back)
+        {
+            m_back();
+        }
+    }
 }
 
 void sg::chess::ui::AnalysisScreen::Draw(sf::RenderTarget& t_target)
@@ -212,6 +243,10 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
 
     if (ImGui::Begin("##analysis", nullptr, PANEL_FLAGS))
     {
+        // A game from the list may wait here. The board is not touched while its parts are drawn: this is first.
+        DrawOpenQuestion();
+        DrawBackBar();
+
         // Three zones from the top: the game (name, status), the engine, and the moves with the navigation.
         DrawHeader();
         ImGui::Separator();
@@ -242,11 +277,20 @@ void sg::chess::ui::AnalysisScreen::DrawGui()
         // The tags are up to date before the game is copied or saved.
         UpdateOpeningTags();
 
+        // The game as it was opened, with the opening tags. Everything that differs later is a change of the user.
+        if (m_cleanPending)
+        {
+            m_cleanText = core::pgn_write(m_game, m_headers);
+            m_cleanPending = false;
+        }
+
         bool changed{ m_pgnMenu.Draw(m_game, m_headers) };
         if (changed)
         {
             // Another game has been opened: everything that belonged to the old one is dropped.
             m_notationPanel.Reset();
+            m_cameFromList = false;
+            m_listed.reset();
         }
 
         changed = m_notationPanel.DrawMoveList(m_game, m_headers) || changed;
@@ -416,6 +460,130 @@ void sg::chess::ui::AnalysisScreen::OnPositionChanged()
     UpdateOpening();
 }
 
+bool sg::chess::ui::AnalysisScreen::IsModified() const
+{
+    return m_game.HasMoves() && core::pgn_write(m_game, m_headers) != m_cleanText;
+}
+
+void sg::chess::ui::AnalysisScreen::LoadListedGame()
+{
+    if (!m_pending)
+    {
+        return;
+    }
+
+    m_cameFromList = true;
+
+    try
+    {
+        // The game is built on its own. The one on the board is only replaced when this has worked.
+        core::PgnGame loaded{ core::pgn_read(m_pending->pgn, m_rules) };
+
+        m_game.ReplaceWith(std::move(loaded.game));
+        m_headers = std::move(loaded.headers);
+        m_game.GoToStart();
+        m_notationPanel.Reset();
+
+        // The user is at the bottom of the board. If the user is not in the game, the board stays as it is.
+        if (m_pending->userColor)
+        {
+            m_boardView.SetFlipped(*m_pending->userColor == core::Color::BLACK);
+        }
+
+        m_listed = std::move(m_pending);
+        m_cleanPending = true;
+        m_openError.clear();
+        OnPositionChanged();
+    }
+    catch (const std::exception& t_error)
+    {
+        m_openError = t_error.what();
+    }
+
+    m_pending.reset();
+    m_asking = false;
+}
+
+void sg::chess::ui::AnalysisScreen::DrawOpenQuestion()
+{
+    if (m_pending && !m_asking)
+    {
+        // Own work is not thrown away without a question.
+        if (IsModified())
+        {
+            ImGui::OpenPopup(OPEN_GAME_POPUP);
+            m_asking = true;
+        }
+        else
+        {
+            LoadListedGame();
+        }
+    }
+
+    const ImVec2 displaySize{ ImGui::GetIO().DisplaySize };
+    ImGui::SetNextWindowPos(ImVec2(displaySize.x / 2.0f, displaySize.y / 2.0f), ImGuiCond_Appearing,
+                            ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal(core::tr_id("Open game", OPEN_GAME_POPUP).c_str(), nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        ImGui::TextUnformatted(core::tr("The game on the board has changes (moves, variations or comments)."));
+        ImGui::TextUnformatted(core::tr("Replace it with the game from the list?"));
+        ImGui::Spacing();
+
+        if (ImGui::Button(core::tr("Replace")))
+        {
+            LoadListedGame();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        // The Escape key cancels, like the button. The game on the board stays.
+        if (ImGui::Button(core::tr("Cancel")) || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        {
+            m_pending.reset();
+            m_asking = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void sg::chess::ui::AnalysisScreen::DrawBackBar()
+{
+    if (!m_cameFromList || !m_back)
+    {
+        return;
+    }
+
+    ImGui::AlignTextToFramePadding();
+
+    if (ImGui::Button(core::tr("< My Games")))
+    {
+        m_wantBack = true;
+    }
+
+    // The accuracy is a number that the website has worked out. It is shown as what it is, with its source.
+    if (m_listed && m_listed->whiteAccuracy && m_listed->blackAccuracy)
+    {
+        ImGui::SameLine();
+        ImGui::TextDisabled("%s",
+                            core::tr_format("Accuracy (chess.com): {:.1f}% / {:.1f}%", *m_listed->whiteAccuracy,
+                                            *m_listed->blackAccuracy)
+                                .c_str());
+    }
+
+    if (!m_openError.empty())
+    {
+        ImGui::TextColored(ERROR_COLOR, "%s", core::tr("This game could not be opened:"));
+        ImGui::TextWrapped("%s", m_openError.c_str());
+    }
+
+    ImGui::Separator();
+}
+
 void sg::chess::ui::AnalysisScreen::DrawPlayers()
 {
     const core::Material material{ core::captured_material(m_game) };
@@ -498,6 +666,8 @@ void sg::chess::ui::AnalysisScreen::DrawHeader()
             m_game.Reset();
             m_headers = core::PgnHeaders::MakeDefault(core::format_local_time("%Y.%m.%d"));
             m_notationPanel.Reset();
+            m_cameFromList = false;
+            m_listed.reset();
             OnPositionChanged();
             ImGui::CloseCurrentPopup();
         }
