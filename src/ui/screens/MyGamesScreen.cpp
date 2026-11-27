@@ -56,7 +56,7 @@ namespace
     // The columns of the table.
     constexpr int COLUMN_COUNT{ 9 };
     constexpr float RESULT_WIDTH{ 96.0f };
-    constexpr float COLOR_WIDTH{ 46.0f };
+    constexpr float COLOR_WIDTH{ 66.0f };
     constexpr float TIME_WIDTH{ 64.0f };
     constexpr float ACCURACY_WIDTH{ 100.0f };
     constexpr float MOVES_WIDTH{ 56.0f };
@@ -445,15 +445,12 @@ bool sg::chess::ui::MyGamesScreen::DrawFilter()
 
 void sg::chess::ui::MyGamesScreen::DrawTable()
 {
-    if (m_visibleOutdated || m_filter != m_shownFilter)
-    {
-        m_visible = core::filter_games(m_games, m_filter);
-        m_shownFilter = m_filter;
-        m_visibleOutdated = false;
-    }
-
+    // A click on a header sorts by that column, a second click turns the order around, a third one removes it. With
+    // the Ctrl key, more columns can be combined.
     constexpr ImGuiTableFlags flags{ ImGuiTableFlags_ScrollY | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerH
-                                     | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedFit };
+                                     | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingFixedFit
+                                     | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
+                                     | ImGuiTableFlags_SortTristate };
 
     if (m_games.empty() && !m_syncer.IsRunning())
     {
@@ -470,16 +467,49 @@ void sg::chess::ui::MyGamesScreen::DrawTable()
     }
 
     ImGui::TableSetupScrollFreeze(0, 1);
-    ImGui::TableSetupColumn(core::tr("Result"), ImGuiTableColumnFlags_WidthFixed, RESULT_WIDTH);
-    ImGui::TableSetupColumn(core::tr("Color"), ImGuiTableColumnFlags_WidthFixed, COLOR_WIDTH);
-    ImGui::TableSetupColumn(core::tr("Opponent"), ImGuiTableColumnFlags_WidthStretch, 1.0f);
-    ImGui::TableSetupColumn(core::tr("Time"), ImGuiTableColumnFlags_WidthFixed, TIME_WIDTH);
-    ImGui::TableSetupColumn(core::tr("Accuracy"), ImGuiTableColumnFlags_WidthFixed, ACCURACY_WIDTH);
-    ImGui::TableSetupColumn(core::tr("Moves"), ImGuiTableColumnFlags_WidthFixed, MOVES_WIDTH);
-    ImGui::TableSetupColumn(core::tr("Date"), ImGuiTableColumnFlags_WidthFixed, DATE_WIDTH);
-    ImGui::TableSetupColumn(core::tr("Opening"), ImGuiTableColumnFlags_WidthStretch, 1.5f);
-    ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, ACTION_WIDTH);
+    // The ID of a column is the column of the list that it sorts by. The last column (the button) cannot be sorted.
+    const auto column = [](const core::SortColumn t_column) { return static_cast<ImGuiID>(t_column); };
+    constexpr ImGuiTableColumnFlags fixed{ ImGuiTableColumnFlags_WidthFixed };
+    constexpr ImGuiTableColumnFlags stretch{ ImGuiTableColumnFlags_WidthStretch };
+
+    ImGui::TableSetupColumn(core::tr("Result"), fixed, RESULT_WIDTH, column(core::SortColumn::RESULT));
+    ImGui::TableSetupColumn(core::tr("Color"), fixed, COLOR_WIDTH, column(core::SortColumn::COLOR));
+    ImGui::TableSetupColumn(core::tr("Opponent"), stretch, 1.0f, column(core::SortColumn::OPPONENT));
+    ImGui::TableSetupColumn(core::tr("Time"), fixed, TIME_WIDTH, column(core::SortColumn::TIME));
+    ImGui::TableSetupColumn(core::tr("Accuracy"), fixed, ACCURACY_WIDTH, column(core::SortColumn::ACCURACY));
+    ImGui::TableSetupColumn(core::tr("Moves"), fixed, MOVES_WIDTH, column(core::SortColumn::MOVES));
+
+    // The newest games are at the top at the start.
+    ImGui::TableSetupColumn(core::tr("Date"),
+                            fixed | ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortDescending,
+                            DATE_WIDTH, column(core::SortColumn::DATE));
+    ImGui::TableSetupColumn(core::tr("Opening"), stretch, 1.5f, column(core::SortColumn::OPENING));
+    ImGui::TableSetupColumn("", fixed | ImGuiTableColumnFlags_NoResize | ImGuiTableColumnFlags_NoSort, ACTION_WIDTH);
     ImGui::TableHeadersRow();
+
+    // The keys of the sorting come from the table after it was submitted. They are taken when they have changed.
+    if (ImGuiTableSortSpecs* specs{ ImGui::TableGetSortSpecs() }; specs != nullptr && specs->SpecsDirty)
+    {
+        m_sort.clear();
+
+        for (int i{ 0 }; i < specs->SpecsCount; ++i)
+        {
+            const ImGuiTableColumnSortSpecs& spec{ specs->Specs[i] };
+            m_sort.push_back({ static_cast<core::SortColumn>(spec.ColumnUserID),
+                               spec.SortDirection == ImGuiSortDirection_Ascending });
+        }
+
+        specs->SpecsDirty = false;
+        m_visibleOutdated = true;
+    }
+
+    if (m_visibleOutdated || m_filter != m_shownFilter)
+    {
+        m_visible = core::filter_games(m_games, m_filter);
+        core::sort_games(m_games, m_visible, m_sort);
+        m_shownFilter = m_filter;
+        m_visibleOutdated = false;
+    }
 
     ImGuiListClipper clipper;
     clipper.Begin(static_cast<int>(m_visible.size()));

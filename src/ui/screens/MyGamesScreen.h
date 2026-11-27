@@ -157,6 +157,7 @@ namespace sg::chess::ui
         std::array<char, 64> m_search{}; ///< The text field for the search
         std::vector<core::GameSummary> m_games; ///< All games that were fetched
         std::vector<std::size_t> m_visible; ///< Indexes in m_games of the games that pass the filter
+        std::vector<core::SortKey> m_sort; ///< The columns that the table is sorted by, the first is the most important
         core::GameFilter m_filter; ///< What is chosen (tab and search text)
         core::GameFilter m_shownFilter; ///< The filter that m_visible was made with
         bool m_visibleOutdated{ true }; ///< m_visible has to be made again
