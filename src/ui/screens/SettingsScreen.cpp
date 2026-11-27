@@ -80,9 +80,10 @@ void sg::chess::ui::SettingsScreen::DrawGui()
 {
     const ImVec2 displaySize{ ImGui::GetIO().DisplaySize };
 
-    // The page fills everything to the right of the navigation bar.
-    ImGui::SetNextWindowPos({ NAVIGATION_WIDTH, 0.0f });
-    ImGui::SetNextWindowSize({ displaySize.x - NAVIGATION_WIDTH, displaySize.y });
+    // The page stands a little off the edges of the window, like the side panel of the analysis page.
+    ImGui::SetNextWindowPos({ NAVIGATION_WIDTH + PAGE_MARGIN_SIDE, PAGE_MARGIN_TOP });
+    ImGui::SetNextWindowSize({ displaySize.x - NAVIGATION_WIDTH - 2.0f * PAGE_MARGIN_SIDE,
+                               displaySize.y - PAGE_MARGIN_TOP - PAGE_MARGIN_BOTTOM });
 
     // The padding is read when the window begins. It is taken back at once, or the popup of the list has it, too.
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { MARGIN, MARGIN });

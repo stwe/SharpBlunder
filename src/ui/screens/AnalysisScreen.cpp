@@ -45,7 +45,7 @@ namespace
 
     // The board is a little smaller than it could be: a strip with a player fits above and below it.
     constexpr float SQUARE_SIZE{ 72.0f };
-    constexpr float MARGIN{ 30.0f };
+    constexpr float MARGIN{ sg::chess::ui::PAGE_MARGIN_SIDE };
     constexpr float TOP_MARGIN{ sg::chess::ui::PAGE_MARGIN_TOP };
     constexpr float STRIP_HEIGHT{ 46.0f };
     constexpr float STRIP_GAP{ 4.0f };

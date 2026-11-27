@@ -204,8 +204,10 @@ void sg::chess::ui::MyGamesScreen::DrawGui()
 {
     const ImVec2 displaySize{ ImGui::GetIO().DisplaySize };
 
-    ImGui::SetNextWindowPos({ NAVIGATION_WIDTH, 0.0f });
-    ImGui::SetNextWindowSize({ displaySize.x - NAVIGATION_WIDTH, displaySize.y });
+    // The page stands a little off the edges of the window, like the side panel of the analysis page.
+    ImGui::SetNextWindowPos({ NAVIGATION_WIDTH + PAGE_MARGIN_SIDE, PAGE_MARGIN_TOP });
+    ImGui::SetNextWindowSize({ displaySize.x - NAVIGATION_WIDTH - 2.0f * PAGE_MARGIN_SIDE,
+                               displaySize.y - PAGE_MARGIN_TOP - PAGE_MARGIN_BOTTOM });
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(WINDOW_PADDING, WINDOW_PADDING));
     const bool open{ ImGui::Begin("##content", nullptr, WINDOW_FLAGS) };

@@ -47,6 +47,14 @@ namespace sg::chess::ui
     inline constexpr float PAGE_MARGIN_BOTTOM{ 12.0f };
 
     /**
+     * @brief The space to the left and to the right of a page, in pixels.
+     *
+     * A page starts this far to the right of the navigation bar and ends this far from the right edge of the window.
+     * On the analysis page, the evaluation bar starts here and the side panel ends here.
+     */
+    inline constexpr float PAGE_MARGIN_SIDE{ 30.0f };
+
+    /**
      * @brief The space between the left edge of the window and the navigation bar, in pixels.
      *
      * The navigation bar still ends at NAVIGATION_WIDTH, so the pages to its right do not move.
