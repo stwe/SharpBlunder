@@ -72,33 +72,18 @@ namespace
         fs::remove_all(home);
     }
 
-    void TestMoveOldFolder()
+    void TestOtherFoldersAreLeftAlone()
     {
-        const fs::path home{ MakeHome("old") };
-        MakeFile(home / ".chess" / "games" / "old.pgn", "old");
+        const fs::path home{ MakeHome("other") };
+        MakeFile(home / ".chess" / "games" / "other.pgn", "other");
 
         const fs::path dir{ sg::chess::core::data_dir_in(home) };
 
-        // The games of the hidden folder are in the new one.
+        // A folder of another program with the name of an earlier version is not touched: nothing is moved or read.
         CHECK(dir == home / "SharpBlunder");
-        CHECK(ReadFile(dir / "games" / "old.pgn") == "old");
-        CHECK(!fs::exists(home / ".chess"));
-
-        fs::remove_all(home);
-    }
-
-    void TestBothFolders()
-    {
-        const fs::path home{ MakeHome("both") };
-        MakeFile(home / ".chess" / "games" / "old.pgn", "old");
-        MakeFile(home / "SharpBlunder" / "games" / "new.pgn", "new");
-
-        const fs::path dir{ sg::chess::core::data_dir_in(home) };
-
-        // Nothing is moved or mixed.
-        CHECK(ReadFile(dir / "games" / "new.pgn") == "new");
-        CHECK(!fs::exists(dir / "games" / "old.pgn"));
-        CHECK(ReadFile(home / ".chess" / "games" / "old.pgn") == "old");
+        CHECK(fs::is_directory(dir));
+        CHECK(fs::is_empty(dir));
+        CHECK(ReadFile(home / ".chess" / "games" / "other.pgn") == "other");
 
         fs::remove_all(home);
     }
@@ -107,8 +92,7 @@ namespace
 int main()
 {
     TestNewHome();
-    TestMoveOldFolder();
-    TestBothFolders();
+    TestOtherFoldersAreLeftAlone();
 
     if (sg::chess::tests::failures() != 0)
     {

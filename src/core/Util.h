@@ -68,8 +68,7 @@ namespace sg::chess::core
     /**
      * @brief Retrieves and ensures the existence of the data directory 'SharpBlunder' in a given folder.
      *
-     * Earlier versions kept their files in the hidden directory '.chess'. If that directory exists and 'SharpBlunder'
-     * does not, the old directory is renamed, so the games are still there. If both exist, nothing is moved.
+     * Only this directory is used. Other directories in the home folder are never read, moved or changed.
      *
      * @param t_home The folder in which the data directory lies, usually the home folder of the user.
      *
