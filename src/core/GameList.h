@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include "core/GameSummary.h"
@@ -43,6 +44,66 @@ namespace sg::chess::core
          */
         [[nodiscard]] bool operator==(const GameFilter&) const = default;
     };
+
+    //-------------------------------------------------
+    // Sorting
+    //-------------------------------------------------
+
+    /**
+     * @brief The columns that the list of games can be sorted by.
+     */
+    enum class SortColumn : std::uint8_t
+    {
+        RESULT, ///< Win, draw, loss (from the point of view of the user). Ascending: wins first
+        COLOR, ///< The color that the user played. Ascending: White first
+        OPPONENT, ///< The name of the opponent, upper and lower case do not matter
+        TIME, ///< The time control, from short to long. A game with an increment counts as longer
+        ACCURACY, ///< The accuracy of the user. Games without it are always last
+        MOVES, ///< The number of moves
+        DATE, ///< When the game ended
+        OPENING ///< The name of the opening. Games without one are always last
+    };
+
+    /**
+     * @brief One column to sort by, and the direction.
+     */
+    struct SortKey
+    {
+        SortColumn column{ SortColumn::DATE }; ///< The column
+        bool ascending{ false }; ///< True: from small to large (A to Z, old to new). False: the other way
+
+        /**
+         * @brief Compares two keys.
+         *
+         * @return True if both have the same column and direction.
+         */
+        [[nodiscard]] bool operator==(const SortKey&) const = default;
+    };
+
+    /**
+     * @brief Sorts a list of indexes of games.
+     *
+     * The first key is the most important one. Games that are equal in all keys keep the usual order: the newest
+     * first. Without keys the list gets this usual order.
+     *
+     * @param t_games The games.
+     * @param t_indexes The indexes in t_games to sort. Every index must be valid.
+     * @param t_keys The columns to sort by, the most important first.
+     */
+    void sort_games(const std::vector<GameSummary>& t_games, std::vector<std::size_t>& t_indexes,
+                    const std::vector<SortKey>& t_keys);
+
+    /**
+     * @brief Estimates how long a game with a time control lasts, in seconds.
+     *
+     * The base time plus 40 times the increment: the usual way to compare time controls with an increment. A daily
+     * game ("1/86400") counts as its days. A time control that cannot be read is the largest value.
+     *
+     * @param t_timeControl The PGN value of the time control, e.g. "900+10".
+     *
+     * @return The duration in seconds.
+     */
+    [[nodiscard]] long estimated_duration(const std::string& t_timeControl);
 
     //-------------------------------------------------
     // List
